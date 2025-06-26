@@ -217,6 +217,12 @@ export function initializeGame(
     allCluesSubmitted: false,
     includeUndercover,
     round: 1,
+    originalConfig: {
+      players: playerNames,
+      difficulty,
+      includeUndercover,
+      maxMisterWhites,
+    },
   };
 }
 

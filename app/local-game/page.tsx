@@ -102,6 +102,22 @@ function LocalGameContent() {
     router.push('/local');
   };
 
+  const continueWithSameConfig = () => {
+    if (!gameData) return;
+    
+    // Reiniciar el juego con la misma configuración
+    const newGameData = initializeGame(
+      gameData.originalConfig.players,
+      gameData.originalConfig.difficulty,
+      gameData.originalConfig.includeUndercover,
+      gameData.originalConfig.maxMisterWhites
+    );
+    
+    setGameData(newGameData);
+    setShowRole(false);
+    setSelectedVotedPlayer('');
+  };
+
   const handleGoBack = () => {
     router.push('/local');
   };
@@ -409,9 +425,14 @@ function LocalGameContent() {
             </CardContent>
           </Card>
 
-          <Button onClick={resetGame} size="lg" className="w-full">
-            Jugar otra vez
-          </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Button onClick={continueWithSameConfig} variant="outline" size="lg" className="w-full">
+              Continuar con la misma configuración
+            </Button>
+            <Button onClick={resetGame} size="lg" className="w-full">
+              Jugar con nueva configuración
+            </Button>
+          </div>
         </div>
       </div>
     );

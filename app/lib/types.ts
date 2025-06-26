@@ -87,6 +87,7 @@ export interface LocalGameData {
   winner?: 'civilians' | 'mister_white' | 'undercover' | 'payaso' | null;
   includeUndercover: boolean;
   round: number;
+  originalConfig: LocalGameConfig; // Configuration used to create this game
 }
 
 // Tipos para eventos Pusher

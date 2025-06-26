@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Users, Settings, Info } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -14,7 +14,7 @@ import { MAX_PLAYERS, MIN_PLAYERS } from "../lib/types";
 
 export default function LocalGameSetupPage() {
   const router = useRouter();
-  const [players, setPlayers] = useState<string[]>(['']);
+  const [players, setPlayers] = useState<string[]>(['', '', '']); // 3 espacios iniciales
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [includeUndercover, setIncludeUndercover] = useState(false);
   const [maxMisterWhites, setMaxMisterWhites] = useState(1);
@@ -64,9 +64,12 @@ export default function LocalGameSetupPage() {
     }
     
     // Check Mr. White count
-    const specialRoles = maxMisterWhites + (includeUndercover ? 1 : 0) + (validPlayers.length >= 8 ? 1 : 0); // +1 for Payaso if 8+ players
-    if (specialRoles >= validPlayers.length) {
-      newErrors.push('Demasiados roles especiales para el número de jugadores.');
+    const payasoRoles = validPlayers.length >= 8 ? 1 : 0;
+    const undercoverRoles = includeUndercover ? 1 : 0;
+    const totalSpecialRoles = maxMisterWhites + undercoverRoles + payasoRoles;
+    
+    if (totalSpecialRoles >= validPlayers.length) {
+      newErrors.push('Demasiados roles especiales para el número de jugadores. Se necesita al menos 1 civil.');
     }
     
     setErrors(newErrors);
@@ -93,7 +96,32 @@ export default function LocalGameSetupPage() {
 
   const validPlayerCount = players.filter(p => p.trim() !== '').length;
   const includePayaso = validPlayerCount >= 8;
-  const maxPossibleMisterWhites = Math.max(1, Math.floor(validPlayerCount / 3));
+  
+  // Cálculo más flexible del máximo de Mr. White
+  // Permitir hasta aproximadamente 60% de los jugadores como Mr. White, pero al menos 1 civil
+  const calculateMaxMisterWhites = (playerCount: number) => {
+    if (playerCount < MIN_PLAYERS) return 1;
+    
+    // Contar roles especiales obligatorios
+    const payasoRoles = playerCount >= 8 ? 1 : 0;
+    const undercoverRoles = includeUndercover ? 1 : 0;
+    
+    // Asegurar al menos 1 civil
+    const maxSpecialRoles = Math.max(1, playerCount - 1 - undercoverRoles - payasoRoles);
+    
+    // Para 5 jugadores: máximo 3 Mr. White (60%)
+    // Para 8 jugadores: máximo 4-5 Mr. White
+    return Math.min(maxSpecialRoles, Math.floor(playerCount * 0.6));
+  };
+  
+  const maxPossibleMisterWhites = calculateMaxMisterWhites(validPlayerCount);
+
+  // Ajustar automáticamente el número de Mr. White si excede el máximo permitido
+  useEffect(() => {
+    if (maxMisterWhites > maxPossibleMisterWhites) {
+      setMaxMisterWhites(Math.max(1, maxPossibleMisterWhites));
+    }
+  }, [maxPossibleMisterWhites, maxMisterWhites]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
