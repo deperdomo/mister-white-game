@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, GripVertical, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, GripVertical, Plus, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -17,6 +17,7 @@ function LocalGameContent() {
   const [gameData, setGameData] = useState<LocalGameData | null>(null);
   const [showRole, setShowRole] = useState(false);
   const [selectedVotedPlayer, setSelectedVotedPlayer] = useState<string>('');
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
   useEffect(() => {
     // Get configuration from URL parameters
@@ -73,20 +74,31 @@ function LocalGameContent() {
   };
 
   // Handle clue submission
-  const handleClueSubmit = (playerId: string, clue: string) => {
+  const handleAllCluesSubmit = () => {
+    if (!gameData) return;
+    
+    // Check that all players have clues
+    const allHaveClues = gameData.players.every(p => p.clue && p.clue.trim() !== '');
+    if (!allHaveClues) return;
+    
+    setGameData({
+      ...gameData,
+      allCluesSubmitted: true,
+      gamePhase: 'voting',
+    });
+  };
+
+  // Handle individual clue change
+  const handleClueChange = (playerId: string, clue: string) => {
     if (!gameData) return;
     
     const updatedPlayers = gameData.players.map(p => 
       p.id === playerId ? { ...p, clue: clue.trim() } : p
     );
     
-    const allCluesReady = allCluesSubmitted(updatedPlayers);
-    
     setGameData({
       ...gameData,
       players: updatedPlayers,
-      allCluesSubmitted: allCluesReady,
-      gamePhase: allCluesReady ? 'voting' : 'clues',
     });
   };
 
@@ -103,7 +115,15 @@ function LocalGameContent() {
   };
 
   const handleGoBack = () => {
+    setShowExitConfirmation(true);
+  };
+
+  const confirmExit = () => {
     router.push('/local');
+  };
+
+  const cancelExit = () => {
+    setShowExitConfirmation(false);
   };
 
   const continueWithSameConfig = () => {
@@ -145,10 +165,58 @@ function LocalGameContent() {
 
   if (!gameData) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-md text-center">
-        <p className="text-slate-600 dark:text-slate-400 mb-4">Cargando juego...</p>
-        <Button onClick={handleGoBack}>Volver atrás</Button>
-      </div>
+      <>
+        {/* Modal de confirmación para salir */}
+        {showExitConfirmation && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            {/* Overlay */}
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+              onClick={cancelExit}
+            ></div>
+            
+            {/* Modal */}
+            <div className="relative w-full max-w-md p-6 bg-white dark:bg-slate-800 shadow-xl rounded-2xl z-10">
+              <div className="flex items-center mb-4">
+                <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full dark:bg-yellow-900/20">
+                  <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
+                  ¿Estás seguro de que quieres salir?
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                  Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
+                </p>
+              </div>
+              
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={cancelExit}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={confirmExit}
+                  className="flex-1"
+                >
+                  Salir de todas formas
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="container mx-auto px-4 py-8 max-w-md text-center">
+          <p className="text-slate-600 dark:text-slate-400 mb-4">Cargando juego...</p>
+          <Button onClick={handleGoBack}>Volver atrás</Button>
+        </div>
+      </>
     );
   }
 
@@ -158,11 +226,58 @@ function LocalGameContent() {
     const roleInfo = getRoleInfo(currentPlayer, gameData.category !== undefined);
 
     return (
-      <div className="container mx-auto px-4 py-8 max-w-md">
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver
+      <>
+        {/* Modal de confirmación para salir */}
+        {showExitConfirmation && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            {/* Overlay */}
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+              onClick={cancelExit}
+            ></div>
+            
+            {/* Modal */}
+            <div className="relative w-full max-w-md p-6 bg-white dark:bg-slate-800 shadow-xl rounded-2xl z-10">
+              <div className="flex items-center mb-4">
+                <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full dark:bg-yellow-900/20">
+                  <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
+                  ¿Estás seguro de que quieres salir?
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                  Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
+                </p>
+              </div>
+              
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={cancelExit}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={confirmExit}
+                  className="flex-1"
+                >
+                  Salir de todas formas
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="container mx-auto px-4 py-8 max-w-md">
+          <div className="flex items-center mb-6">
+            <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Volver
           </Button>
           <h1 className="text-xl font-bold text-slate-900 dark:text-slate-50">
             Revelar Roles
@@ -234,13 +349,61 @@ function LocalGameContent() {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
   // Clues Phase - All players submit their clues
   if (gameData.gamePhase === 'clues') {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <>
+        {/* Modal de confirmación para salir */}
+        {showExitConfirmation && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            {/* Overlay */}
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+              onClick={cancelExit}
+            ></div>
+            
+            {/* Modal */}
+            <div className="relative w-full max-w-md p-6 bg-white dark:bg-slate-800 shadow-xl rounded-2xl z-10">
+              <div className="flex items-center mb-4">
+                <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full dark:bg-yellow-900/20">
+                  <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
+                  ¿Estás seguro de que quieres salir?
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                  Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
+                </p>
+              </div>
+              
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={cancelExit}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={confirmExit}
+                  className="flex-1"
+                >
+                  Salir de todas formas
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -272,11 +435,28 @@ function LocalGameContent() {
                 <ClueInput
                   key={player.id}
                   player={player}
-                  onClueSubmit={handleClueSubmit}
-                  disabled={!!player.clue}
+                  onClueChange={handleClueChange}
+                  disabled={gameData.allCluesSubmitted}
                 />
               ))}
             </div>
+
+            {!gameData.allCluesSubmitted && (
+              <div className="text-center mt-6">
+                <Button 
+                  size="lg" 
+                  onClick={handleAllCluesSubmit}
+                  disabled={!gameData.players.every(p => p.clue && p.clue.trim() !== '')}
+                  className="px-8"
+                >
+                  <Send className="h-5 w-5 mr-2" />
+                  Enviar pistas
+                </Button>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+                  Todos los jugadores deben escribir una pista antes de continuar
+                </p>
+              </div>
+            )}
 
             {gameData.allCluesSubmitted && (
               <div className="text-center">
@@ -287,14 +467,62 @@ function LocalGameContent() {
             )}
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </>
     );
   }
 
   // Voting Phase - Vote for who to eliminate
   if (gameData.gamePhase === 'voting') {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <>
+        {/* Modal de confirmación para salir */}
+        {showExitConfirmation && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            {/* Overlay */}
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+              onClick={cancelExit}
+            ></div>
+            
+            {/* Modal */}
+            <div className="relative w-full max-w-md p-6 bg-white dark:bg-slate-800 shadow-xl rounded-2xl z-10">
+              <div className="flex items-center mb-4">
+                <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full dark:bg-yellow-900/20">
+                  <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
+                  ¿Estás seguro de que quieres salir?
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                  Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
+                </p>
+              </div>
+              
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={cancelExit}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={confirmExit}
+                  className="flex-1"
+                >
+                  Salir de todas formas
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -360,7 +588,8 @@ function LocalGameContent() {
             </CardContent>
           </Card>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
@@ -464,26 +693,70 @@ function LocalGameContent() {
     );
   }
 
-  return null;
+  return (
+    <>
+      {/* Modal de confirmación para salir */}
+      {showExitConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          {/* Overlay */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+            onClick={cancelExit}
+          ></div>
+          
+          {/* Modal */}
+          <div className="relative w-full max-w-md p-6 bg-white dark:bg-slate-800 shadow-xl rounded-2xl z-10">
+            <div className="flex items-center mb-4">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full dark:bg-yellow-900/20">
+                <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
+                ¿Estás seguro de que quieres salir?
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={cancelExit}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={confirmExit}
+                className="flex-1"
+              >
+                Salir de todas formas
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 // Component for clue input
 function ClueInput({ 
   player, 
-  onClueSubmit, 
+  onClueChange, 
   disabled 
 }: { 
   player: Player; 
-  onClueSubmit: (playerId: string, clue: string) => void;
+  onClueChange: (playerId: string, clue: string) => void;
   disabled: boolean;
 }) {
-  const [clue, setClue] = useState(player.clue || '');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (clue.trim()) {
-      onClueSubmit(player.id, clue.trim());
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newClue = e.target.value;
+    onClueChange(player.id, newClue);
   };
 
   return (
@@ -492,19 +765,14 @@ function ClueInput({
         <Label className="font-medium">{player.name}</Label>
         {disabled && <span className="text-xs text-green-600">✓ Pista enviada</span>}
       </div>
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <Input
-          value={clue}
-          onChange={(e) => setClue(e.target.value)}
-          placeholder="Escribe tu pista aquí..."
-          disabled={disabled}
-          maxLength={50}
-          className="flex-1"
-        />
-        <Button type="submit" disabled={disabled || !clue.trim()}>
-          <Send className="h-4 w-4" />
-        </Button>
-      </form>
+      <Input
+        value={player.clue || ''}
+        onChange={handleChange}
+        placeholder="Escribe tu pista aquí..."
+        disabled={disabled}
+        maxLength={50}
+        className="w-full"
+      />
     </div>
   );
 }
