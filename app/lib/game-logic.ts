@@ -3,6 +3,7 @@ import { shuffleArray } from './utils';
 
 // Palabras predefinidas para el juego local
 export const GAME_WORDS = [
+  // Nivel fácil
   {
     category: 'Comida',
     word: 'Pizza',
@@ -16,6 +17,26 @@ export const GAME_WORDS = [
     difficulty: 'easy' as const,
   },
   {
+    category: 'Colores',
+    word: 'Rojo',
+    undercoverWord: 'Azul',
+    difficulty: 'easy' as const,
+  },
+  {
+    category: 'Frutas',
+    word: 'Manzana',
+    undercoverWord: 'Naranja',
+    difficulty: 'easy' as const,
+  },
+  {
+    category: 'Vehículos',
+    word: 'Coche',
+    undercoverWord: 'Moto',
+    difficulty: 'easy' as const,
+  },
+  
+  // Nivel medio
+  {
     category: 'Deportes',
     word: 'Fútbol',
     undercoverWord: 'Baloncesto',
@@ -28,6 +49,26 @@ export const GAME_WORDS = [
     difficulty: 'medium' as const,
   },
   {
+    category: 'Instrumentos',
+    word: 'Guitarra',
+    undercoverWord: 'Piano',
+    difficulty: 'medium' as const,
+  },
+  {
+    category: 'Bebidas',
+    word: 'Café',
+    undercoverWord: 'Té',
+    difficulty: 'medium' as const,
+  },
+  {
+    category: 'Estaciones',
+    word: 'Verano',
+    undercoverWord: 'Invierno',
+    difficulty: 'medium' as const,
+  },
+  
+  // Nivel difícil
+  {
     category: 'Transporte',
     word: 'Avión',
     undercoverWord: 'Helicóptero',
@@ -37,6 +78,24 @@ export const GAME_WORDS = [
     category: 'Profesiones',
     word: 'Doctor',
     undercoverWord: 'Enfermero',
+    difficulty: 'hard' as const,
+  },
+  {
+    category: 'Materiales',
+    word: 'Madera',
+    undercoverWord: 'Metal',
+    difficulty: 'hard' as const,
+  },
+  {
+    category: 'Ciencias',
+    word: 'Química',
+    undercoverWord: 'Física',
+    difficulty: 'hard' as const,
+  },
+  {
+    category: 'Emociones',
+    word: 'Felicidad',
+    undercoverWord: 'Tristeza',
     difficulty: 'hard' as const,
   },
 ] as const;

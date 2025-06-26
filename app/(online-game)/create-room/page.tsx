@@ -1,11 +1,38 @@
+'use client';
+
 import Link from "next/link";
-import { ArrowLeft, Users, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "../../components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
+import CreateRoomForm from "../../components/forms/CreateRoomForm";
+import { CreateRoomFormData } from "../../lib/types";
 
 export default function CreateRoomPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCreateRoom = async (formData: CreateRoomFormData) => {
+    setIsLoading(true);
+    try {
+      // TODO: Implementar lógica real de creación de sala con Supabase
+      console.log('Creando sala con datos:', formData);
+      
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Redirigir a sala de espera (mock room code)
+      const mockRoomCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+      router.push(`/waiting-room?code=${mockRoomCode}&host=true`);
+      
+    } catch (error) {
+      console.error('Error al crear sala:', error);
+      throw error; // El formulario manejará el error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-md">
       {/* Header con navegación */}
@@ -22,82 +49,10 @@ export default function CreateRoomPage() {
       </div>
 
       {/* Formulario de creación */}
-      <Card className="animate-fade-in">
-        <CardHeader className="text-center">
-          <div className="mx-auto bg-blue-100 dark:bg-blue-900 p-3 rounded-full w-fit mb-4">
-            <Plus className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-          </div>
-          <CardTitle>Nueva Sala Online</CardTitle>
-          <CardDescription>
-            Configura tu sala y comparte el código con tus amigos
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Formulario */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="playerName">Tu nombre</Label>
-              <Input
-                id="playerName"
-                placeholder="Escribe tu nombre"
-                maxLength={20}
-                className="w-full"
-              />
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Máximo 20 caracteres
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="maxPlayers">Número máximo de jugadores</Label>
-              <select
-                id="maxPlayers"
-                className="w-full h-10 px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-md bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-slate-300"
-                defaultValue="6"
-              >
-                <option value="3">3 jugadores</option>
-                <option value="4">4 jugadores</option>
-                <option value="5">5 jugadores</option>
-                <option value="6">6 jugadores</option>
-                <option value="7">7 jugadores</option>
-                <option value="8">8 jugadores</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="difficulty">Dificultad de las palabras</Label>
-              <select
-                id="difficulty"
-                className="w-full h-10 px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-md bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-slate-300"
-                defaultValue="medium"
-              >
-                <option value="easy">Fácil - Palabras comunes</option>
-                <option value="medium">Medio - Variedad equilibrada</option>
-                <option value="hard">Difícil - Palabras complejas</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Botón de creación */}
-          <Button className="w-full" size="lg">
-            <Users className="mr-2 h-5 w-5" />
-            Crear Sala
-          </Button>
-
-          {/* Información adicional */}
-          <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-800">
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-              ¿Qué sucede después?
-            </p>
-            <ul className="text-xs text-slate-500 dark:text-slate-500 space-y-1">
-              <li>• Se generará un código único de 6 caracteres</li>
-              <li>• Podrás compartirlo con tus amigos</li>
-              <li>• Serás el anfitrión de la sala</li>
-              <li>• Podrás iniciar el juego cuando todos estén listos</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
+      <CreateRoomForm 
+        onSubmit={handleCreateRoom}
+        isLoading={isLoading}
+      />
 
       {/* Alternativas */}
       <div className="mt-8 text-center">

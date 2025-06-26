@@ -149,31 +149,59 @@ app/
 - **Accent**: Green, Purple, Orange para estados
 - **Destructive**: Red 600/400
 
-## 🔮 Próximas Fases
+## 🔮 Estado del Proyecto
 
-### FASE 2: Páginas Principales y Navegación
-- [ ] Formularios con validación
-- [ ] Página de sala de espera
-- [ ] Navegación entre estados
-- [ ] Gestión de errores
+### ✅ COMPLETADO
 
-### FASE 3: Lógica del Juego (Modo Local)
-- [ ] Asignación de roles
-- [ ] Interfaz de descripción
-- [ ] Sistema de votación
-- [ ] Pantalla de resultados
+#### FASE 1: Setup e Infraestructura
+- ✅ Configuración Next.js 14 + TypeScript + Tailwind CSS
+- ✅ Integración Supabase y Pusher (configuración)
+- ✅ Estructura de carpetas y arquitectura
+- ✅ Componentes UI base (shadcn/ui style)
+- ✅ Sistema de tipos TypeScript
+- ✅ Utilidades y helpers
 
-### FASE 4: Modo Online (Real-time)
-- [ ] API Routes completas
-- [ ] WebSocket events
-- [ ] Sincronización de estado
-- [ ] Persistencia en Supabase
+#### FASE 2: Páginas Principales y Navegación
+- ✅ Formularios con validación (CreateRoom, JoinRoom, PlayerName)
+- ✅ Páginas principales (/create-room, /join-room, /local)
+- ✅ Sistema global de toasts
+- ✅ Navegación entre estados
+- ✅ Gestión de errores y loading states
+- ✅ Páginas de sala de espera y juego (estructura)
 
-### FASE 5: Polish y Optimización
+#### FASE 3: Lógica del Juego (Modo Local) 🆕
+- ✅ Asignación automática de roles
+- ✅ Revelación individual de roles
+- ✅ Sistema de descripciones con validación
+- ✅ Sistema de votación completo
+- ✅ Detección automática de ganadores
+- ✅ Pantalla de resultados con revelación
+- ✅ Base de datos expandida (15 pares de palabras)
+- ✅ Flujo completo del juego local funcional
+
+### 🔄 EN PROGRESO / PENDIENTE
+
+#### FASE 4: Modo Online (Real-time)
+- [ ] API Routes para gestión de salas
+- [ ] Integración real con Supabase (CRUD)
+- [ ] WebSocket events con Pusher
+- [ ] Sincronización de estado entre jugadores
+- [ ] Persistencia en base de datos
+- [ ] Manejo de conexiones/desconexiones
+
+#### FASE 5: Funcionalidades Avanzadas
+- [ ] Chat en tiempo real
+- [ ] Efectos de sonido
 - [ ] Animaciones avanzadas
-- [ ] Loading states
-- [ ] Error boundaries
-- [ ] Testing
+- [ ] Sistema de estadísticas
+- [ ] Ranking de jugadores
+- [ ] Historial de partidas
+
+#### FASE 6: Polish y Optimización
+- [ ] Testing automatizado
+- [ ] Optimización de rendimiento
+- [ ] SEO y meta tags
+- [ ] PWA capabilities
 - [ ] Deploy a producción
 
 ## 🧪 Scripts Disponibles
@@ -216,5 +244,12 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ---
 
-**Estado actual**: ✅ FASE 1 Completada - Ready para FASE 2
-**Última actualización**: Junio 2025
+**Estado actual**: ✅ FASE 3 Completada - Modo local completamente funcional  
+**Próximo**: 🔄 FASE 4 - Integración backend y modo online  
+**Última actualización**: Enero 2025
+
+## 📚 Documentación Adicional
+
+- [FASE 1 - Setup e Infraestructura](./README.md#fase-1-completada)
+- [FASE 2 - Páginas y Navegación](./README-FASE2.md)
+- [FASE 3 - Lógica de Juego Local](./README-FASE3.md)

@@ -59,6 +59,11 @@ export interface JoinRoomFormData {
   roomCode: string;
 }
 
+export interface PlayerNameFormData {
+  playerName: string;
+  numberOfPlayers: number;
+}
+
 // Tipos para eventos Pusher
 export type PusherEventData = 
   | { type: 'player-joined'; player: Player }

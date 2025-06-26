@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
+import { ToastProvider } from "./contexts/ToastContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -56,15 +57,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased min-h-screen bg-background text-foreground`}>
-        <div className="flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </div>
+    <html lang="es" className="scroll-smooth">
+      <body className={`${inter.variable} font-sans antialiased min-h-screen bg-white dark:bg-slate-950 transition-colors`}>
+        <ToastProvider>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </ToastProvider>
       </body>
     </html>
   );
