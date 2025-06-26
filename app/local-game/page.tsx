@@ -2,12 +2,12 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, GripVertical, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, AlertTriangle } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { initializeGame, allPlayersRevealed, allCluesSubmitted, processVote, getRoleInfo } from "../lib/game-logic";
+import { initializeGame, allPlayersRevealed, processVote, getRoleInfo } from "../lib/game-logic";
 import { Player, LocalGameData, LocalGameConfig } from "../lib/types";
 
 function LocalGameContent() {
@@ -223,7 +223,7 @@ function LocalGameContent() {
   // Word Reveal Phase - Each player sees their role and word
   if (gameData.gamePhase === 'wordReveal') {
     const currentPlayer = gameData.players[gameData.currentPlayerIndex];
-    const roleInfo = getRoleInfo(currentPlayer, gameData.category !== undefined);
+    const roleInfo = getRoleInfo(currentPlayer);
 
     return (
       <>

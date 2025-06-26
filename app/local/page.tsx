@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Users, Settings, Info, GripVertical } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -12,7 +12,7 @@ import { Switch } from "../components/ui/switch";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { MAX_PLAYERS, MIN_PLAYERS } from "../lib/types";
 
-export default function LocalGameSetupPage() {
+function LocalGameSetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -105,7 +105,7 @@ export default function LocalGameSetupPage() {
     setPlayers(newPlayers);
   };
 
-  const validateForm = (): boolean => {
+  const validateForm = useCallback((): boolean => {
     const newErrors: string[] = [];
     
     // Filter out empty player names
@@ -141,7 +141,7 @@ export default function LocalGameSetupPage() {
     
     setErrors(newErrors);
     return newErrors.length === 0;
-  };
+  }, [players, includeUndercover, maxMisterWhites]);
 
   const handleStartGame = () => {
     if (!validateForm()) return;
@@ -193,7 +193,7 @@ export default function LocalGameSetupPage() {
   // Validación automática cuando cambian los datos del formulario
   useEffect(() => {
     validateForm();
-  }, [players, difficulty, includeUndercover, maxMisterWhites]);
+  }, [players, difficulty, includeUndercover, maxMisterWhites, validateForm]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -224,7 +224,7 @@ export default function LocalGameSetupPage() {
             {/* Difficulty */}
             <div className="space-y-2">
               <Label htmlFor="difficulty">Dificultad</Label>
-              <Select value={difficulty} onValueChange={(value: 'easy' | 'medium' | 'hard') => setDifficulty(value)}>
+              <Select value={difficulty} onValueChange={(value: string) => setDifficulty(value as 'easy' | 'medium' | 'hard')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -394,5 +394,13 @@ export default function LocalGameSetupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LocalGameSetupPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <LocalGameSetupContent />
+    </Suspense>
   );
 }

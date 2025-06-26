@@ -2,6 +2,52 @@ import { useState, useEffect, useCallback } from 'react';
 import { getPusherClient } from '../lib/pusher';
 import { useToast } from './useToast';
 
+// Pusher types
+interface PusherConnection {
+  bind: (event: string, callback: (data?: unknown) => void) => void;
+}
+
+interface PusherChannel {
+  bind: (event: string, callback: (data: unknown) => void) => void;
+  name: string;
+}
+
+interface PusherClient {
+  connection: PusherConnection;
+  subscribe: (channelName: string) => PusherChannel;
+  unsubscribe: (channelName: string) => void;
+  disconnect: () => void;
+}
+
+// Event data interfaces
+interface PlayerJoinedData {
+  playerName: string;
+}
+
+interface DescriptionSubmittedData {
+  playerName: string;
+}
+
+interface VoteSubmittedData {
+  playerName: string;
+}
+
+interface PlayerEliminatedData {
+  playerName: string;
+}
+
+interface GameEndedData {
+  winner: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  error?: string;
+  roomCode?: string;
+  room?: OnlineRoom;
+  players?: OnlinePlayer[];
+}
+
 interface OnlinePlayer {
   id: string;
   name: string;
@@ -45,8 +91,8 @@ export function useOnlineGame(): UseOnlineGameState {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pusher, setPusher] = useState<any>(null);
-  const [channel, setChannel] = useState<any>(null);
+  const [pusher, setPusher] = useState<PusherClient | null>(null);
+  const [channel, setChannel] = useState<PusherChannel | null>(null);
   const { success: showSuccess, error: showError, info: showInfo, warning: showWarning } = useToast();
 
   // Initialize Pusher connection
@@ -64,7 +110,7 @@ export function useOnlineGame(): UseOnlineGameState {
           setIsConnected(false);
         });
 
-        pusherClient.connection.bind('error', (err: any) => {
+        pusherClient.connection.bind('error', (err: unknown) => {
           console.error('Pusher connection error:', err);
           setError('Connection error');
         });
@@ -79,7 +125,7 @@ export function useOnlineGame(): UseOnlineGameState {
         pusher.disconnect();
       }
     };
-  }, []);
+  }, [pusher]);
 
   // Refresh room data from API
   const refreshRoom = useCallback(async () => {
@@ -88,9 +134,9 @@ export function useOnlineGame(): UseOnlineGameState {
     try {
       const response = await fetch(`/api/rooms/${room.roomCode}`);
       if (response.ok) {
-        const data = await response.json();
-        setRoom(data.room);
-        setPlayers(data.players);
+        const data: ApiResponse = await response.json();
+        if (data.room) setRoom(data.room);
+        if (data.players) setPlayers(data.players);
       }
     } catch (err) {
       console.error('Failed to refresh room:', err);
@@ -106,38 +152,43 @@ export function useOnlineGame(): UseOnlineGameState {
     setChannel(roomChannel);
 
     // Player joined event
-    roomChannel.bind('player-joined', (data: any) => {
-      showSuccess(`${data.playerName} joined the room`);
+    roomChannel.bind('player-joined', (data: unknown) => {
+      const playerData = data as PlayerJoinedData;
+      showSuccess(`${playerData.playerName} joined the room`);
       refreshRoom();
     });
 
     // Game started event
-    roomChannel.bind('game-started', (data: any) => {
+    roomChannel.bind('game-started', () => {
       showSuccess('Game has started!');
       refreshRoom();
     });
 
     // Description submitted event
-    roomChannel.bind('description-submitted', (data: any) => {
-      showInfo(`${data.playerName} submitted their description`);
+    roomChannel.bind('description-submitted', (data: unknown) => {
+      const descriptionData = data as DescriptionSubmittedData;
+      showInfo(`${descriptionData.playerName} submitted their description`);
       refreshRoom();
     });
 
     // Vote submitted event
-    roomChannel.bind('vote-submitted', (data: any) => {
-      showInfo(`${data.playerName} voted`);
+    roomChannel.bind('vote-submitted', (data: unknown) => {
+      const voteData = data as VoteSubmittedData;
+      showInfo(`${voteData.playerName} voted`);
       refreshRoom();
     });
 
     // Player eliminated event
-    roomChannel.bind('player-eliminated', (data: any) => {
-      showWarning(`${data.playerName} was eliminated!`);
+    roomChannel.bind('player-eliminated', (data: unknown) => {
+      const eliminatedData = data as PlayerEliminatedData;
+      showWarning(`${eliminatedData.playerName} was eliminated!`);
       refreshRoom();
     });
 
     // Game ended event
-    roomChannel.bind('game-ended', (data: any) => {
-      showSuccess(`Game ended! Winner: ${data.winner}`);
+    roomChannel.bind('game-ended', (data: unknown) => {
+      const gameEndData = data as GameEndedData;
+      showSuccess(`Game ended! Winner: ${gameEndData.winner}`);
       refreshRoom();
     });
 
@@ -162,7 +213,7 @@ export function useOnlineGame(): UseOnlineGameState {
         body: JSON.stringify({ playerName, maxPlayers }),
       });
 
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
 
       if (response.ok && data.success) {
         showSuccess('Room created successfully!');
@@ -170,19 +221,19 @@ export function useOnlineGame(): UseOnlineGameState {
         // Fetch room details and subscribe
         const roomResponse = await fetch(`/api/rooms/${data.roomCode}`);
         if (roomResponse.ok) {
-          const roomData = await roomResponse.json();
-          setRoom(roomData.room);
-          setPlayers(roomData.players);
-          subscribeToRoom(data.roomCode);
+          const roomData: ApiResponse = await roomResponse.json();
+          if (roomData.room) setRoom(roomData.room);
+          if (roomData.players) setPlayers(roomData.players);
+          if (data.roomCode) subscribeToRoom(data.roomCode);
         }
         
-        return data.roomCode;
+        return data.roomCode || null;
       } else {
         setError(data.error || 'Failed to create room');
         showError(data.error || 'Failed to create room');
         return null;
       }
-    } catch (err) {
+    } catch {
       const errorMsg = 'Failed to create room';
       setError(errorMsg);
       showError(errorMsg);
@@ -204,7 +255,7 @@ export function useOnlineGame(): UseOnlineGameState {
         body: JSON.stringify({ roomCode, playerName }),
       });
 
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
 
       if (response.ok && data.success) {
         showSuccess('Joined room successfully!');
@@ -212,10 +263,10 @@ export function useOnlineGame(): UseOnlineGameState {
         // Fetch room details and subscribe
         const roomResponse = await fetch(`/api/rooms/${data.roomCode}`);
         if (roomResponse.ok) {
-          const roomData = await roomResponse.json();
-          setRoom(roomData.room);
-          setPlayers(roomData.players);
-          subscribeToRoom(data.roomCode);
+          const roomData: ApiResponse = await roomResponse.json();
+          if (roomData.room) setRoom(roomData.room);
+          if (roomData.players) setPlayers(roomData.players);
+          if (data.roomCode) subscribeToRoom(data.roomCode);
         }
         
         return true;
@@ -224,7 +275,7 @@ export function useOnlineGame(): UseOnlineGameState {
         showError(data.error || 'Failed to join room');
         return false;
       }
-    } catch (err) {
+    } catch {
       const errorMsg = 'Failed to join room';
       setError(errorMsg);
       showError(errorMsg);
@@ -260,7 +311,7 @@ export function useOnlineGame(): UseOnlineGameState {
         }),
       });
 
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
 
       if (response.ok && data.success) {
         return true;
@@ -268,7 +319,7 @@ export function useOnlineGame(): UseOnlineGameState {
         showError(data.error || 'Failed to start game');
         return false;
       }
-    } catch (err) {
+    } catch {
       showError('Failed to start game');
       return false;
     }
@@ -289,7 +340,7 @@ export function useOnlineGame(): UseOnlineGameState {
         }),
       });
 
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
 
       if (response.ok && data.success) {
         return true;
@@ -297,7 +348,7 @@ export function useOnlineGame(): UseOnlineGameState {
         showError(data.error || 'Failed to submit description');
         return false;
       }
-    } catch (err) {
+    } catch {
       showError('Failed to submit description');
       return false;
     }
@@ -318,7 +369,7 @@ export function useOnlineGame(): UseOnlineGameState {
         }),
       });
 
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
 
       if (response.ok && data.success) {
         return true;
@@ -326,7 +377,7 @@ export function useOnlineGame(): UseOnlineGameState {
         showError(data.error || 'Failed to submit vote');
         return false;
       }
-    } catch (err) {
+    } catch {
       showError('Failed to submit vote');
       return false;
     }

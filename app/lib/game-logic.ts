@@ -281,7 +281,7 @@ export function processVote(gameData: LocalGameData, votedPlayerId: string): Loc
 }
 
 // Get role information for display
-export function getRoleInfo(player: Player, showCategory: boolean = false) {
+export function getRoleInfo(player: Player) {
   switch (player.role) {
     case PLAYER_ROLES.CIVIL:
       return {
