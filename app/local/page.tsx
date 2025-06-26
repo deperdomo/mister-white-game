@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Users, Settings, Info } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, Users, Settings, Info, GripVertical } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -14,11 +14,50 @@ import { MAX_PLAYERS, MIN_PLAYERS } from "../lib/types";
 
 export default function LocalGameSetupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
   const [players, setPlayers] = useState<string[]>(['', '', '']); // 3 espacios iniciales
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [includeUndercover, setIncludeUndercover] = useState(false);
   const [maxMisterWhites, setMaxMisterWhites] = useState(1);
   const [errors, setErrors] = useState<string[]>([]);
+  const [isEditingMode, setIsEditingMode] = useState(false);
+
+  // Cargar configuración desde parámetros URL si están presentes
+  useEffect(() => {
+    const configParam = searchParams.get('config');
+    
+    if (configParam) {
+      try {
+        const config = JSON.parse(configParam);
+        
+        // Pre-llenar los campos con la configuración existente
+        if (config.players && Array.isArray(config.players)) {
+          setPlayers(config.players);
+        }
+        
+        if (config.difficulty) {
+          setDifficulty(config.difficulty);
+        }
+        
+        if (typeof config.includeUndercover === 'boolean') {
+          setIncludeUndercover(config.includeUndercover);
+        }
+        
+        if (typeof config.maxMisterWhites === 'number') {
+          setMaxMisterWhites(config.maxMisterWhites);
+        }
+        
+        // Indicar que estamos en modo edición
+        if (config.isEditing) {
+          setIsEditingMode(true);
+        }
+        
+      } catch (error) {
+        console.error('Error parsing config from URL:', error);
+      }
+    }
+  }, [searchParams]);
 
   const addPlayer = () => {
     if (players.length < MAX_PLAYERS) {
@@ -35,6 +74,34 @@ export default function LocalGameSetupPage() {
   const updatePlayer = (index: number, name: string) => {
     const newPlayers = [...players];
     newPlayers[index] = name;
+    setPlayers(newPlayers);
+  };
+
+  // Drag & Drop functions
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    
+    if (dragIndex === dropIndex) return;
+    
+    const newPlayers = [...players];
+    const draggedPlayer = newPlayers[dragIndex];
+    
+    // Remove the dragged item
+    newPlayers.splice(dragIndex, 1);
+    // Insert at new position
+    newPlayers.splice(dropIndex, 0, draggedPlayer);
+    
     setPlayers(newPlayers);
   };
 
@@ -132,7 +199,7 @@ export default function LocalGameSetupPage() {
           Volver
         </Button>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
-          Configurar Juego Local
+          {isEditingMode ? 'Editar Configuración' : 'Configurar Juego Local'}
         </h1>
       </div>
 
@@ -220,23 +287,40 @@ export default function LocalGameSetupPage() {
               Jugadores ({validPlayerCount}/{MAX_PLAYERS})
             </CardTitle>
             <CardDescription>
-              Añade los nombres de los jugadores
+              Añade los nombres de los jugadores. Arrastra el ícono ⋮⋮ para reordenar.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {players.map((player, index) => (
-              <div key={index} className="flex gap-2">
+              <div 
+                key={index} 
+                className="flex gap-2 items-center bg-slate-50 dark:bg-slate-800 p-2 rounded border hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+              >
+                <div className="flex-shrink-0" title="Arrastra para reordenar">
+                  <GripVertical 
+                    className="h-4 w-4 text-slate-400 cursor-grab active:cursor-grabbing" 
+                  />
+                </div>
+                <span className="text-sm text-slate-600 dark:text-slate-400 min-w-[20px] flex-shrink-0">
+                  {index + 1}.
+                </span>
                 <Input
                   placeholder={`Jugador ${index + 1}`}
                   value={player}
                   onChange={(e) => updatePlayer(index, e.target.value)}
                   maxLength={20}
+                  className="flex-1"
                 />
                 {players.length > 1 && (
                   <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={() => removePlayer(index)}
+                    className="flex-shrink-0"
                   >
                     Eliminar
                   </Button>
@@ -283,14 +367,26 @@ export default function LocalGameSetupPage() {
         )}
 
         {/* Start Game Button */}
-        <Button 
-          onClick={handleStartGame} 
-          size="lg" 
-          className="w-full"
-          disabled={validPlayerCount < MIN_PLAYERS || errors.length > 0}
-        >
-          Comenzar Juego Local
-        </Button>
+        <div className="space-y-3">
+          {isEditingMode && (
+            <Button 
+              onClick={() => router.back()} 
+              variant="outline"
+              size="lg" 
+              className="w-full"
+            >
+              Cancelar y Volver al Juego
+            </Button>
+          )}
+          <Button 
+            onClick={handleStartGame} 
+            size="lg" 
+            className="w-full"
+            disabled={validPlayerCount < MIN_PLAYERS || errors.length > 0}
+          >
+            {isEditingMode ? 'Aplicar Cambios y Comenzar' : 'Comenzar Juego Local'}
+          </Button>
+        </div>
       </div>
     </div>
   );

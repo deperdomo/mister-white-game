@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, GripVertical, Plus, Trash2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -102,6 +102,10 @@ function LocalGameContent() {
     router.push('/local');
   };
 
+  const handleGoBack = () => {
+    router.push('/local');
+  };
+
   const continueWithSameConfig = () => {
     if (!gameData) return;
     
@@ -118,9 +122,26 @@ function LocalGameContent() {
     setSelectedVotedPlayer('');
   };
 
-  const handleGoBack = () => {
-    router.push('/local');
+  const handleEditPlayers = () => {
+    if (!gameData) return;
+    
+    // Redirigir a la página de configuración con los datos actuales precargados
+    const currentConfig = {
+      players: gameData.originalConfig.players,
+      difficulty: gameData.originalConfig.difficulty,
+      includeUndercover: gameData.originalConfig.includeUndercover,
+      maxMisterWhites: gameData.originalConfig.maxMisterWhites,
+      isEditing: true // Indicar que estamos editando una configuración existente
+    };
+    
+    const params = new URLSearchParams({
+      config: JSON.stringify(currentConfig),
+    });
+    
+    router.push(`/local?${params.toString()}`);
   };
+
+
 
   if (!gameData) {
     return (
@@ -425,12 +446,17 @@ function LocalGameContent() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Button onClick={continueWithSameConfig} variant="outline" size="lg" className="w-full">
-              Continuar con la misma configuración
-            </Button>
-            <Button onClick={resetGame} size="lg" className="w-full">
-              Jugar con nueva configuración
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button onClick={continueWithSameConfig} variant="outline" size="lg" className="w-full">
+                Continuar con la misma configuración
+              </Button>
+              <Button onClick={resetGame} size="lg" className="w-full">
+                Jugar con nueva configuración
+              </Button>
+            </div>
+            <Button onClick={handleEditPlayers} variant="secondary" size="lg" className="w-full">
+              Modificar jugadores
             </Button>
           </div>
         </div>
