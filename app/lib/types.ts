@@ -2,10 +2,13 @@
 export interface Player {
   id: string;
   name: string;
-  role: 'civil' | 'mister_white' | 'undercover';
+  role: 'civil' | 'mister_white' | 'undercover' | 'payaso';
   isHost: boolean;
   isAlive: boolean;
   joinedAt: string;
+  word?: string; // The word this player knows
+  clue?: string; // The clue given by this player
+  wordRevealed?: boolean; // Whether the player has seen their role/word
 }
 
 export interface GameRoom {
@@ -64,6 +67,28 @@ export interface PlayerNameFormData {
   numberOfPlayers: number;
 }
 
+// Tipos para el juego local
+export interface LocalGameConfig {
+  players: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  includeUndercover: boolean;
+  maxMisterWhites: number;
+}
+
+export interface LocalGameData {
+  players: Player[];
+  civilianWord: string;
+  undercoverWord?: string;
+  category?: string; // Only shown on easy difficulty
+  gamePhase: 'wordReveal' | 'clues' | 'voting' | 'results';
+  currentPlayerIndex: number;
+  allCluesSubmitted: boolean;
+  votedPlayerId?: string;
+  winner?: 'civilians' | 'mister_white' | 'undercover' | 'payaso' | null;
+  includeUndercover: boolean;
+  round: number;
+}
+
 // Tipos para eventos Pusher
 export type PusherEventData = 
   | { type: 'player-joined'; player: Player }
@@ -76,7 +101,7 @@ export type PusherEventData =
   | { type: 'room-deleted'; roomId: string };
 
 // Constantes
-export const MAX_PLAYERS = 8;
+export const MAX_PLAYERS = 20;
 export const MIN_PLAYERS = 3;
 export const ROOM_CODE_LENGTH = 6;
 
@@ -103,4 +128,5 @@ export const PLAYER_ROLES = {
   CIVIL: 'civil',
   MISTER_WHITE: 'mister_white',
   UNDERCOVER: 'undercover',
+  PAYASO: 'payaso',
 } as const;

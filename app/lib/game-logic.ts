@@ -1,256 +1,313 @@
-import { Player, GameRoom, PLAYER_ROLES } from './types';
+import { Player, LocalGameData, PLAYER_ROLES } from './types';
 import { shuffleArray } from './utils';
 
-// Palabras predefinidas para el juego local
+// Expanded word database similar to the referenced repository
 export const GAME_WORDS = [
-  // Nivel fácil
+  // Easy difficulty - shows category
   {
     category: 'Comida',
-    word: 'Pizza',
-    undercoverWord: 'Hamburguesa',
+    civilian: 'Pizza',
+    undercover: 'Hamburguesa',
     difficulty: 'easy' as const,
   },
   {
     category: 'Animales',
-    word: 'Gato',
-    undercoverWord: 'Perro',
+    civilian: 'Gato',
+    undercover: 'Perro',
     difficulty: 'easy' as const,
   },
   {
     category: 'Colores',
-    word: 'Rojo',
-    undercoverWord: 'Azul',
+    civilian: 'Rojo',
+    undercover: 'Azul',
     difficulty: 'easy' as const,
   },
   {
     category: 'Frutas',
-    word: 'Manzana',
-    undercoverWord: 'Naranja',
+    civilian: 'Manzana',
+    undercover: 'Naranja',
     difficulty: 'easy' as const,
   },
   {
     category: 'Vehículos',
-    word: 'Coche',
-    undercoverWord: 'Moto',
+    civilian: 'Coche',
+    undercover: 'Moto',
+    difficulty: 'easy' as const,
+  },
+  {
+    category: 'Deportes',
+    civilian: 'Fútbol',
+    undercover: 'Baloncesto',
     difficulty: 'easy' as const,
   },
   
-  // Nivel medio
+  // Medium difficulty - no category shown
   {
-    category: 'Deportes',
-    word: 'Fútbol',
-    undercoverWord: 'Baloncesto',
-    difficulty: 'medium' as const,
-  },
-  {
-    category: 'Tecnología',
-    word: 'Smartphone',
-    undercoverWord: 'Tablet',
+    category: 'Bebidas',
+    civilian: 'Café',
+    undercover: 'Té',
     difficulty: 'medium' as const,
   },
   {
     category: 'Instrumentos',
-    word: 'Guitarra',
-    undercoverWord: 'Piano',
-    difficulty: 'medium' as const,
-  },
-  {
-    category: 'Bebidas',
-    word: 'Café',
-    undercoverWord: 'Té',
+    civilian: 'Guitarra',
+    undercover: 'Piano',
     difficulty: 'medium' as const,
   },
   {
     category: 'Estaciones',
-    word: 'Verano',
-    undercoverWord: 'Invierno',
+    civilian: 'Verano',
+    undercover: 'Invierno',
     difficulty: 'medium' as const,
-  },
-  
-  // Nivel difícil
-  {
-    category: 'Transporte',
-    word: 'Avión',
-    undercoverWord: 'Helicóptero',
-    difficulty: 'hard' as const,
   },
   {
     category: 'Profesiones',
-    word: 'Doctor',
-    undercoverWord: 'Enfermero',
+    civilian: 'Doctor',
+    undercover: 'Enfermero',
+    difficulty: 'medium' as const,
+  },
+  {
+    category: 'Tecnología',
+    civilian: 'Smartphone',
+    undercover: 'Tablet',
+    difficulty: 'medium' as const,
+  },
+  {
+    category: 'Lugares',
+    civilian: 'Playa',
+    undercover: 'Piscina',
+    difficulty: 'medium' as const,
+  },
+  
+  // Hard difficulty - no category shown
+  {
+    category: 'Emociones',
+    civilian: 'Felicidad',
+    undercover: 'Alegría',
+    difficulty: 'hard' as const,
+  },
+  {
+    category: 'Conceptos',
+    civilian: 'Libertad',
+    undercover: 'Independencia',
     difficulty: 'hard' as const,
   },
   {
     category: 'Materiales',
-    word: 'Madera',
-    undercoverWord: 'Metal',
+    civilian: 'Madera',
+    undercover: 'Bambú',
     difficulty: 'hard' as const,
   },
   {
     category: 'Ciencias',
-    word: 'Química',
-    undercoverWord: 'Física',
+    civilian: 'Química',
+    undercover: 'Física',
     difficulty: 'hard' as const,
   },
   {
-    category: 'Emociones',
-    word: 'Felicidad',
-    undercoverWord: 'Tristeza',
+    category: 'Arte',
+    civilian: 'Pintura',
+    undercover: 'Dibujo',
     difficulty: 'hard' as const,
   },
-] as const;
+  {
+    category: 'Naturaleza',
+    civilian: 'Montaña',
+    undercover: 'Colina',
+    difficulty: 'hard' as const,
+  },
+];
 
-// Asignar roles aleatoriamente
-export function assignRoles(players: Player[]): Player[] {
-  const playerCount = players.length;
+export const MR_WHITE_MESSAGE = "Eres Mr. White";
+export const MIN_PLAYERS = 3;
+export const MAX_PLAYERS = 20;
+
+// Initialize game with new mechanics from referenced repository
+export function initializeGame(
+  playerNames: string[],
+  difficulty: 'easy' | 'medium' | 'hard',
+  includeUndercover: boolean = false,
+  maxMisterWhites: number = 1
+): LocalGameData {
+  const numPlayers = playerNames.length;
   
-  if (playerCount < 3) {
-    throw new Error('Se necesitan al menos 3 jugadores');
+  if (numPlayers < MIN_PLAYERS || numPlayers > MAX_PLAYERS) {
+    throw new Error(`Number of players must be between ${MIN_PLAYERS} and ${MAX_PLAYERS}`);
   }
 
-  // Lógica de asignación de roles basada en el número de jugadores
-  const misterWhiteCount = 1;
-  let undercoverCount = Math.floor(playerCount / 3); // Aproximadamente 1/3 de los jugadores
+  // Select word pair
+  const availableWords = GAME_WORDS.filter(w => w.difficulty === difficulty);
+  const selectedWord = availableWords[Math.floor(Math.random() * availableWords.length)] || GAME_WORDS[0];
   
-  // Ajustar para partidas pequeñas
-  if (playerCount === 3) {
-    undercoverCount = 1;
-  } else if (playerCount === 4) {
-    undercoverCount = 1;
+  // Determine roles
+  const includePayaso = numPlayers >= 8;
+  let actualMisterWhites = Math.min(maxMisterWhites, Math.floor(numPlayers / 3));
+  
+  // Ensure we don't have too many special roles
+  const specialRolesCount = actualMisterWhites + (includeUndercover ? 1 : 0) + (includePayaso ? 1 : 0);
+  if (specialRolesCount >= numPlayers) {
+    if (includePayaso) {
+      actualMisterWhites = Math.max(0, numPlayers - (includeUndercover ? 1 : 0) - 1 - 1); // Leave at least 1 civilian
+    } else {
+      actualMisterWhites = Math.max(0, numPlayers - (includeUndercover ? 1 : 0) - 1); // Leave at least 1 civilian
+    }
   }
 
-  const civilCount = playerCount - misterWhiteCount - undercoverCount;
-
-  // Crear array de roles
-  const roles: Player['role'][] = [
-    ...Array(civilCount).fill(PLAYER_ROLES.CIVIL),
-    ...Array(undercoverCount).fill(PLAYER_ROLES.UNDERCOVER),
-    ...Array(misterWhiteCount).fill(PLAYER_ROLES.MISTER_WHITE),
-  ];
-
-  // Mezclar roles aleatoriamente
-  const shuffledRoles = shuffleArray(roles);
-
-  // Asignar roles a jugadores
-  return players.map((player, index) => ({
-    ...player,
-    role: shuffledRoles[index],
-  }));
-}
-
-// Seleccionar palabra aleatoria
-export function selectRandomWord(difficulty?: 'easy' | 'medium' | 'hard') {
-  const filteredWords = difficulty 
-    ? GAME_WORDS.filter(word => word.difficulty === difficulty)
-    : GAME_WORDS;
+  // Create shuffled indices for role assignment
+  const indices = Array.from(Array(numPlayers).keys());
+  const shuffledIndices = shuffleArray(indices);
   
-  if (filteredWords.length === 0) {
-    // Fallback a todas las palabras si no hay ninguna de la dificultad seleccionada
-    return GAME_WORDS[Math.floor(Math.random() * GAME_WORDS.length)];
+  let undercoverIndex: number | undefined;
+  let payasoIndex: number | undefined;
+  const misterWhiteIndices = new Set<number>();
+  
+  let currentIndex = 0;
+  
+  // Assign undercover if enabled
+  if (includeUndercover && shuffledIndices.length > currentIndex) {
+    undercoverIndex = shuffledIndices[currentIndex++];
+  }
+  
+  // Assign payaso if enabled (8+ players)
+  if (includePayaso && shuffledIndices.length > currentIndex) {
+    payasoIndex = shuffledIndices[currentIndex++];
+  }
+  
+  // Assign mister whites
+  for (let i = 0; i < actualMisterWhites && currentIndex < shuffledIndices.length; i++) {
+    misterWhiteIndices.add(shuffledIndices[currentIndex++]);
   }
 
-  return filteredWords[Math.floor(Math.random() * filteredWords.length)];
-}
-
-// Verificar si el juego puede comenzar
-export function canStartGame(room: GameRoom): boolean {
-  return room.players.length >= 3 && room.status === 'waiting';
-}
-
-// Verificar si todos los jugadores han enviado su descripción
-export function allPlayersDescribed(players: Player[], descriptions: string[]): boolean {
-  const alivePlayers = players.filter(p => p.isAlive);
-  return descriptions.length >= alivePlayers.length;
-}
-
-// Calcular resultado de votación
-export function calculateVotingResult(votes: { targetId: string }[]): string | null {
-  if (votes.length === 0) return null;
-
-  const voteCounts: Record<string, number> = {};
-  
-  votes.forEach(vote => {
-    voteCounts[vote.targetId] = (voteCounts[vote.targetId] || 0) + 1;
+  // Create players with assigned roles and words
+  const players: Player[] = playerNames.map((name, index) => {
+    let role: Player['role'] = PLAYER_ROLES.CIVIL;
+    let word = selectedWord.civilian;
+    
+    if (index === undercoverIndex) {
+      role = PLAYER_ROLES.UNDERCOVER;
+      word = selectedWord.undercover;
+    } else if (index === payasoIndex) {
+      role = PLAYER_ROLES.PAYASO;
+      word = selectedWord.civilian; // Payaso knows the civilian word
+    } else if (misterWhiteIndices.has(index)) {
+      role = PLAYER_ROLES.MISTER_WHITE;
+      word = MR_WHITE_MESSAGE;
+    }
+    
+    return {
+      id: `player-${index}-${Date.now()}`,
+      name: name.trim(),
+      role,
+      word,
+      isHost: index === 0,
+      isAlive: true,
+      joinedAt: new Date().toISOString(),
+      wordRevealed: false,
+      clue: '',
+    };
   });
 
-  // Encontrar al jugador con más votos
-  const maxVotes = Math.max(...Object.values(voteCounts));
-  const playersWithMaxVotes = Object.keys(voteCounts).filter(
-    playerId => voteCounts[playerId] === maxVotes
-  );
-
-  // Si hay empate, no se elimina a nadie
-  if (playersWithMaxVotes.length > 1) {
-    return null;
-  }
-
-  return playersWithMaxVotes[0];
+  return {
+    players,
+    civilianWord: selectedWord.civilian,
+    undercoverWord: includeUndercover ? selectedWord.undercover : undefined,
+    category: difficulty === 'easy' ? selectedWord.category : undefined, // Only show category on easy
+    gamePhase: 'wordReveal',
+    currentPlayerIndex: 0,
+    allCluesSubmitted: false,
+    includeUndercover,
+    round: 1,
+  };
 }
 
-// Verificar condiciones de victoria
-export function checkWinCondition(players: Player[]): 'civilians' | 'mister_white' | 'undercover' | null {
-  const alivePlayers = players.filter(p => p.isAlive);
-  const aliveCivils = alivePlayers.filter(p => p.role === PLAYER_ROLES.CIVIL);
-  const aliveMisterWhite = alivePlayers.filter(p => p.role === PLAYER_ROLES.MISTER_WHITE);
-  const aliveUndercover = alivePlayers.filter(p => p.role === PLAYER_ROLES.UNDERCOVER);
-
-  // Mister White eliminado = Civiles ganan
-  if (aliveMisterWhite.length === 0) {
-    return 'civilians';
-  }
-
-  // Solo queda Mister White y Undercover = Mister White gana
-  if (aliveCivils.length === 0 && aliveMisterWhite.length > 0) {
-    return 'mister_white';
-  }
-
-  // Solo quedan Undercover = Undercover gana
-  if (aliveCivils.length === 0 && aliveMisterWhite.length === 0 && aliveUndercover.length > 0) {
-    return 'undercover';
-  }
-
-  // Juego continúa
-  return null;
+// Check if all players have revealed their words/roles
+export function allPlayersRevealed(players: Player[]): boolean {
+  return players.every(p => p.wordRevealed);
 }
 
-// Obtener próximo jugador para describir
-export function getNextPlayer(players: Player[], currentPlayerIndex: number): Player | null {
-  const alivePlayers = players.filter(p => p.isAlive);
-  if (alivePlayers.length === 0) return null;
-
-  const nextIndex = (currentPlayerIndex + 1) % alivePlayers.length;
-  return alivePlayers[nextIndex];
+// Check if all players have submitted clues
+export function allCluesSubmitted(players: Player[]): boolean {
+  return players.every(p => p.clue && p.clue.trim() !== '');
 }
 
-// Validar descripción del jugador
-export function isValidDescription(description: string): boolean {
-  const trimmed = description.trim();
-  return trimmed.length >= 3 && trimmed.length <= 200;
+// Process voting and determine winner
+export function processVote(gameData: LocalGameData, votedPlayerId: string): LocalGameData {
+  const votedPlayer = gameData.players.find(p => p.id === votedPlayerId);
+  if (!votedPlayer) {
+    return gameData;
+  }
+
+  let winner: LocalGameData['winner'] = null;
+  
+  // Check win conditions based on who was voted
+  if (votedPlayer.role === PLAYER_ROLES.PAYASO) {
+    // Payaso wins if voted (regardless of being voted as Mr. White or not)
+    winner = 'payaso';
+  } else if (votedPlayer.role === PLAYER_ROLES.MISTER_WHITE) {
+    // Civilians win if they voted out Mr. White
+    winner = 'civilians';
+  } else if (votedPlayer.role === PLAYER_ROLES.UNDERCOVER) {
+    // Civilians win if they voted out undercover
+    winner = 'civilians';
+  } else {
+    // Voted a civilian - check who else is still in game
+    const hasUndercover = gameData.includeUndercover;
+    const hasMisterWhite = gameData.players.some(p => p.role === PLAYER_ROLES.MISTER_WHITE);
+    const hasPayaso = gameData.players.some(p => p.role === PLAYER_ROLES.PAYASO);
+    
+    if (hasMisterWhite) {
+      winner = 'mister_white'; // Mr. White wins
+    } else if (hasUndercover) {
+      winner = 'undercover'; // Undercover wins
+    } else if (hasPayaso) {
+      winner = 'payaso'; // Payaso wins if not voted out
+    } else {
+      winner = 'civilians'; // Shouldn't happen, but civilians win as fallback
+    }
+  }
+
+  return {
+    ...gameData,
+    votedPlayerId,
+    winner,
+    gamePhase: 'results',
+  };
 }
 
-// Obtener información del rol para mostrar al jugador
-export function getRoleInfo(role: Player['role'], word?: string, undercoverWord?: string) {
-  switch (role) {
+// Get role information for display
+export function getRoleInfo(player: Player, showCategory: boolean = false) {
+  switch (player.role) {
     case PLAYER_ROLES.CIVIL:
       return {
         title: 'Eres un Civil',
-        description: 'Conoces la palabra secreta. Describe la palabra sin mencionarla directamente.',
-        word: word || '',
+        description: 'Conoces la palabra secreta. Da una pista relacionada sin mencionarla directamente.',
+        word: player.word || '',
         color: 'bg-blue-500',
+        icon: '👥',
       };
     case PLAYER_ROLES.UNDERCOVER:
       return {
         title: 'Eres Undercover',
-        description: 'Tienes una palabra diferente pero relacionada. Mantente alerta.',
-        word: undercoverWord || '',
-        color: 'bg-orange-500',
+        description: 'Tienes una palabra diferente pero relacionada. Da una pista sin ser descubierto.',
+        word: player.word || '',
+        color: 'bg-purple-500',
+        icon: '🥸',
       };
     case PLAYER_ROLES.MISTER_WHITE:
       return {
-        title: 'Eres Mister White',
-        description: '¡No conoces la palabra! Escucha las descripciones e intenta deducirla.',
+        title: 'Eres Mr. White',
+        description: '¡No conoces la palabra! Escucha las pistas e intenta deducirla.',
         word: '???',
         color: 'bg-red-500',
+        icon: '🕵️',
+      };
+    case PLAYER_ROLES.PAYASO:
+      return {
+        title: 'Eres el Payaso',
+        description: '¡Tu objetivo es que te voten como si fueras Mr. White! Conoces la palabra civil.',
+        word: player.word || '',
+        color: 'bg-orange-500',
+        icon: '🤡',
       };
     default:
       return {
@@ -258,6 +315,7 @@ export function getRoleInfo(role: Player['role'], word?: string, undercoverWord?
         description: '',
         word: '',
         color: 'bg-gray-500',
+        icon: '❓',
       };
   }
 }

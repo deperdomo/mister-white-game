@@ -2,65 +2,42 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import DescriptionInput from "../components/game/DescriptionInput";
-import { assignRoles, selectRandomWord, getRoleInfo, checkWinCondition, calculateVotingResult } from "../lib/game-logic";
-import { Player } from "../lib/types";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { initializeGame, allPlayersRevealed, allCluesSubmitted, processVote, getRoleInfo } from "../lib/game-logic";
+import { Player, LocalGameData, LocalGameConfig } from "../lib/types";
 
 function LocalGameContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [gameWord, setGameWord] = useState<{ word: string; undercoverWord: string; category: string } | null>(null);
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [gamePhase, setGamePhase] = useState<'setup' | 'reveal-roles' | 'describing' | 'voting' | 'finished'>('setup');
+  const [gameData, setGameData] = useState<LocalGameData | null>(null);
   const [showRole, setShowRole] = useState(false);
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
-  const [descriptions, setDescriptions] = useState<{ playerId: string; description: string }[]>([]);
-  const [votes, setVotes] = useState<{ voterId: string; targetId: string }[]>([]);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [eliminatedPlayers, setEliminatedPlayers] = useState<string[]>([]);
-  const [winner, setWinner] = useState<'civilians' | 'mister_white' | 'undercover' | null>(null);
+  const [selectedVotedPlayer, setSelectedVotedPlayer] = useState<string>('');
 
   useEffect(() => {
-    // Obtener datos de los parámetros de URL
-    const playersParam = searchParams.get('players');
-    const difficultyParam = searchParams.get('difficulty') as 'easy' | 'medium' | 'hard';
+    // Get configuration from URL parameters
+    const configParam = searchParams.get('config');
     
-    if (playersParam) {
+    if (configParam) {
       try {
-        const playerNames = JSON.parse(playersParam) as string[];
-        setDifficulty(difficultyParam || 'medium');
+        const config: LocalGameConfig = JSON.parse(configParam);
         
-        // Crear objetos Player
-        const initialPlayers: Player[] = playerNames.map((name, index) => ({
-          id: (index + 1).toString(),
-          name: name.trim(),
-          role: 'civil', // Se asignará después
-          isHost: index === 0,
-          isAlive: true,
-          joinedAt: new Date().toISOString(),
-        }));
+        // Initialize game with new mechanics
+        const newGameData = initializeGame(
+          config.players,
+          config.difficulty,
+          config.includeUndercover,
+          config.maxMisterWhites
+        );
         
-        // Asignar roles
-        const playersWithRoles = assignRoles(initialPlayers);
-        setPlayers(playersWithRoles);
-        
-        // Seleccionar palabra
-        const selectedWord = selectRandomWord(difficultyParam || 'medium');
-        setGameWord({
-          word: selectedWord.word,
-          undercoverWord: selectedWord.undercoverWord,
-          category: selectedWord.category,
-        });
-        
-        setGamePhase('reveal-roles');
+        setGameData(newGameData);
         
       } catch (error) {
-        console.error('Error al parsear datos del juego:', error);
+        console.error('Error parsing game configuration:', error);
         router.push('/local');
       }
     } else {
@@ -68,76 +45,57 @@ function LocalGameContent() {
     }
   }, [searchParams, router]);
 
-  const handleNextPlayer = () => {
-    if (currentPlayerIndex < players.length - 1) {
-      setCurrentPlayerIndex(currentPlayerIndex + 1);
-      setShowRole(false);
-    } else {
-      // Todos los jugadores han visto sus roles
-      setGamePhase('describing');
-    }
+  // Handle player seeing their role/word
+  const handleRevealWord = () => {
+    if (!gameData) return;
+    setShowRole(true);
   };
 
-  const handleStartGame = () => {
-    setGamePhase('describing');
-    setCurrentPlayerIndex(0);
+  const handleWordSeen = () => {
+    if (!gameData) return;
+    
+    const currentPlayer = gameData.players[gameData.currentPlayerIndex];
+    const updatedPlayers = gameData.players.map(p => 
+      p.id === currentPlayer.id ? { ...p, wordRevealed: true } : p
+    );
+    
+    const nextPlayerIndex = gameData.currentPlayerIndex + 1;
+    const allRevealed = allPlayersRevealed(updatedPlayers);
+    
+    setGameData({
+      ...gameData,
+      players: updatedPlayers,
+      currentPlayerIndex: allRevealed ? 0 : nextPlayerIndex,
+      gamePhase: allRevealed ? 'clues' : 'wordReveal',
+    });
+    
+    setShowRole(false);
   };
 
-  const handleSubmitDescription = (description: string) => {
-    const currentPlayer = getAlivePlayers()[currentPlayerIndex];
-    setDescriptions(prev => [...prev, { playerId: currentPlayer.id, description }]);
+  // Handle clue submission
+  const handleClueSubmit = (playerId: string, clue: string) => {
+    if (!gameData) return;
     
-    if (currentPlayerIndex < getAlivePlayers().length - 1) {
-      setCurrentPlayerIndex(currentPlayerIndex + 1);
-    } else {
-      // Todas las descripciones completadas, ir a votación
-      setGamePhase('voting');
-      setCurrentPlayerIndex(0);
-    }
+    const updatedPlayers = gameData.players.map(p => 
+      p.id === playerId ? { ...p, clue: clue.trim() } : p
+    );
+    
+    const allCluesReady = allCluesSubmitted(updatedPlayers);
+    
+    setGameData({
+      ...gameData,
+      players: updatedPlayers,
+      allCluesSubmitted: allCluesReady,
+      gamePhase: allCluesReady ? 'voting' : 'clues',
+    });
   };
 
-  const handleVote = (targetId: string) => {
-    const currentPlayer = getAlivePlayers()[currentPlayerIndex];
-    setVotes(prev => [...prev, { voterId: currentPlayer.id, targetId }]);
+  // Handle voting
+  const handleVote = () => {
+    if (!gameData || !selectedVotedPlayer) return;
     
-    if (currentPlayerIndex < getAlivePlayers().length - 1) {
-      setCurrentPlayerIndex(currentPlayerIndex + 1);
-    } else {
-      // Todas las votaciones completadas, calcular resultado
-      processVotingResult();
-    }
-  };
-
-  const processVotingResult = () => {
-    const eliminatedPlayerId = calculateVotingResult(votes.map(v => ({ targetId: v.targetId })));
-    
-    if (eliminatedPlayerId) {
-      setEliminatedPlayers(prev => [...prev, eliminatedPlayerId]);
-    }
-    
-    // Actualizar estado de jugadores y verificar condición de victoria
-    const updatedPlayers = players.map(p => ({
-      ...p,
-      isAlive: !eliminatedPlayers.includes(p.id) && p.id !== eliminatedPlayerId
-    }));
-    
-    const winCondition = checkWinCondition(updatedPlayers);
-    
-    if (winCondition) {
-      setWinner(winCondition);
-      setGamePhase('finished');
-    } else {
-      // Continuar al siguiente round
-      setCurrentRound(prev => prev + 1);
-      setDescriptions([]);
-      setVotes([]);
-      setCurrentPlayerIndex(0);
-      setGamePhase('describing');
-    }
-  };
-
-  const getAlivePlayers = () => {
-    return players.filter(p => !eliminatedPlayers.includes(p.id));
+    const finalGameData = processVote(gameData, selectedVotedPlayer);
+    setGameData(finalGameData);
   };
 
   const resetGame = () => {
@@ -148,7 +106,7 @@ function LocalGameContent() {
     router.push('/local');
   };
 
-  if (!players.length || !gameWord) {
+  if (!gameData) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
         <p className="text-slate-600 dark:text-slate-400 mb-4">Cargando juego...</p>
@@ -157,13 +115,13 @@ function LocalGameContent() {
     );
   }
 
-  if (gamePhase === 'reveal-roles') {
-    const currentPlayer = players[currentPlayerIndex];
-    const roleInfo = getRoleInfo(currentPlayer.role, gameWord.word, gameWord.undercoverWord);
+  // Word Reveal Phase - Each player sees their role and word
+  if (gameData.gamePhase === 'wordReveal') {
+    const currentPlayer = gameData.players[gameData.currentPlayerIndex];
+    const roleInfo = getRoleInfo(currentPlayer, gameData.category !== undefined);
 
     return (
       <div className="container mx-auto px-4 py-8 max-w-md">
-        {/* Header */}
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -178,7 +136,7 @@ function LocalGameContent() {
           <CardHeader className="text-center">
             <CardTitle>Turno de {currentPlayer.name}</CardTitle>
             <CardDescription>
-              Jugador {currentPlayerIndex + 1} de {players.length}
+              Jugador {gameData.currentPlayerIndex + 1} de {gameData.players.length}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 text-center">
@@ -193,7 +151,7 @@ function LocalGameContent() {
                   </p>
                 </div>
                 
-                <Button onClick={() => setShowRole(true)} size="lg" className="w-full">
+                <Button onClick={handleRevealWord} size="lg" className="w-full">
                   <Eye className="h-4 w-4 mr-2" />
                   Ver mi rol
                 </Button>
@@ -201,6 +159,7 @@ function LocalGameContent() {
             ) : (
               <>
                 <div className={`p-6 rounded-lg ${roleInfo.color} text-white`}>
+                  <div className="text-4xl mb-2">{roleInfo.icon}</div>
                   <h3 className="text-xl font-bold mb-2">{roleInfo.title}</h3>
                   <p className="text-sm mb-4">{roleInfo.description}</p>
                   <div className="bg-black bg-opacity-20 rounded p-3">
@@ -209,30 +168,31 @@ function LocalGameContent() {
                   </div>
                 </div>
 
-                <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                  <p><strong>Categoría:</strong> {gameWord.category}</p>
-                  <p><strong>Dificultad:</strong> {difficulty}</p>
-                </div>
+                {gameData.category && (
+                  <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                    <p><strong>Categoría:</strong> {gameData.category}</p>
+                  </div>
+                )}
 
-                <Button onClick={handleNextPlayer} size="lg" className="w-full">
+                <Button onClick={handleWordSeen} size="lg" className="w-full">
                   <EyeOff className="h-4 w-4 mr-2" />
-                  {currentPlayerIndex < players.length - 1 ? 'Siguiente jugador' : 'Comenzar juego'}
+                  {gameData.currentPlayerIndex < gameData.players.length - 1 ? 'Siguiente jugador' : 'Comenzar ronda de pistas'}
                 </Button>
               </>
             )}
           </CardContent>
         </Card>
 
-        {/* Progreso */}
+        {/* Progress */}
         <div className="mt-6">
           <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400 mb-2">
             <span>Progreso</span>
-            <span>{currentPlayerIndex + 1}/{players.length}</span>
+            <span>{gameData.currentPlayerIndex + 1}/{gameData.players.length}</span>
           </div>
           <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
             <div 
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((currentPlayerIndex + 1) / players.length) * 100}%` }}
+              style={{ width: `${((gameData.currentPlayerIndex + 1) / gameData.players.length) * 100}%` }}
             />
           </div>
         </div>
@@ -240,60 +200,52 @@ function LocalGameContent() {
     );
   }
 
-  // Fase de descripciones
-  if (gamePhase === 'describing') {
-    const alivePlayers = getAlivePlayers();
-    const currentPlayer = alivePlayers[currentPlayerIndex];
-
+  // Clues Phase - All players submit their clues
+  if (gameData.gamePhase === 'clues') {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
             <ArrowLeft className="h-4 w-4 mr-1" />
             Volver
           </Button>
           <h1 className="text-xl font-bold text-slate-900 dark:text-slate-50">
-            Ronda {currentRound} - Descripciones
+            Ronda {gameData.round} - Pistas
           </h1>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Turno de {currentPlayer.name}</CardTitle>
+            <CardTitle>Todos los jugadores deben dar una pista</CardTitle>
             <CardDescription>
-              Describe tu palabra sin mencionarla directamente
+              Da una pista de una palabra relacionada con tu palabra secreta (sin mencionarla directamente)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="text-center">
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                Jugador {currentPlayerIndex + 1} de {alivePlayers.length}
-              </p>
-              <p className="text-sm text-slate-500 dark:text-slate-500">
-                Categoría: <strong>{gameWord.category}</strong>
-              </p>
+            {gameData.category && (
+              <div className="text-center p-4 bg-slate-100 dark:bg-slate-800 rounded">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Categoría: <strong>{gameData.category}</strong>
+                </p>
+              </div>
+            )}
+
+            <div className="grid gap-4">
+              {gameData.players.map((player) => (
+                <ClueInput
+                  key={player.id}
+                  player={player}
+                  onClueSubmit={handleClueSubmit}
+                  disabled={!!player.clue}
+                />
+              ))}
             </div>
 
-            <DescriptionInput
-              playerName={currentPlayer.name}
-              onSubmit={handleSubmitDescription}
-            />
-
-            {/* Descripciones anteriores en esta ronda */}
-            {descriptions.length > 0 && (
-              <div className="mt-6">
-                <h3 className="font-medium mb-3">Descripciones de esta ronda:</h3>
-                <div className="space-y-2">
-                  {descriptions.map((desc, index) => {
-                    const player = players.find(p => p.id === desc.playerId);
-                    return (
-                      <div key={index} className="p-3 bg-slate-100 dark:bg-slate-800 rounded">
-                        <p className="text-sm font-medium">{player?.name}:</p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">&ldquo;{desc.description}&rdquo;</p>
-                      </div>
-                    );
-                  })}
-                </div>
+            {gameData.allCluesSubmitted && (
+              <div className="text-center">
+                <Button size="lg" onClick={() => setGameData({...gameData, gamePhase: 'voting'})}>
+                  Continuar a la votación
+                </Button>
               </div>
             )}
           </CardContent>
@@ -302,95 +254,85 @@ function LocalGameContent() {
     );
   }
 
-  // Fase de votación
-  if (gamePhase === 'voting') {
-    const alivePlayers = getAlivePlayers();
-    const currentPlayer = alivePlayers[currentPlayerIndex];
-
+  // Voting Phase - Vote for who to eliminate
+  if (gameData.gamePhase === 'voting') {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
             <ArrowLeft className="h-4 w-4 mr-1" />
             Volver
           </Button>
           <h1 className="text-xl font-bold text-slate-900 dark:text-slate-50">
-            Ronda {currentRound} - Votación
+            Ronda {gameData.round} - Votación
           </h1>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Turno de {currentPlayer.name}</CardTitle>
-            <CardDescription>
-              Vota por el jugador que crees que es sospechoso
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center">
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                Votación {currentPlayerIndex + 1} de {alivePlayers.length}
-              </p>
-            </div>
-
-            {/* Mostrar todas las descripciones de esta ronda */}
-            <div className="space-y-3">
-              <h3 className="font-medium">Descripciones de esta ronda:</h3>
-              {descriptions.map((desc, index) => {
-                const player = players.find(p => p.id === desc.playerId);
-                return (
-                  <div key={index} className="p-3 bg-slate-100 dark:bg-slate-800 rounded">
-                    <p className="text-sm font-medium">{player?.name}:</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">&ldquo;{desc.description}&rdquo;</p>
+        <div className="space-y-6">
+          {/* Show all clues */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Pistas de esta ronda</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3">
+                {gameData.players.map((player) => (
+                  <div key={player.id} className="p-3 bg-slate-100 dark:bg-slate-800 rounded">
+                    <p className="text-sm font-medium">{player.name}:</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">&ldquo;{player.clue}&rdquo;</p>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Opciones de votación */}
-            <div className="space-y-3">
-              <h3 className="font-medium">¿A quién votas?</h3>
-              <div className="grid grid-cols-1 gap-2">
-                {alivePlayers
-                  .filter(p => p.id !== currentPlayer.id) // No puede votar por sí mismo
-                  .map(player => (
-                    <Button
-                      key={player.id}
-                      variant="outline"
-                      onClick={() => handleVote(player.id)}
-                      className="justify-start"
-                    >
-                      Votar por {player.name}
-                    </Button>
-                  ))}
+                ))}
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Votos anteriores en esta ronda */}
-            {votes.length > 0 && (
-              <div className="mt-6">
-                <h3 className="font-medium mb-3">Votos emitidos:</h3>
-                <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
-                  {votes.map((vote, index) => {
-                    const voter = players.find(p => p.id === vote.voterId);
-                    const target = players.find(p => p.id === vote.targetId);
-                    return (
-                      <p key={index}>{voter?.name} votó por {target?.name}</p>
-                    );
-                  })}
-                </div>
+          {/* Voting */}
+          <Card>
+            <CardHeader>
+              <CardTitle>¿A quién votas?</CardTitle>
+              <CardDescription>
+                Selecciona al jugador que crees que es sospechoso (Mr. White, Undercover, o Payaso)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-2">
+                {gameData.players.map(player => (
+                  <label key={player.id} className="flex items-center space-x-3 p-3 border rounded cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <input
+                      type="radio"
+                      name="vote"
+                      value={player.id}
+                      checked={selectedVotedPlayer === player.id}
+                      onChange={(e) => setSelectedVotedPlayer(e.target.value)}
+                      className="text-blue-600"
+                    />
+                    <span className="flex-1">{player.name}</span>
+                  </label>
+                ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+
+              <Button 
+                onClick={handleVote} 
+                disabled={!selectedVotedPlayer}
+                size="lg" 
+                className="w-full"
+              >
+                <VoteIcon className="h-4 w-4 mr-2" />
+                Confirmar voto y ver resultados
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
-  // Fase de juego terminado
-  if (gamePhase === 'finished' && winner) {
+  // Results Phase
+  if (gameData.gamePhase === 'results' && gameData.winner) {
+    const votedPlayer = gameData.players.find(p => p.id === gameData.votedPlayerId);
+
     return (
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="sm" className="mr-2" onClick={resetGame}>
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -401,113 +343,121 @@ function LocalGameContent() {
           </h1>
         </div>
 
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">
-              {winner === 'civilians' && '🎉 ¡Ganaron los Civiles!'}
-              {winner === 'mister_white' && '🕵️ ¡Ganó Mister White!'}
-              {winner === 'undercover' && '🥸 ¡Ganaron los Undercover!'}
-            </CardTitle>
-            <CardDescription>
-              Rondas jugadas: {currentRound}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Revelación de roles */}
-            <div className="space-y-3">
-              <h3 className="font-medium">Revelación de roles:</h3>
-              {players.map(player => {
-                const roleInfo = getRoleInfo(player.role, gameWord?.word, gameWord?.undercoverWord);
-                const isEliminated = eliminatedPlayers.includes(player.id);
-                return (
-                  <div 
-                    key={player.id} 
-                    className={`p-3 rounded border ${isEliminated ? 'opacity-50 border-red-300' : 'border-slate-200 dark:border-slate-700'}`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">
-                        {player.name} {isEliminated && '❌'}
-                      </span>
-                      <span className={`px-2 py-1 rounded text-xs text-white ${roleInfo.color}`}>
-                        {roleInfo.title.replace('Eres ', '')}
-                      </span>
+        <div className="space-y-6">
+          {/* Winner announcement */}
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-3xl">
+                {gameData.winner === 'civilians' && '🎉 ¡Ganaron los Civiles!'}
+                {gameData.winner === 'mister_white' && '🕵️ ¡Ganó Mr. White!'}
+                {gameData.winner === 'undercover' && '🥸 ¡Ganó el Undercover!'}
+                {gameData.winner === 'payaso' && '🤡 ¡Ganó el Payaso!'}
+              </CardTitle>
+              <CardDescription>
+                {votedPlayer && `Jugador votado: ${votedPlayer.name}`}
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          {/* Role revelation */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Revelación de roles</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {gameData.players.map(player => {
+                  const roleInfo = getRoleInfo(player);
+                  const wasVoted = player.id === gameData.votedPlayerId;
+                  return (
+                    <div 
+                      key={player.id} 
+                      className={`p-4 rounded border ${wasVoted ? 'border-red-300 bg-red-50 dark:bg-red-950/20' : 'border-slate-200 dark:border-slate-700'}`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">
+                          {roleInfo.icon} {player.name} {wasVoted && '🗳️'}
+                        </span>
+                        <span className={`px-3 py-1 rounded text-xs text-white ${roleInfo.color}`}>
+                          {roleInfo.title.replace('Eres ', '').replace('el ', '')}
+                        </span>
+                      </div>
+                      <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                        <p>Palabra: <strong>{player.word !== '???' ? player.word : 'No conocía la palabra'}</strong></p>
+                        <p>Pista: <em>&ldquo;{player.clue}&rdquo;</em></p>
+                      </div>
                     </div>
-                    {player.role !== 'mister_white' && (
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                        Palabra: {roleInfo.word}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Información de la palabra */}
-            <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded">
-              <h3 className="font-medium mb-2">Palabras del juego:</h3>
-              <p><strong>Palabra civil:</strong> {gameWord?.word}</p>
-              <p><strong>Palabra undercover:</strong> {gameWord?.undercoverWord}</p>
-              <p><strong>Categoría:</strong> {gameWord?.category}</p>
-            </div>
+          {/* Game info */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Información del juego</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p><strong>Palabra civil:</strong> {gameData.civilianWord}</p>
+              {gameData.undercoverWord && (
+                <p><strong>Palabra undercover:</strong> {gameData.undercoverWord}</p>
+              )}
+              {gameData.category && (
+                <p><strong>Categoría:</strong> {gameData.category}</p>
+              )}
+            </CardContent>
+          </Card>
 
-            <Button onClick={resetGame} size="lg" className="w-full">
-              Jugar otra vez
-            </Button>
-          </CardContent>
-        </Card>
+          <Button onClick={resetGame} size="lg" className="w-full">
+            Jugar otra vez
+          </Button>
+        </div>
       </div>
     );
   }
 
-  // Fase de setup/resumen antes de comenzar el juego
+  return null;
+}
+
+// Component for clue input
+function ClueInput({ 
+  player, 
+  onClueSubmit, 
+  disabled 
+}: { 
+  player: Player; 
+  onClueSubmit: (playerId: string, clue: string) => void;
+  disabled: boolean;
+}) {
+  const [clue, setClue] = useState(player.clue || '');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (clue.trim()) {
+      onClueSubmit(player.id, clue.trim());
+    }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      {/* Header */}
-      <div className="flex items-center mb-6">
-        <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Volver
-        </Button>
-        <h1 className="text-xl font-bold text-slate-900 dark:text-slate-50">
-          Juego Local - {gameWord.category}
-        </h1>
+    <div className="p-4 border rounded">
+      <div className="flex items-center justify-between mb-2">
+        <Label className="font-medium">{player.name}</Label>
+        {disabled && <span className="text-xs text-green-600">✓ Pista enviada</span>}
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>¡Todos los roles han sido revelados!</CardTitle>
-          <CardDescription>
-            Es hora de comenzar el juego. Cada jugador describir su palabra.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Jugadores</p>
-              <p className="text-2xl font-bold">{players.length}</p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Categoría</p>
-              <p className="text-lg font-semibold">{gameWord.category}</p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="font-medium">Jugadores:</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {players.map((player) => (
-                <div key={player.id} className="p-2 bg-slate-100 dark:bg-slate-800 rounded text-center">
-                  <span className="text-sm">{player.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <Button onClick={handleStartGame} size="lg" className="w-full">
-            Comenzar descripciones
-          </Button>
-        </CardContent>
-      </Card>
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <Input
+          value={clue}
+          onChange={(e) => setClue(e.target.value)}
+          placeholder="Escribe tu pista aquí..."
+          disabled={disabled}
+          maxLength={50}
+          className="flex-1"
+        />
+        <Button type="submit" disabled={disabled || !clue.trim()}>
+          <Send className="h-4 w-4" />
+        </Button>
+      </form>
     </div>
   );
 }

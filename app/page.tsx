@@ -63,7 +63,8 @@ export default function HomePage() {
             <CardContent>
               <CardDescription>
                 Cada jugador recibe un rol: <strong>Civil</strong> (conoce la palabra), 
-                <strong> Undercover</strong> (palabra relacionada) o <strong>Mister White</strong> (no conoce la palabra).
+                <strong> Undercover</strong> (palabra relacionada, opcional), <strong>Mister White</strong> (no conoce la palabra),
+                o <strong>Payaso</strong> (conoce la palabra, gana si es votado como Mister White - 8+ jugadores).
               </CardDescription>
             </CardContent>
           </Card>
@@ -74,13 +75,13 @@ export default function HomePage() {
                 <div className="bg-green-100 dark:bg-green-900 p-2 rounded-lg mr-3">
                   <PlayIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
-                Describir
+                Dar Pistas
               </CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Por turnos, cada jugador describe la palabra secreta sin mencionarla directamente. 
-                ¡Cuidado de no revelar demasiado!
+                Todos los jugadores dan una pista de una palabra relacionada con su palabra secreta 
+                <strong>al mismo tiempo</strong>. Luego se procede a la votación.
               </CardDescription>
             </CardContent>
           </Card>
@@ -123,10 +124,11 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                <li>• Hasta 8 jugadores simultáneos</li>
+                <li>• Hasta 20 jugadores simultáneos</li>
                 <li>• Salas privadas con código único</li>
                 <li>• Sincronización en tiempo real</li>
-                <li>• Chat integrado durante el juego</li>
+                <li>• Nuevos roles: Payaso (8+ jugadores)</li>
+                <li>• Undercover opcional</li>
               </ul>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Link href="/create-room" className="flex-1">
@@ -152,10 +154,12 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                <li>• De 3 a 8 jugadores en persona</li>
+                <li>• De 3 a 20 jugadores en persona</li>
                 <li>• No requiere conexión a internet</li>
+                <li>• Rol Payaso para 8+ jugadores</li>
+                <li>• Undercover opcional</li>
+                <li>• Categorías solo en dificultad fácil</li>
                 <li>• Ideal para fiestas y reuniones</li>
-                <li>• Control total del juego</li>
               </ul>
               <Link href="/local">
                 <Button variant="success" className="w-full">
@@ -176,7 +180,7 @@ export default function HomePage() {
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">3-8</div>
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">3-20</div>
               <div className="text-sm text-slate-600 dark:text-slate-400">Jugadores</div>
             </div>
             <div className="text-center">
