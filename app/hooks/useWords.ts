@@ -52,7 +52,7 @@ export function useWords(): UseWordsState {
     setError(null);
 
     try {
-      const body: any = {};
+      const body: { difficulty?: string } = {};
       if (difficulty && ['easy', 'medium', 'hard'].includes(difficulty)) {
         body.difficulty = difficulty;
       }
