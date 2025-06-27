@@ -1,0 +1,16 @@
+{
+  "name": "mister-white-scripts",
+  "version": "1.0.0",
+  "description": "Scripts de utilidad para Mister White Game",
+  "type": "module",
+  "scripts": {
+    "insert-words": "node insert-words.js",
+    "insert-words-force": "node insert-words.js --force",
+    "show-stats": "node -e \"import('./insert-words.js').then(m => m.showStats())\"",
+    "help": "echo 'Scripts disponibles:\n  npm run insert-words     - Insertar palabras (con confirmación)\n  npm run insert-words-force - Insertar palabras (sin confirmación)\n  npm run show-stats       - Mostrar estadísticas de la BD'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "dotenv": "^16.3.1"
+  }
+}
