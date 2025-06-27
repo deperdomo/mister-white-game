@@ -73,6 +73,8 @@ export interface LocalGameConfig {
   difficulty: 'easy' | 'medium' | 'hard';
   includeUndercover: boolean;
   maxMisterWhites: number;
+  useDatabase?: boolean;
+  category?: string;
 }
 
 export interface LocalGameData {

@@ -1,6 +1,38 @@
 import { Player, LocalGameData, PLAYER_ROLES } from './types';
 import { shuffleArray } from './utils';
 
+// Interface para palabras desde la base de datos
+interface DatabaseWord {
+  id: string;
+  category: string;
+  civilWord: string;
+  undercoverWord: string;
+  difficulty: string;
+}
+
+// Función para obtener palabras desde la base de datos
+export async function getWordFromDatabase(difficulty: string, category?: string): Promise<DatabaseWord | null> {
+  try {
+    const params = new URLSearchParams({ difficulty });
+    if (category && category !== 'all') {
+      params.append('category', category);
+    }
+
+    const response = await fetch(`/api/words?${params}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Error fetching word from database:', data.error);
+      return null;
+    }
+
+    return data.word;
+  } catch (error) {
+    console.error('Failed to fetch word from database:', error);
+    return null;
+  }
+}
+
 // Expanded word database similar to the referenced repository
 export const GAME_WORDS = [
   // Easy difficulty - shows category
@@ -127,7 +159,8 @@ export function initializeGame(
   playerNames: string[],
   difficulty: 'easy' | 'medium' | 'hard',
   includeUndercover: boolean = false,
-  maxMisterWhites: number = 1
+  maxMisterWhites: number = 1,
+  customWord?: { civilian: string; undercover: string; category?: string }
 ): LocalGameData {
   const numPlayers = playerNames.length;
   
@@ -135,9 +168,19 @@ export function initializeGame(
     throw new Error(`Number of players must be between ${MIN_PLAYERS} and ${MAX_PLAYERS}`);
   }
 
-  // Select word pair
-  const availableWords = GAME_WORDS.filter(w => w.difficulty === difficulty);
-  const selectedWord = availableWords[Math.floor(Math.random() * availableWords.length)] || GAME_WORDS[0];
+  // Select word pair - use custom word if provided, otherwise fallback to static words
+  let selectedWord;
+  if (customWord) {
+    selectedWord = {
+      category: customWord.category || 'Custom',
+      civilian: customWord.civilian,
+      undercover: customWord.undercover,
+      difficulty
+    };
+  } else {
+    const availableWords = GAME_WORDS.filter(w => w.difficulty === difficulty);
+    selectedWord = availableWords[Math.floor(Math.random() * availableWords.length)] || GAME_WORDS[0];
+  }
   
   // Determine roles
   const includePayaso = numPlayers >= 8;
@@ -224,6 +267,43 @@ export function initializeGame(
       maxMisterWhites,
     },
   };
+}
+
+// Función asíncrona para inicializar juego con palabras de la base de datos
+export async function initializeGameWithDatabaseWords(
+  playerNames: string[],
+  difficulty: 'easy' | 'medium' | 'hard',
+  includeUndercover: boolean = false,
+  maxMisterWhites: number = 1,
+  category?: string
+): Promise<LocalGameData> {
+  try {
+    // Intentar obtener palabra de la base de datos
+    const databaseWord = await getWordFromDatabase(difficulty, category);
+    
+    if (databaseWord) {
+      // Usar palabra de la base de datos
+      return initializeGame(
+        playerNames,
+        difficulty,
+        includeUndercover,
+        maxMisterWhites,
+        {
+          civilian: databaseWord.civilWord,
+          undercover: databaseWord.undercoverWord,
+          category: databaseWord.category
+        }
+      );
+    } else {
+      // Fallback a palabras estáticas si no hay conexión con la BD
+      console.warn('Could not fetch word from database, using static words');
+      return initializeGame(playerNames, difficulty, includeUndercover, maxMisterWhites);
+    }
+  } catch (error) {
+    console.error('Error initializing game with database words:', error);
+    // Fallback a palabras estáticas en caso de error
+    return initializeGame(playerNames, difficulty, includeUndercover, maxMisterWhites);
+  }
 }
 
 // Check if all players have revealed their words/roles

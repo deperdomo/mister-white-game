@@ -7,7 +7,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { initializeGame, allPlayersRevealed, processVote, getRoleInfo } from "../lib/game-logic";
+import { initializeGame, initializeGameWithDatabaseWords, allPlayersRevealed, processVote, getRoleInfo } from "../lib/game-logic";
 import { Player, LocalGameData, LocalGameConfig } from "../lib/types";
 
 function LocalGameContent() {
@@ -24,23 +24,38 @@ function LocalGameContent() {
     const configParam = searchParams.get('config');
     
     if (configParam) {
-      try {
-        const config: LocalGameConfig = JSON.parse(configParam);
-        
-        // Initialize game with new mechanics
-        const newGameData = initializeGame(
-          config.players,
-          config.difficulty,
-          config.includeUndercover,
-          config.maxMisterWhites
-        );
-        
-        setGameData(newGameData);
-        
-      } catch (error) {
-        console.error('Error parsing game configuration:', error);
-        router.push('/local');
-      }
+      const initializeGameAsync = async () => {
+        try {
+          const config: LocalGameConfig = JSON.parse(configParam);
+          
+          // Initialize game with database words if enabled
+          let newGameData;
+          if (config.useDatabase) {
+            newGameData = await initializeGameWithDatabaseWords(
+              config.players,
+              config.difficulty,
+              config.includeUndercover,
+              config.maxMisterWhites,
+              config.category
+            );
+          } else {
+            newGameData = initializeGame(
+              config.players,
+              config.difficulty,
+              config.includeUndercover,
+              config.maxMisterWhites
+            );
+          }
+          
+          setGameData(newGameData);
+          
+        } catch (error) {
+          console.error('Error parsing game configuration:', error);
+          router.push('/local');
+        }
+      };
+
+      initializeGameAsync();
     } else {
       router.push('/local');
     }
@@ -126,16 +141,27 @@ function LocalGameContent() {
     setShowExitConfirmation(false);
   };
 
-  const continueWithSameConfig = () => {
+  const continueWithSameConfig = async () => {
     if (!gameData) return;
     
     // Reiniciar el juego con la misma configuración
-    const newGameData = initializeGame(
-      gameData.originalConfig.players,
-      gameData.originalConfig.difficulty,
-      gameData.originalConfig.includeUndercover,
-      gameData.originalConfig.maxMisterWhites
-    );
+    let newGameData;
+    if (gameData.originalConfig.useDatabase) {
+      newGameData = await initializeGameWithDatabaseWords(
+        gameData.originalConfig.players,
+        gameData.originalConfig.difficulty,
+        gameData.originalConfig.includeUndercover,
+        gameData.originalConfig.maxMisterWhites,
+        gameData.originalConfig.category
+      );
+    } else {
+      newGameData = initializeGame(
+        gameData.originalConfig.players,
+        gameData.originalConfig.difficulty,
+        gameData.originalConfig.includeUndercover,
+        gameData.originalConfig.maxMisterWhites
+      );
+    }
     
     setGameData(newGameData);
     setShowRole(false);

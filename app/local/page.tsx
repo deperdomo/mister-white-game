@@ -11,17 +11,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Switch } from "../components/ui/switch";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { MAX_PLAYERS, MIN_PLAYERS } from "../lib/types";
+import { useWords } from "../hooks/useWords";
 
 function LocalGameSetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { getCategories } = useWords();
   
   const [players, setPlayers] = useState<string[]>(['', '', '']); // 3 espacios iniciales
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [includeUndercover, setIncludeUndercover] = useState(false);
   const [maxMisterWhites, setMaxMisterWhites] = useState(1);
+  const [category, setCategory] = useState<string>('all');
+  const [categories, setCategories] = useState<string[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [isEditingMode, setIsEditingMode] = useState(false);
+  const [useDatabase, setUseDatabase] = useState(true);
 
   // Cargar configuración desde parámetros URL si están presentes
   useEffect(() => {
@@ -58,6 +63,23 @@ function LocalGameSetupContent() {
       }
     }
   }, [searchParams]);
+
+  // Cargar categorías disponibles desde la base de datos
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (useDatabase) {
+        try {
+          const fetchedCategories = await getCategories();
+          setCategories(fetchedCategories);
+        } catch (error) {
+          console.error('Error loading categories:', error);
+          setUseDatabase(false); // Fallback a palabras estáticas
+        }
+      }
+    };
+
+    loadCategories();
+  }, [useDatabase, getCategories]);
 
   const addPlayer = () => {
     if (players.length < MAX_PLAYERS) {
@@ -152,6 +174,8 @@ function LocalGameSetupContent() {
       difficulty,
       includeUndercover,
       maxMisterWhites,
+      useDatabase,
+      category: category !== 'all' ? category : undefined,
     };
     
     const params = new URLSearchParams({
@@ -270,6 +294,39 @@ function LocalGameSetupContent() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Fuente de palabras */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="use-database">Usar palabras de la base de datos</Label>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Usar palabras almacenadas en línea (requiere conexión)
+                </p>
+              </div>
+              <Switch
+                id="use-database"
+                checked={useDatabase}
+                onCheckedChange={setUseDatabase}
+              />
+            </div>
+
+            {/* Selección de categoría */}
+            {useDatabase && categories.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="category">Categoría de palabras</Label>
+                <Select value={category} onValueChange={(value: string) => setCategory(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Payaso Info */}
             {includePayaso && (
