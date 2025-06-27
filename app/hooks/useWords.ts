@@ -12,7 +12,7 @@ interface UseWordsState {
   isLoading: boolean;
   error: string | null;
   getRandomWord: (difficulty: string, category?: string) => Promise<GameWord | null>;
-  getCategories: () => Promise<string[]>;
+  getCategories: (difficulty?: string) => Promise<string[]>;
 }
 
 export function useWords(): UseWordsState {
@@ -47,13 +47,22 @@ export function useWords(): UseWordsState {
     }
   }, []);
 
-  const getCategories = useCallback(async (): Promise<string[]> => {
+  const getCategories = useCallback(async (difficulty?: string): Promise<string[]> => {
     setIsLoading(true);
     setError(null);
 
     try {
+      const body: any = {};
+      if (difficulty && ['easy', 'medium', 'hard'].includes(difficulty)) {
+        body.difficulty = difficulty;
+      }
+
       const response = await fetch('/api/words', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
       });
       const data = await response.json();
 

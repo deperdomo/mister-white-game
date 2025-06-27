@@ -69,8 +69,13 @@ function LocalGameSetupContent() {
     const loadCategories = async () => {
       if (useDatabase) {
         try {
-          const fetchedCategories = await getCategories();
+          const fetchedCategories = await getCategories(difficulty);
           setCategories(fetchedCategories);
+          
+          // Si la categoría actual no está disponible en la nueva dificultad, resetear a 'all'
+          if (category !== 'all' && !fetchedCategories.includes(category)) {
+            setCategory('all');
+          }
         } catch (error) {
           console.error('Error loading categories:', error);
           setUseDatabase(false); // Fallback a palabras estáticas
@@ -79,7 +84,7 @@ function LocalGameSetupContent() {
     };
 
     loadCategories();
-  }, [useDatabase, getCategories]);
+  }, [useDatabase, difficulty, getCategories, category]); // Agregamos 'difficulty' y 'category' como dependencias
 
   const addPlayer = () => {
     if (players.length < MAX_PLAYERS) {
@@ -183,6 +188,11 @@ function LocalGameSetupContent() {
     });
     
     router.push(`/local-game?${params.toString()}`);
+  };
+
+  // Función para obtener el texto de visualización de la categoría
+  const getCategoryDisplayText = (categoryValue: string) => {
+    return categoryValue === 'all' ? 'Todas las categorías' : categoryValue;
   };
 
   const validPlayerCount = players.filter(p => p.trim() !== '').length;
@@ -315,8 +325,12 @@ function LocalGameSetupContent() {
               <div className="space-y-2">
                 <Label htmlFor="category">Categoría de palabras</Label>
                 <Select value={category} onValueChange={(value: string) => setCategory(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
+                  <SelectTrigger className="w-full">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="truncate">
+                        {getCategoryDisplayText(category)}
+                      </span>
+                    </div>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas las categorías</SelectItem>

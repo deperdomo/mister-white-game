@@ -87,8 +87,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// GET all categories
-export async function POST() {
+// GET categories (optionally filtered by difficulty)
+export async function POST(request: NextRequest) {
   try {
     // Verificar si Supabase está configurado
     if (!isSupabaseConfigured()) {
@@ -99,10 +99,27 @@ export async function POST() {
     }
 
     const supabase = await getSupabaseClient();
-    const { data: categories, error } = await supabase
+    
+    // Obtener la dificultad del cuerpo de la petición
+    let difficulty: string | null = null;
+    try {
+      const body = await request.json();
+      difficulty = body.difficulty;
+    } catch {
+      // Si no hay body o no es JSON válido, obtener todas las categorías
+    }
+
+    let query = supabase
       .from('game_words')
       .select('category')
       .order('category');
+
+    // Filtrar por dificultad si se especifica
+    if (difficulty && ['easy', 'medium', 'hard'].includes(difficulty)) {
+      query = query.eq('difficulty', difficulty);
+    }
+
+    const { data: categories, error } = await query;
 
     if (error) {
       console.error('Error fetching categories:', error);
@@ -117,7 +134,8 @@ export async function POST() {
 
     return NextResponse.json({
       success: true,
-      categories: uniqueCategories
+      categories: uniqueCategories,
+      difficulty: difficulty || 'all'
     });
 
   } catch (error) {
