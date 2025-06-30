@@ -5,7 +5,7 @@ import { useEffect, useState, Suspense } from "react";
 import { ArrowLeft, Copy, Crown, Users } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { useOnlineGame } from "../hooks/useOnlineGame";
 import { LoadingState } from "../components/ui/loading";
 import { useToast } from "../hooks/useToast";

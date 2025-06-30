@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 import { pusherServer } from '../../../lib/pusher';
 
-interface RoleAssignment {
-  playerId: string;
-  role: 'civil' | 'mister_white' | 'undercover' | 'payaso';
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

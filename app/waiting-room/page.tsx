@@ -5,7 +5,7 @@ import { useEffect, useState, Suspense } from "react";
 import { ArrowLeft, Copy, Crown, Users } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { useOnlineGame } from "../hooks/useOnlineGame";
 import { LoadingState } from "../components/ui/loading";
 import { useToast } from "../hooks/useToast";
@@ -16,7 +16,7 @@ function WaitingRoomContent() {
   const roomCode = searchParams.get('code') || '';
   const playerName = searchParams.get('name') || '';
   
-  const { room, players, startGame, leaveRoom, loadRoomAndSubscribe, refreshRoom, isLoading } = useOnlineGame();
+  const { room, players, startGame, leaveRoom, loadRoomAndSubscribe, isLoading } = useOnlineGame();
   const { success: showSuccess, error: showError } = useToast();
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import { ArrowLeft, Users, Clock, Eye, EyeOff } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
@@ -21,16 +21,7 @@ interface OnlinePlayer {
   votedFor: string | null;
 }
 
-interface OnlineRoom {
-  id: string;
-  roomCode: string;
-  status: string;
-  currentRound: number;
-  maxPlayers: number;
-  currentWord: string | null;
-  undercoverWord: string | null;
-  hostId: string;
-}
+
 
 function OnlineGameContent() {
   const params = useParams();
@@ -39,8 +30,8 @@ function OnlineGameContent() {
   const roomCode = params.roomCode as string;
   const playerName = searchParams.get('name') || '';
   
-  const { room, players, submitDescription, submitVote, loadRoomAndSubscribe, refreshRoom, isLoading } = useOnlineGame();
-  const { success: showSuccess, error: showError } = useToast();
+  const { room, players, submitDescription, submitVote, loadRoomAndSubscribe, isLoading } = useOnlineGame();
+  const { success: showSuccess } = useToast();
   
   const [currentPlayer, setCurrentPlayer] = useState<OnlinePlayer | null>(null);
   const [gamePhase, setGamePhase] = useState<'waiting' | 'role-reveal' | 'describing' | 'voting' | 'results'>('waiting');
@@ -94,7 +85,7 @@ function OnlineGameContent() {
   }, [room, players]);
 
   // Funciones de manejo de acciones
-  const handleSubmitDescription = async () => {
+  const handleSubmitDescription = useCallback(async () => {
     if (!description.trim() || !currentPlayer) return;
 
     const success = await submitDescription(description.trim(), currentPlayer.name);
@@ -102,9 +93,9 @@ function OnlineGameContent() {
       showSuccess('Descripción enviada exitosamente');
       setDescription('');
     }
-  };
+  }, [description, currentPlayer, submitDescription, showSuccess]);
 
-  const handleSubmitVote = async () => {
+  const handleSubmitVote = useCallback(async () => {
     if (!selectedVote || !currentPlayer) return;
 
     const success = await submitVote(selectedVote, currentPlayer.name);
@@ -112,7 +103,7 @@ function OnlineGameContent() {
       showSuccess('Voto enviado exitosamente');
       setSelectedVote('');
     }
-  };
+  }, [selectedVote, currentPlayer, submitVote, showSuccess]);
 
   // Timer para fases del juego
   useEffect(() => {
@@ -293,7 +284,7 @@ function OnlineGameContent() {
             ) : (
               <div>
                 <p className="text-green-600 dark:text-green-400">
-                  ✓ Tu descripción ha sido enviada: "{currentPlayer.description}"
+                  ✓ Tu descripción ha sido enviada: &quot;{currentPlayer.description}&quot;
                 </p>
                 <p className="text-slate-600 dark:text-slate-400 mt-2">
                   Esperando a que los demás jugadores envíen sus descripciones...
@@ -330,7 +321,7 @@ function OnlineGameContent() {
                           {player.name}
                           {player.description && (
                             <span className="ml-2 text-sm opacity-70">
-                              - "{player.description}"
+                              - &quot;{player.description}&quot;
                             </span>
                           )}
                         </Button>
