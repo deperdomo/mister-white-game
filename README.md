@@ -2,114 +2,66 @@
 
 Una implementación moderna del clásico juego de deducción social "Mister White" construida con Next.js 14, TypeScript, Tailwind CSS, Supabase y Pusher.
 
-## 🚀 Estado del Desarrollo
-
-### ✅ FASE 1 COMPLETADA: Setup e Infraestructura
-### ✅ FASE 2 COMPLETADA: Formularios y Navegación
-### ✅ FASE 3 COMPLETADA: Lógica de juego completa para modo local
-### ✅ FASE 4 COMPLETADA: Funcionalidad online con Supabase y Pusher
-
-**Funcionalidades Principales Implementadas:**
-
-🎮 **Modo Local Completo:**
-- ✅ Flujo completo de juego para 3-8 jugadores
-- ✅ Asignación automática de roles (Civil, Undercover, Mister White)
-- ✅ 15 pares de palabras organizados por dificultad
-- ✅ Sistema de descripciones con validación
-- ✅ Sistema de votación y eliminación
-- ✅ Detección automática de ganador
-- ✅ Múltiples rondas hasta determinación de ganador
-
-🌐 **Modo Online Completo:**
-- ✅ API RESTful con Supabase para persistencia
-- ✅ Comunicación en tiempo real con Pusher
-- ✅ Creación y gestión de salas con códigos únicos
-- ✅ Sistema de unirse a salas existentes
-- ✅ Eventos en tiempo real (unión de jugadores, inicio de juego, etc.)
-- ✅ Hook personalizado useOnlineGame para gestión de estado
-- ✅ Validaciones robustas cliente/servidor
-
-🎨 **Interfaz y UX:**
-- ✅ Diseño responsive mobile-first
-- ✅ Sistema de toasts para notificaciones
-- ✅ Formularios con validación en tiempo real
-- ✅ Componentes UI reutilizables (shadcn/ui style)
-- ✅ Dark mode automático
-- ✅ Animaciones suaves y transiciones
-
-🔧 **Arquitectura Técnica:**
-- ✅ Next.js 14 con App Router y TypeScript
-- ✅ Tailwind CSS v4 para estilos
-- ✅ Supabase para base de datos y autenticación
-- ✅ Pusher para comunicación en tiempo real
-- ✅ Sistema de tipos TypeScript completo
-- ✅ Build optimizado sin errores
-
-**Stack Tecnológico Implementado:**
-- ✅ Next.js 14 con App Router y TypeScript
-- ✅ Tailwind CSS v4 con variables CSS personalizadas
-- ✅ Componentes UI base (shadcn/ui style)
-- ✅ Configuración de Supabase
-- ✅ Configuración de Pusher
-- ✅ Layout responsive con Header y Footer
-- ✅ Estructura de carpetas completa
-- ✅ Sistema de tipos TypeScript completo
-- ✅ Utilidades y helpers implementados
-- ✅ Lógica del juego base
-
-**Páginas Implementadas:**
-- ✅ Página principal con diseño atractivo
-- ✅ Crear sala online (/create-room)
-- ✅ Unirse a sala (/join-room)  
-- ✅ Modo local (/local)
-- ✅ Layout responsive mobile-first
-
-**Características Técnicas:**
-- ✅ Diseño mobile-first responsive
-- ✅ Dark mode automático
-- ✅ Animaciones suaves con CSS
-- ✅ Sistema de componentes modular
-- ✅ Variables de entorno configuradas
-- ✅ Optimización de performance
-- ✅ Accesibilidad implementada
-
 ## 🎮 Sobre el Juego
 
 **Mister White** es un emocionante juego de deducción social donde:
 
-- **3-8 jugadores** participan en cada partida
-- **Roles secretos**: Civil, Undercover, y Mister White
+- **3-20 jugadores** participan en cada partida
+- **Roles secretos**: Civil, Undercover, Mister White y Payaso
 - **Objetivo**: Los civiles deben encontrar a Mister White antes de que él adivine la palabra secreta
 
-### Roles del Juego
+### � Roles del Juego
 
-1. **Civiles** 👥: Conocen la palabra secreta y deben describir sin revelarla
-2. **Undercover** 🕵️: Tienen una palabra relacionada pero diferente
-3. **Mister White** 🎭: No conoce la palabra y debe deducirla escuchando
+- **👥 Civiles**: Conocen la palabra secreta y deben dar pistas sin revelarla
+- **🕵️ Undercover**: Tienen una palabra relacionada pero diferente (opcional)
+- **🎭 Mister White**: No conoce la palabra y debe deducirla escuchando las pistas
+- **🃏 Payaso**: Conoce la palabra, pero gana si es votado como Mister White (8+ jugadores)
 
-## 🛠️ Instalación y Desarrollo
+## ✨ Características
+
+### 🎮 Modos de Juego
+- **🏠 Modo Local**: Perfecto para reuniones presenciales (3-20 jugadores)
+- **🌐 Modo Online**: Juega con amigos desde cualquier lugar (hasta 20 jugadores)
+
+### 🎯 Funcionalidades Principales
+- ✅ Sistema de roles dinámico con configuración flexible
+- ✅ Base de datos de palabras con diferentes dificultades
+- ✅ Comunicación en tiempo real para modo online
+- ✅ Interfaz responsive mobile-first
+- ✅ Dark mode automático
+- ✅ Sistema de salas privadas con códigos únicos
+- ✅ Validaciones robustas y manejo de errores
+
+### � Diseño y UX
+- **Mobile-First**: Optimizado para dispositivos móviles
+- **Responsive**: Se adapta automáticamente a tablets y desktop
+- **Accesibilidad**: Navegación por teclado y alto contraste
+- **Animaciones**: Transiciones suaves para mejor experiencia
+
+## 🛠️ Tecnologías
+
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL)
+- **Real-time**: Pusher WebSockets
+- **UI Components**: Lucide React, shadcn/ui style
+- **Hosting**: Vercel
+
+## � Instalación y Desarrollo
 
 ### Prerrequisitos
-
-- Node.js 18+ 
+- Node.js 18+
 - npm o yarn
 - Cuenta de Supabase
 - Cuenta de Pusher
 
-### Configuración
-
-1. **Clonar el repositorio**
+### 1. Clonar e instalar
 ```bash
 git clone <repo-url>
 cd mister-white-game
-```
-
-2. **Instalar dependencias**
-```bash
 npm install
 ```
 
-3. **Configurar variables de entorno**
+### 2. Configurar variables de entorno
 Crea un archivo `.env.local`:
 ```bash
 # Supabase
@@ -124,153 +76,84 @@ NEXT_PUBLIC_PUSHER_KEY=tu_pusher_key
 NEXT_PUBLIC_PUSHER_CLUSTER=tu_pusher_cluster
 ```
 
-4. **Ejecutar en desarrollo**
+### 3. Configurar base de datos
+Ejecuta el script SQL en tu proyecto de Supabase:
+```bash
+# El archivo database-schema.sql contiene las tablas necesarias
+```
+
+### 4. Ejecutar en desarrollo
 ```bash
 npm run dev
 ```
 
-5. **Abrir en navegador**
-```
-http://localhost:3000
-```
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
 ## 📁 Estructura del Proyecto
 
 ```
 app/
-├── globals.css                 # Estilos globales y variables CSS
-├── layout.tsx                  # Layout principal con Header/Footer
-├── page.tsx                    # Página de inicio
-├── (local-game)/
+├── (local-game)/           # Modo local
 │   └── local/
-│       └── page.tsx           # Configuración juego local
-├── (online-game)/
+├── (online-game)/          # Modo online
 │   ├── create-room/
-│   │   └── page.tsx           # Crear sala online
 │   ├── join-room/
-│   │   └── page.tsx           # Unirse a sala
-│   └── room/
-│       └── [roomCode]/
-│           └── page.tsx        # Sala de juego (pendiente)
-├── api/                        # API Routes (pendiente)
+│   └── room/[roomCode]/
+├── api/                    # API Routes
 ├── components/
-│   ├── ui/                     # Componentes UI base
-│   │   ├── button.tsx
-│   │   ├── card.tsx
-│   │   ├── input.tsx
-│   │   ├── label.tsx
-│   │   └── loading.tsx
-│   ├── game/                   # Componentes del juego (pendiente)
-│   ├── layout/
-│   │   ├── Header.tsx          # Header responsive
-│   │   └── Footer.tsx          # Footer
-│   └── forms/                  # Formularios (pendiente)
-└── lib/
-    ├── supabase.ts            # Cliente Supabase
-    ├── pusher.ts              # Cliente Pusher
-    ├── game-logic.ts          # Lógica del juego
-    ├── utils.ts               # Utilidades
-    └── types.ts               # Tipos TypeScript
+│   ├── ui/                 # Componentes base
+│   ├── game/               # Componentes del juego
+│   ├── layout/             # Header y Footer
+│   └── forms/              # Formularios
+├── lib/
+│   ├── supabase.ts         # Cliente Supabase
+│   ├── pusher.ts           # Cliente Pusher
+│   ├── game-logic.ts       # Lógica del juego
+│   ├── types.ts            # Tipos TypeScript
+│   └── utils.ts            # Utilidades
+└── contexts/               # React Contexts
 ```
 
-## 🎨 Diseño y UX
+## � Cómo Jugar
 
-### Características del Diseño
-- **Mobile-First**: Optimizado primero para dispositivos móviles
-- **Responsive**: Se adapta a tablets y desktop automáticamente
-- **Dark Mode**: Soporte automático según preferencias del sistema
-- **Accesibilidad**: Navegación por teclado y alto contraste
-- **Animaciones**: Transiciones suaves para mejor UX
+### Modo Local
+1. Ve a "Juego Local"
+2. Configura el número de jugadores y reglas
+3. Añade los nombres de los jugadores
+4. ¡Comienza a jugar!
 
-### Paleta de Colores
-- **Primary**: Slate 900/100 (dark/light mode)
-- **Secondary**: Blue 600/400
-- **Accent**: Green, Purple, Orange para estados
-- **Destructive**: Red 600/400
+### Modo Online
+1. **Crear sala**: Ve a "Crear Sala Online" y comparte el código
+2. **Unirse**: Ve a "Unirse a Sala" e ingresa el código
+3. Espera a que todos se unan y ¡comienza la partida!
 
-## 🔮 Estado del Proyecto
-
-### ✅ COMPLETADO
-
-#### FASE 1: Setup e Infraestructura
-- ✅ Configuración Next.js 14 + TypeScript + Tailwind CSS
-- ✅ Integración Supabase y Pusher (configuración)
-- ✅ Estructura de carpetas y arquitectura
-- ✅ Componentes UI base (shadcn/ui style)
-- ✅ Sistema de tipos TypeScript
-- ✅ Utilidades y helpers
-
-#### FASE 2: Páginas Principales y Navegación
-- ✅ Formularios con validación (CreateRoom, JoinRoom, PlayerName)
-- ✅ Páginas principales (/create-room, /join-room, /local)
-- ✅ Sistema global de toasts
-- ✅ Navegación entre estados
-- ✅ Gestión de errores y loading states
-- ✅ Páginas de sala de espera y juego (estructura)
-
-#### FASE 3: Lógica del Juego (Modo Local) 🆕
-- ✅ Asignación automática de roles
-- ✅ Revelación individual de roles
-- ✅ Sistema de descripciones con validación
-- ✅ Sistema de votación completo
-- ✅ Detección automática de ganadores
-- ✅ Pantalla de resultados con revelación
-- ✅ Base de datos expandida (15 pares de palabras)
-- ✅ Flujo completo del juego local funcional
-
-### 🔄 EN PROGRESO / PENDIENTE
-
-#### FASE 4: Modo Online (Real-time)
-- [ ] API Routes para gestión de salas
-- [ ] Integración real con Supabase (CRUD)
-- [ ] WebSocket events con Pusher
-- [ ] Sincronización de estado entre jugadores
-- [ ] Persistencia en base de datos
-- [ ] Manejo de conexiones/desconexiones
-
-#### FASE 5: Funcionalidades Avanzadas
-- [ ] Chat en tiempo real
-- [ ] Efectos de sonido
-- [ ] Animaciones avanzadas
-- [ ] Sistema de estadísticas
-- [ ] Ranking de jugadores
-- [ ] Historial de partidas
-
-#### FASE 6: Polish y Optimización
-- [ ] Testing automatizado
-- [ ] Optimización de rendimiento
-- [ ] SEO y meta tags
-- [ ] PWA capabilities
-- [ ] Deploy a producción
-
-## 🧪 Scripts Disponibles
-
-```bash
-npm run dev          # Servidor de desarrollo
-npm run build        # Build para producción
-npm start           # Servidor de producción
-npm run lint        # Linter ESLint
-```
+### Flujo del Juego
+1. **Revelación de roles**: Cada jugador ve su rol secreto
+2. **Ronda de pistas**: Todos dan una pista relacionada con su palabra
+3. **Votación**: Los jugadores votan para eliminar al sospechoso
+4. **Resultado**: Se revela si ganaron los civiles o Mister White
 
 ## 🚀 Deploy
 
-El proyecto está configurado para deploy automático en **Vercel**:
+### Vercel (Recomendado)
+1. Conecta tu repositorio con Vercel
+2. Configura las variables de entorno
+3. Deploy automático en cada push
 
-1. Conecta tu repositorio GitHub con Vercel
-2. Configura las variables de entorno en Vercel
-3. El deploy será automático en cada push
+### Variables de entorno en producción
+Asegúrate de configurar todas las variables de `.env.local` en tu plataforma de hosting.
 
 ## 🤝 Contribuir
 
 1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
+2. Crea una rama feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit tus cambios (`git commit -m 'Añade nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
 5. Abre un Pull Request
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+MIT License - ver el archivo [LICENSE](LICENSE) para más detalles.
 
 ## 🙏 Reconocimientos
 
@@ -283,12 +166,5 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ---
 
-**Estado actual**: ✅ FASE 3 Completada - Modo local completamente funcional  
-**Próximo**: 🔄 FASE 4 - Integración backend y modo online  
-**Última actualización**: Enero 2025
-
-## 📚 Documentación Adicional
-
-- [FASE 1 - Setup e Infraestructura](./README.md#fase-1-completada)
-- [FASE 2 - Páginas y Navegación](./README-FASE2.md)
-- [FASE 3 - Lógica de Juego Local](./README-FASE3.md)
+**Estado**: ✅ Completamente funcional  
+**Última actualización**: Junio 2025

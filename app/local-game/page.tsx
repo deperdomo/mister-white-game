@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, AlertTriangle, SkipForward } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -602,7 +602,8 @@ function LocalGameContent() {
                     onClick={handleSkipClues}
                     className="text-slate-600"
                   >
-                    ⏭️ Saltar pistas e ir a votación
+                    <SkipForward className="h-4 w-4 mr-2" />
+                    Saltar pistas e ir a votación
                   </Button>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Los jugadores sin pista aparecerán como "(Sin pista)"
