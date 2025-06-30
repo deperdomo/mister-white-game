@@ -606,7 +606,7 @@ function LocalGameContent() {
                     Saltar pistas e ir a votación
                   </Button>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    Los jugadores sin pista aparecerán como "(Sin pista)"
+                    Los jugadores sin pista aparecerán como &ldquo;(Sin pista)&rdquo;
                   </p>
                 </div>
               </div>
