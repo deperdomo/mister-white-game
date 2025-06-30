@@ -16,7 +16,7 @@ function WaitingRoomContent() {
   const roomCode = searchParams.get('code') || '';
   const playerName = searchParams.get('name') || '';
   
-  const { room, players, startGame, leaveRoom, loadRoom, refreshRoom, isLoading } = useOnlineGame();
+  const { room, players, startGame, leaveRoom, loadRoomAndSubscribe, refreshRoom, isLoading } = useOnlineGame();
   const { success: showSuccess, error: showError } = useToast();
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
@@ -28,9 +28,9 @@ function WaitingRoomContent() {
   // Actualizar datos de la sala
   useEffect(() => {
     if (roomCode) {
-      loadRoom(roomCode);
+      loadRoomAndSubscribe(roomCode);
     }
-  }, [roomCode, loadRoom]);
+  }, [roomCode, loadRoomAndSubscribe]);
 
   // Redirigir al juego cuando empiece
   useEffect(() => {

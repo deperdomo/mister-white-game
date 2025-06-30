@@ -39,7 +39,7 @@ function OnlineGameContent() {
   const roomCode = params.roomCode as string;
   const playerName = searchParams.get('name') || '';
   
-  const { room, players, submitDescription, submitVote, loadRoom, refreshRoom, isLoading } = useOnlineGame();
+  const { room, players, submitDescription, submitVote, loadRoomAndSubscribe, refreshRoom, isLoading } = useOnlineGame();
   const { success: showSuccess, error: showError } = useToast();
   
   const [currentPlayer, setCurrentPlayer] = useState<OnlinePlayer | null>(null);
@@ -60,9 +60,9 @@ function OnlineGameContent() {
   // Actualizar datos de la sala
   useEffect(() => {
     if (roomCode) {
-      loadRoom(roomCode);
+      loadRoomAndSubscribe(roomCode);
     }
-  }, [roomCode, loadRoom]);
+  }, [roomCode, loadRoomAndSubscribe]);
 
   // Determinar la fase del juego basada en el estado de la sala
   useEffect(() => {

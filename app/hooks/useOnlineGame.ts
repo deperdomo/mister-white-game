@@ -53,6 +53,7 @@ interface UseOnlineGameState {
   submitDescription: (description: string, playerName: string) => Promise<boolean>;
   submitVote: (votedFor: string, playerName: string) => Promise<boolean>;
   loadRoom: (roomCode: string) => Promise<void>;
+  loadRoomAndSubscribe: (roomCode: string) => Promise<void>;
   refreshRoom: () => Promise<void>;
 }
 
@@ -144,41 +145,47 @@ export function useOnlineGame(): UseOnlineGameState {
     roomChannel.bind('player-joined', (data: unknown) => {
       const eventData = data as { playerName: string };
       showSuccess(`${eventData.playerName} joined the room`);
-      refreshRoom();
+      // Refresh room data when a player joins
+      loadRoom(roomCode);
     });
 
     // Game started event
     roomChannel.bind('game-started', () => {
       showSuccess('Game has started!');
-      refreshRoom();
+      // Refresh room data when game starts
+      loadRoom(roomCode);
     });
 
     // Description submitted event
     roomChannel.bind('description-submitted', (data: unknown) => {
       const eventData = data as { playerName: string };
       showInfo(`${eventData.playerName} submitted their description`);
-      refreshRoom();
+      // Refresh room data when description is submitted
+      loadRoom(roomCode);
     });
 
     // Vote submitted event
     roomChannel.bind('vote-submitted', (data: unknown) => {
       const eventData = data as { playerName: string };
       showInfo(`${eventData.playerName} voted`);
-      refreshRoom();
+      // Refresh room data when vote is submitted
+      loadRoom(roomCode);
     });
 
     // Player eliminated event
     roomChannel.bind('player-eliminated', (data: unknown) => {
       const eventData = data as { playerName: string };
       showWarning(`${eventData.playerName} was eliminated!`);
-      refreshRoom();
+      // Refresh room data when player is eliminated
+      loadRoom(roomCode);
     });
 
     // Game ended event
     roomChannel.bind('game-ended', (data: unknown) => {
       const eventData = data as { winner: string };
       showSuccess(`Game ended! Winner: ${eventData.winner}`);
-      refreshRoom();
+      // Refresh room data when game ends
+      loadRoom(roomCode);
     });
 
     // Room deleted event
@@ -188,7 +195,13 @@ export function useOnlineGame(): UseOnlineGameState {
       setPlayers([]);
     });
 
-  }, [pusher, showSuccess, showInfo, showWarning, showError, refreshRoom]);
+  }, [pusher, showSuccess, showInfo, showWarning, showError, loadRoom]);
+
+  // Function to load room and subscribe to events
+  const loadRoomAndSubscribe = useCallback(async (roomCode: string) => {
+    await loadRoom(roomCode);
+    subscribeToRoom(roomCode);
+  }, [loadRoom, subscribeToRoom]);
 
   // Create room
   const createRoom = useCallback(async (playerName: string, maxPlayers = 8): Promise<string | null> => {
@@ -418,6 +431,7 @@ export function useOnlineGame(): UseOnlineGameState {
     submitDescription,
     submitVote,
     loadRoom,
+    loadRoomAndSubscribe,
     refreshRoom,
   };
 }
