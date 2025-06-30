@@ -28,11 +28,21 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const difficulty = searchParams.get('difficulty') || 'medium';
     const category = searchParams.get('category');
+    const countParam = searchParams.get('count');
+    const count = countParam ? parseInt(countParam, 10) : 1;
 
     // Validar dificultad
     if (!['easy', 'medium', 'hard'].includes(difficulty)) {
       return NextResponse.json(
         { error: 'Invalid difficulty level' },
+        { status: 400 }
+      );
+    }
+
+    // Validar count
+    if (count < 1 || count > 50) {
+      return NextResponse.json(
+        { error: 'Count must be between 1 and 50' },
         { status: 400 }
       );
     }
@@ -64,19 +74,36 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Seleccionar una palabra aleatoria
-    const randomWord = words[Math.floor(Math.random() * words.length)];
+    if (count === 1) {
+      // Seleccionar una palabra aleatoria (mantener compatibilidad)
+      const randomWord = words[Math.floor(Math.random() * words.length)];
 
-    return NextResponse.json({
-      success: true,
-      word: {
-        id: randomWord.id,
-        category: randomWord.category,
-        civilWord: randomWord.word,
-        undercoverWord: randomWord.undercover_word,
-        difficulty: randomWord.difficulty
-      }
-    });
+      return NextResponse.json({
+        success: true,
+        word: {
+          id: randomWord.id,
+          category: randomWord.category,
+          civilWord: randomWord.word,
+          undercoverWord: randomWord.undercover_word,
+          difficulty: randomWord.difficulty
+        }
+      });
+    } else {
+      // Seleccionar múltiples palabras aleatorias sin repetición
+      const shuffledWords = [...words].sort(() => Math.random() - 0.5);
+      const selectedWords = shuffledWords.slice(0, Math.min(count, words.length));
+
+      return NextResponse.json({
+        success: true,
+        words: selectedWords.map(word => ({
+          id: word.id,
+          category: word.category,
+          civilWord: word.word,
+          undercoverWord: word.undercover_word,
+          difficulty: word.difficulty
+        }))
+      });
+    }
 
   } catch (error) {
     console.error('Unexpected error fetching words:', error);

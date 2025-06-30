@@ -7,7 +7,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { initializeGame, initializeGameWithDatabaseWords, allPlayersRevealed, processVote, getRoleInfo } from "../lib/game-logic";
+import { initializeGame, initializeGameWithDatabaseWords, initializeGameWithRotation, initializeGameWithDatabaseWordsAndRotation, allPlayersRevealed, processVote, getRoleInfo } from "../lib/game-logic";
 import { Player, LocalGameData, LocalGameConfig } from "../lib/types";
 
 function LocalGameContent() {
@@ -47,7 +47,25 @@ function LocalGameContent() {
             );
           }
           
-          setGameData(newGameData);
+          // Ensure all required fields are present to avoid hydration issues
+          const gameDataWithDefaults = {
+            ...newGameData,
+            startingPlayerIndex: newGameData.startingPlayerIndex ?? 0,
+            currentPlayerIndex: newGameData.currentPlayerIndex ?? 0,
+            players: newGameData.players || [],
+            // Explicitly preserve pre-fetched words properties
+            preFetchedWords: newGameData.preFetchedWords,
+            currentWordIndex: newGameData.currentWordIndex
+          };
+          
+          // Additional validation to ensure we have valid data
+          if (gameDataWithDefaults.players.length === 0) {
+            console.error('No players found in game data');
+            router.push('/local');
+            return;
+          }
+          
+          setGameData(gameDataWithDefaults);
           
         } catch (error) {
           console.error('Error parsing game configuration:', error);
@@ -70,7 +88,10 @@ function LocalGameContent() {
   const handleWordSeen = () => {
     if (!gameData) return;
     
-    const currentPlayer = gameData.players[gameData.currentPlayerIndex];
+    // Calculate the actual player index based on starting player rotation
+    const actualPlayerIndex = (gameData.currentPlayerIndex + gameData.startingPlayerIndex) % gameData.players.length;
+    const currentPlayer = gameData.players[actualPlayerIndex];
+    
     const updatedPlayers = gameData.players.map(p => 
       p.id === currentPlayer.id ? { ...p, wordRevealed: true } : p
     );
@@ -88,6 +109,20 @@ function LocalGameContent() {
     setShowRole(false);
   };
 
+  // Handle individual clue change
+  const handleClueChange = (playerId: string, clue: string) => {
+    if (!gameData) return;
+    
+    const updatedPlayers = gameData.players.map(p => 
+      p.id === playerId ? { ...p, clue: clue.trim() } : p
+    );
+    
+    setGameData({
+      ...gameData,
+      players: updatedPlayers,
+    });
+  };
+
   // Handle clue submission
   const handleAllCluesSubmit = () => {
     if (!gameData) return;
@@ -103,17 +138,21 @@ function LocalGameContent() {
     });
   };
 
-  // Handle individual clue change
-  const handleClueChange = (playerId: string, clue: string) => {
+  // Skip clues phase and go directly to voting
+  const handleSkipClues = () => {
     if (!gameData) return;
     
-    const updatedPlayers = gameData.players.map(p => 
-      p.id === playerId ? { ...p, clue: clue.trim() } : p
-    );
+    // Set default clues for players who haven't written any
+    const updatedPlayers = gameData.players.map(p => ({
+      ...p,
+      clue: p.clue && p.clue.trim() !== '' ? p.clue : '(Sin pista)'
+    }));
     
     setGameData({
       ...gameData,
       players: updatedPlayers,
+      allCluesSubmitted: true,
+      gamePhase: 'voting',
     });
   };
 
@@ -144,22 +183,81 @@ function LocalGameContent() {
   const continueWithSameConfig = async () => {
     if (!gameData) return;
     
-    // Reiniciar el juego con la misma configuración
+    // Calcular el siguiente jugador que debe empezar
+    const nextStartingPlayerIndex = (gameData.startingPlayerIndex + 1) % gameData.originalConfig.players.length;
+    const nextRound = gameData.round + 1;
+
+    // Debug: Log the current game state before proceeding
+    console.log(`🔍 [DEBUG] continueWithSameConfig Round ${nextRound}:`, {
+      useDatabase: gameData.originalConfig.useDatabase,
+      hasPreFetchedWords: !!gameData.preFetchedWords,
+      preFetchedWordsLength: gameData.preFetchedWords?.length || 0,
+      currentWordIndex: gameData.currentWordIndex,
+      nextWordIndex: gameData.currentWordIndex !== undefined ? gameData.currentWordIndex + 1 : 'undefined',
+      firstWord: gameData.preFetchedWords?.[0]?.civilian || 'none',
+      currentWord: gameData.preFetchedWords?.[gameData.currentWordIndex || 0]?.civilian || 'none',
+      nextWord: gameData.preFetchedWords?.[gameData.currentWordIndex !== undefined ? gameData.currentWordIndex + 1 : 1]?.civilian || 'none',
+      entireOriginalConfig: gameData.originalConfig
+    });
+    
+    // Reiniciar el juego con la misma configuración pero rotando el jugador inicial
     let newGameData;
     if (gameData.originalConfig.useDatabase) {
-      newGameData = await initializeGameWithDatabaseWords(
+      // Check if we have pre-fetched words available
+      if (gameData.preFetchedWords && gameData.currentWordIndex !== undefined) {
+        const nextWordIndex = gameData.currentWordIndex + 1;
+        
+        console.log(`✅ [DEBUG] Round ${nextRound}: Pre-fetched words check passed, nextWordIndex: ${nextWordIndex}, available words: ${gameData.preFetchedWords.length}`);
+        
+        // If we still have words available, use them
+        if (nextWordIndex < gameData.preFetchedWords.length) {
+          console.log(`✅ [DEBUG] Round ${nextRound}: Using pre-fetched word at index ${nextWordIndex}: "${gameData.preFetchedWords[nextWordIndex]?.civilian}"`);
+          newGameData = await initializeGameWithDatabaseWordsAndRotation(
+            gameData.originalConfig.players,
+            gameData.originalConfig.difficulty,
+            gameData.originalConfig.includeUndercover,
+            gameData.originalConfig.maxMisterWhites,
+            gameData.originalConfig.category,
+            nextStartingPlayerIndex,
+            nextRound,
+            gameData.preFetchedWords,
+            nextWordIndex
+          );
+        } else {
+          // No more pre-fetched words, fetch new batch
+          console.log(`⚠️ [DEBUG] Round ${nextRound}: No more pre-fetched words available, fetching new batch...`);
+          newGameData = await initializeGameWithDatabaseWordsAndRotation(
+            gameData.originalConfig.players,
+            gameData.originalConfig.difficulty,
+            gameData.originalConfig.includeUndercover,
+            gameData.originalConfig.maxMisterWhites,
+            gameData.originalConfig.category,
+            nextStartingPlayerIndex,
+            nextRound
+          );
+        }
+      } else {
+        // No pre-fetched words available, make regular call
+        console.log(`❌ [DEBUG] Round ${nextRound}: Pre-fetched words check failed - preFetchedWords: ${!!gameData.preFetchedWords}, currentWordIndex: ${gameData.currentWordIndex}`);
+        newGameData = await initializeGameWithDatabaseWordsAndRotation(
+          gameData.originalConfig.players,
+          gameData.originalConfig.difficulty,
+          gameData.originalConfig.includeUndercover,
+          gameData.originalConfig.maxMisterWhites,
+          gameData.originalConfig.category,
+          nextStartingPlayerIndex,
+          nextRound
+        );
+      }
+    } else {
+      newGameData = initializeGameWithRotation(
         gameData.originalConfig.players,
         gameData.originalConfig.difficulty,
         gameData.originalConfig.includeUndercover,
         gameData.originalConfig.maxMisterWhites,
-        gameData.originalConfig.category
-      );
-    } else {
-      newGameData = initializeGame(
-        gameData.originalConfig.players,
-        gameData.originalConfig.difficulty,
-        gameData.originalConfig.includeUndercover,
-        gameData.originalConfig.maxMisterWhites
+        undefined,
+        nextStartingPlayerIndex,
+        nextRound
       );
     }
     
@@ -248,7 +346,20 @@ function LocalGameContent() {
 
   // Word Reveal Phase - Each player sees their role and word
   if (gameData.gamePhase === 'wordReveal') {
-    const currentPlayer = gameData.players[gameData.currentPlayerIndex];
+    // Calculate the actual player index based on starting player rotation
+    const actualPlayerIndex = (gameData.currentPlayerIndex + gameData.startingPlayerIndex) % gameData.players.length;
+    const currentPlayer = gameData.players[actualPlayerIndex];
+    
+    // Defensive check to prevent errors
+    if (!currentPlayer) {
+      return (
+        <div className="container mx-auto px-4 py-8 max-w-md text-center">
+          <p className="text-slate-600 dark:text-slate-400 mb-4">Error: Jugador no encontrado. Reiniciando...</p>
+          <Button onClick={() => router.push('/local')}>Volver al inicio</Button>
+        </div>
+      );
+    }
+    
     const roleInfo = getRoleInfo(currentPlayer);
 
     return (
@@ -306,8 +417,9 @@ function LocalGameContent() {
               Volver
           </Button>
           <h1 className="text-xl font-bold text-slate-900 dark:text-slate-50">
-            Revelar Roles
+            Ronda {gameData.round} - Revelar Roles
           </h1>
+          
         </div>
 
         <Card className="animate-fade-in">
@@ -468,7 +580,7 @@ function LocalGameContent() {
             </div>
 
             {!gameData.allCluesSubmitted && (
-              <div className="text-center mt-6">
+              <div className="text-center mt-6 space-y-4">
                 <Button 
                   size="lg" 
                   onClick={handleAllCluesSubmit}
@@ -478,9 +590,24 @@ function LocalGameContent() {
                   <Send className="h-5 w-5 mr-2" />
                   Enviar pistas
                 </Button>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   Todos los jugadores deben escribir una pista antes de continuar
                 </p>
+                
+                {/* Botón para saltar pistas */}
+                <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleSkipClues}
+                    className="text-slate-600"
+                  >
+                    ⏭️ Saltar pistas e ir a votación
+                  </Button>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Los jugadores sin pista aparecerán como "(Sin pista)"
+                  </p>
+                </div>
               </div>
             )}
 
@@ -701,17 +828,17 @@ function LocalGameContent() {
             </CardContent>
           </Card>
 
-          <div className="space-y-4">
+          <div className="space-y-4">           
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button onClick={continueWithSameConfig} variant="outline" size="lg" className="w-full">
-                Continuar con la misma configuración
-              </Button>
-              <Button onClick={resetGame} size="lg" className="w-full">
+              <Button onClick={resetGame} variant="outline" size="lg" className="w-full">
                 Jugar con nueva configuración
+              </Button>
+              <Button onClick={continueWithSameConfig} size="lg" className="w-full">
+                Siguiente ronda
               </Button>
             </div>
             <Button onClick={handleEditPlayers} variant="secondary" size="lg" className="w-full">
-              Modificar jugadores
+              Editar configuración
             </Button>
           </div>
         </div>

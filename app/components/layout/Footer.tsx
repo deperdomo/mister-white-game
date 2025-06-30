@@ -20,7 +20,7 @@ export default function Footer() {
           {/* Enlaces */}
           <div className="flex items-center space-x-4">
             <a
-              href="https://github.com"
+              href="https://github.com/deperdomo/mister-white-game"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50 transition-colors"

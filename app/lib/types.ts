@@ -77,6 +77,13 @@ export interface LocalGameConfig {
   category?: string;
 }
 
+// Interface for pre-fetched database words
+export interface PreFetchedWord {
+  civilian: string;
+  undercover: string;
+  category: string;
+}
+
 export interface LocalGameData {
   players: Player[];
   civilianWord: string;
@@ -90,6 +97,9 @@ export interface LocalGameData {
   includeUndercover: boolean;
   round: number;
   originalConfig: LocalGameConfig; // Configuration used to create this game
+  startingPlayerIndex: number; // Which player starts revealing roles this round
+  preFetchedWords?: PreFetchedWord[]; // Pre-fetched words from database for subsequent rounds
+  currentWordIndex?: number; // Index of the current word being used from preFetchedWords
 }
 
 // Tipos para eventos Pusher

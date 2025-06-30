@@ -48,6 +48,27 @@ export function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
+// Seeded random number generator (Linear Congruential Generator)
+function seededRandom(seed: number): () => number {
+  let state = seed;
+  return () => {
+    state = (state * 1664525 + 1013904223) % 2**32;
+    return state / 2**32;
+  };
+}
+
+// Deterministic shuffle using a seed (Fisher-Yates shuffle with seeded random)
+export function shuffleArrayWithSeed<T>(array: T[], seed: number): T[] {
+  const shuffled = [...array];
+  const random = seededRandom(seed);
+  
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 // Debounce para optimizar performance
 export function debounce<T extends (...args: never[]) => void>(
   func: T,

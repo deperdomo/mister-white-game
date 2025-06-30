@@ -1,5 +1,6 @@
-import { Player, LocalGameData, PLAYER_ROLES } from './types';
-import { shuffleArray } from './utils';
+import { Player, LocalGameData, PLAYER_ROLES, PreFetchedWord, LocalGameConfig } from './types';
+import { shuffleArrayWithSeed } from './utils';
+import { GAME_WORDS } from './static-words';
 
 // Interface para palabras desde la base de datos
 interface DatabaseWord {
@@ -33,122 +34,60 @@ export async function getWordFromDatabase(difficulty: string, category?: string)
   }
 }
 
-// Expanded word database similar to the referenced repository
-export const GAME_WORDS = [
-  // Easy difficulty - shows category
-  {
-    category: 'Comida',
-    civilian: 'Pizza',
-    undercover: 'Hamburguesa',
-    difficulty: 'easy' as const,
-  },
-  {
-    category: 'Animales',
-    civilian: 'Gato',
-    undercover: 'Perro',
-    difficulty: 'easy' as const,
-  },
-  {
-    category: 'Colores',
-    civilian: 'Rojo',
-    undercover: 'Azul',
-    difficulty: 'easy' as const,
-  },
-  {
-    category: 'Frutas',
-    civilian: 'Manzana',
-    undercover: 'Naranja',
-    difficulty: 'easy' as const,
-  },
-  {
-    category: 'Vehículos',
-    civilian: 'Coche',
-    undercover: 'Moto',
-    difficulty: 'easy' as const,
-  },
-  {
-    category: 'Deportes',
-    civilian: 'Fútbol',
-    undercover: 'Baloncesto',
-    difficulty: 'easy' as const,
-  },
+// Función para obtener múltiples palabras desde la base de datos
+export async function getMultipleWordsFromDatabase(
+  difficulty: string, 
+  category?: string, 
+  count: number = 10
+): Promise<PreFetchedWord[]> {
+  console.log(`🔍 [DEBUG] Fetching ${count} words from database - difficulty: ${difficulty}, category: ${category || 'all'}`);
   
-  // Medium difficulty - no category shown
-  {
-    category: 'Bebidas',
-    civilian: 'Café',
-    undercover: 'Té',
-    difficulty: 'medium' as const,
-  },
-  {
-    category: 'Instrumentos',
-    civilian: 'Guitarra',
-    undercover: 'Piano',
-    difficulty: 'medium' as const,
-  },
-  {
-    category: 'Estaciones',
-    civilian: 'Verano',
-    undercover: 'Invierno',
-    difficulty: 'medium' as const,
-  },
-  {
-    category: 'Profesiones',
-    civilian: 'Doctor',
-    undercover: 'Enfermero',
-    difficulty: 'medium' as const,
-  },
-  {
-    category: 'Tecnología',
-    civilian: 'Smartphone',
-    undercover: 'Tablet',
-    difficulty: 'medium' as const,
-  },
-  {
-    category: 'Lugares',
-    civilian: 'Playa',
-    undercover: 'Piscina',
-    difficulty: 'medium' as const,
-  },
-  
-  // Hard difficulty - no category shown
-  {
-    category: 'Emociones',
-    civilian: 'Felicidad',
-    undercover: 'Alegría',
-    difficulty: 'hard' as const,
-  },
-  {
-    category: 'Conceptos',
-    civilian: 'Libertad',
-    undercover: 'Independencia',
-    difficulty: 'hard' as const,
-  },
-  {
-    category: 'Materiales',
-    civilian: 'Madera',
-    undercover: 'Bambú',
-    difficulty: 'hard' as const,
-  },
-  {
-    category: 'Ciencias',
-    civilian: 'Química',
-    undercover: 'Física',
-    difficulty: 'hard' as const,
-  },
-  {
-    category: 'Arte',
-    civilian: 'Pintura',
-    undercover: 'Dibujo',
-    difficulty: 'hard' as const,
-  },
-  {
-    category: 'Naturaleza',
-    civilian: 'Montaña',
-    undercover: 'Colina',
-    difficulty: 'hard' as const,
-  },
-];
+  try {
+    const params = new URLSearchParams({ 
+      difficulty,
+      count: count.toString()
+    });
+    if (category && category !== 'all') {
+      params.append('category', category);
+    }
+
+    const response = await fetch(`/api/words?${params}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('❌ [DEBUG] Error fetching words from database:', data.error);
+      return [];
+    }
+
+    // If the API returns multiple words, map them to our format
+    if (Array.isArray(data.words)) {
+      const mappedWords = data.words.map((word: DatabaseWord) => ({
+        civilian: word.civilWord,
+        undercover: word.undercoverWord,
+        category: word.category
+      }));
+      console.log(`✅ [DEBUG] Successfully fetched ${mappedWords.length} words from database:`, mappedWords.map((w: PreFetchedWord) => w.civilian));
+      return mappedWords;
+    }
+    
+    // If the API returns a single word, wrap it in an array
+    if (data.word) {
+      const singleWord = {
+        civilian: data.word.civilWord,
+        undercover: data.word.undercoverWord,
+        category: data.word.category
+      };
+      console.log(`✅ [DEBUG] Successfully fetched 1 word from database:`, singleWord.civilian);
+      return [singleWord];
+    }
+
+    console.log(`⚠️ [DEBUG] No words returned from database`);
+    return [];
+  } catch (error) {
+    console.error('❌ [DEBUG] Failed to fetch words from database:', error);
+    return [];
+  }
+}
 
 export const MR_WHITE_MESSAGE = "Eres Mr. White";
 export const MIN_PLAYERS = 3;
@@ -160,13 +99,22 @@ export function initializeGame(
   difficulty: 'easy' | 'medium' | 'hard',
   includeUndercover: boolean = false,
   maxMisterWhites: number = 1,
-  customWord?: { civilian: string; undercover: string; category?: string }
+  customWord?: { civilian: string; undercover: string; category?: string },
+  seedValue?: number
 ): LocalGameData {
   const numPlayers = playerNames.length;
   
   if (numPlayers < MIN_PLAYERS || numPlayers > MAX_PLAYERS) {
     throw new Error(`Number of players must be between ${MIN_PLAYERS} and ${MAX_PLAYERS}`);
   }
+
+  // Use a deterministic seed based on player names and game config if no seed provided
+  const gameSeed = seedValue ?? (
+    playerNames.join('').length + 
+    (includeUndercover ? 1 : 0) + 
+    maxMisterWhites + 
+    difficulty.length
+  );
 
   // Select word pair - use custom word if provided, otherwise fallback to static words
   let selectedWord;
@@ -177,9 +125,12 @@ export function initializeGame(
       undercover: customWord.undercover,
       difficulty
     };
+    console.log(`🎯 [DEBUG] Using custom word: "${selectedWord.civilian}"`);
   } else {
     const availableWords = GAME_WORDS.filter(w => w.difficulty === difficulty);
-    selectedWord = availableWords[Math.floor(Math.random() * availableWords.length)] || GAME_WORDS[0];
+    const wordIndex = gameSeed % availableWords.length;
+    selectedWord = availableWords[wordIndex] || GAME_WORDS[0];
+    console.log(`📚 [DEBUG] Using STATIC word: "${selectedWord.civilian}" (from static-words.ts)`);
   }
   
   // Determine roles
@@ -198,7 +149,7 @@ export function initializeGame(
 
   // Create shuffled indices for role assignment
   const indices = Array.from(Array(numPlayers).keys());
-  const shuffledIndices = shuffleArray(indices);
+  const shuffledIndices = shuffleArrayWithSeed(indices, gameSeed);
   
   let undercoverIndex: number | undefined;
   let payasoIndex: number | undefined;
@@ -265,7 +216,54 @@ export function initializeGame(
       difficulty,
       includeUndercover,
       maxMisterWhites,
+      useDatabase: false, // This function doesn't use database
     },
+    startingPlayerIndex: 0, // First game always starts with player 0
+  };
+}
+
+// Initialize game with rotation support for subsequent rounds
+export function initializeGameWithRotation(
+  playerNames: string[],
+  difficulty: 'easy' | 'medium' | 'hard',
+  includeUndercover: boolean = false,
+  maxMisterWhites: number = 1,
+  customWord?: { civilian: string; undercover: string; category?: string },
+  startingPlayerIndex: number = 0,
+  roundNumber: number = 1,
+  preserveOriginalConfig?: LocalGameConfig
+): LocalGameData {
+  // Use round number as part of the seed to ensure different games each round
+  const seed = (
+    playerNames.join('').length + 
+    (includeUndercover ? 1 : 0) + 
+    maxMisterWhites + 
+    difficulty.length +
+    roundNumber * 1000 // Multiply to create significant difference
+  );
+
+  const gameData = initializeGame(
+    playerNames,
+    difficulty,
+    includeUndercover,
+    maxMisterWhites,
+    customWord,
+    seed
+  );
+
+  return {
+    ...gameData,
+    currentPlayerIndex: 0, // Always start counting from 0
+    startingPlayerIndex,
+    round: roundNumber,
+    // Preserve original config if provided, otherwise create a basic one
+    originalConfig: preserveOriginalConfig || {
+      players: playerNames,
+      difficulty,
+      includeUndercover,
+      maxMisterWhites,
+      useDatabase: false // Default to false since this is the non-database path
+    }
   };
 }
 
@@ -278,12 +276,142 @@ export async function initializeGameWithDatabaseWords(
   category?: string
 ): Promise<LocalGameData> {
   try {
+    // Create deterministic seed
+    const seed = (
+      playerNames.join('').length + 
+      (includeUndercover ? 1 : 0) + 
+      maxMisterWhites + 
+      difficulty.length
+    );
+
+    // Pre-fetch multiple words from database for subsequent rounds
+    const preFetchedWords = await getMultipleWordsFromDatabase(difficulty, category, 15);
+    
+    if (preFetchedWords.length > 0) {
+      // Use first word from the pre-fetched batch
+      const firstWord = preFetchedWords[0];
+      console.log(`🎯 [DEBUG] Round 1: Using first pre-fetched word from database: "${firstWord.civilian}"`);
+      const gameData = initializeGame(
+        playerNames,
+        difficulty,
+        includeUndercover,
+        maxMisterWhites,
+        {
+          civilian: firstWord.civilian,
+          undercover: firstWord.undercover,
+          category: firstWord.category
+        },
+        seed
+      );
+      
+      // Add pre-fetched words to game data
+      return {
+        ...gameData,
+        startingPlayerIndex: 0,
+        preFetchedWords,
+        currentWordIndex: 0,
+        originalConfig: {
+          players: playerNames,
+          difficulty,
+          includeUndercover,
+          maxMisterWhites,
+          useDatabase: true,
+          category
+        }
+      };
+    } else {
+      // Fallback a palabras estáticas si no hay conexión con la BD
+      console.warn('⚠️ [DEBUG] Round 1: Could not fetch words from database, falling back to STATIC WORDS');
+      const gameData = initializeGame(playerNames, difficulty, includeUndercover, maxMisterWhites, undefined, seed);
+      return {
+        ...gameData,
+        startingPlayerIndex: 0,
+        originalConfig: {
+          players: playerNames,
+          difficulty,
+          includeUndercover,
+          maxMisterWhites,
+          useDatabase: true,
+          category
+        }
+      };
+    }
+  } catch (error) {
+    console.error('❌ [DEBUG] Round 1: Error initializing game with database words:', error);
+    // Fallback a palabras estáticas en caso de error
+    console.warn('⚠️ [DEBUG] Round 1: Falling back to STATIC WORDS due to error');
+    const seed = (
+      playerNames.join('').length + 
+      (includeUndercover ? 1 : 0) + 
+      maxMisterWhites + 
+      difficulty.length
+    );
+    const gameData = initializeGame(playerNames, difficulty, includeUndercover, maxMisterWhites, undefined, seed);
+    return {
+      ...gameData,
+      startingPlayerIndex: 0,
+      originalConfig: {
+        players: playerNames,
+        difficulty,
+        includeUndercover,
+        maxMisterWhites,
+        useDatabase: true,
+        category
+      }
+    };
+  }
+}
+
+// Initialize game with database words and rotation support
+export async function initializeGameWithDatabaseWordsAndRotation(
+  playerNames: string[],
+  difficulty: 'easy' | 'medium' | 'hard',
+  includeUndercover: boolean = false,
+  maxMisterWhites: number = 1,
+  category?: string,
+  startingPlayerIndex: number = 0,
+  roundNumber: number = 1,
+  preFetchedWords?: PreFetchedWord[],
+  currentWordIndex?: number
+): Promise<LocalGameData> {
+  // Debug: Log what we received
+  console.log(`🔍 [DEBUG] Round ${roundNumber}: initializeGameWithDatabaseWordsAndRotation called with:`, {
+    preFetchedWords: preFetchedWords ? `${preFetchedWords.length} words` : 'none',
+    currentWordIndex,
+    firstWord: preFetchedWords?.[0]?.civilian || 'none',
+    wordAtIndex: preFetchedWords?.[currentWordIndex || 0]?.civilian || 'none'
+  });
+
+  // If we have pre-fetched words and a valid index, use them
+  if (preFetchedWords && currentWordIndex !== undefined && preFetchedWords[currentWordIndex]) {
+    console.log(`✅ [DEBUG] Round ${roundNumber}: Using pre-fetched words path`);
+    return initializeGameWithPreFetchedWords(
+      playerNames,
+      difficulty,
+      includeUndercover,
+      maxMisterWhites,
+      preFetchedWords,
+      currentWordIndex,
+      startingPlayerIndex,
+      roundNumber
+    );
+  } else {
+    console.log(`⚠️ [DEBUG] Round ${roundNumber}: Pre-fetched words check failed:`, {
+      hasPrefetched: !!preFetchedWords,
+      hasIndex: currentWordIndex !== undefined,
+      wordExists: !!(preFetchedWords && currentWordIndex !== undefined && preFetchedWords[currentWordIndex])
+    });
+  }
+
+  try {
     // Intentar obtener palabra de la base de datos
+    console.log(`🔍 [DEBUG] Round ${roundNumber}: Attempting to fetch single word from database (no pre-fetched words available)`);
     const databaseWord = await getWordFromDatabase(difficulty, category);
     
     if (databaseWord) {
       // Usar palabra de la base de datos
-      return initializeGame(
+      console.log(`✅ [DEBUG] Round ${roundNumber}: Using single word from database: "${databaseWord.civilWord}"`);
+      return initializeGameWithRotation(
         playerNames,
         difficulty,
         includeUndercover,
@@ -292,17 +420,115 @@ export async function initializeGameWithDatabaseWords(
           civilian: databaseWord.civilWord,
           undercover: databaseWord.undercoverWord,
           category: databaseWord.category
+        },
+        startingPlayerIndex,
+        roundNumber,
+        // Preserve the original config with useDatabase: true
+        {
+          players: playerNames,
+          difficulty,
+          includeUndercover,
+          maxMisterWhites,
+          useDatabase: true,
+          category
         }
       );
     } else {
       // Fallback a palabras estáticas si no hay conexión con la BD
-      console.warn('Could not fetch word from database, using static words');
-      return initializeGame(playerNames, difficulty, includeUndercover, maxMisterWhites);
+      console.warn(`⚠️ [DEBUG] Round ${roundNumber}: Could not fetch word from database, falling back to STATIC WORDS`);
+      return initializeGameWithRotation(
+        playerNames, 
+        difficulty, 
+        includeUndercover, 
+        maxMisterWhites, 
+        undefined, 
+        startingPlayerIndex, 
+        roundNumber
+      );
     }
   } catch (error) {
-    console.error('Error initializing game with database words:', error);
+    console.error(`❌ [DEBUG] Round ${roundNumber}: Error initializing game with database words:`, error);
     // Fallback a palabras estáticas en caso de error
-    return initializeGame(playerNames, difficulty, includeUndercover, maxMisterWhites);
+    console.warn(`⚠️ [DEBUG] Round ${roundNumber}: Falling back to STATIC WORDS due to error`);
+    return initializeGameWithRotation(
+      playerNames, 
+      difficulty, 
+      includeUndercover, 
+      maxMisterWhites, 
+      undefined, 
+      startingPlayerIndex, 
+      roundNumber
+    );
+  }
+}
+
+// Initialize game with database words and rotation support using pre-fetched words
+export function initializeGameWithPreFetchedWords(
+  playerNames: string[],
+  difficulty: 'easy' | 'medium' | 'hard',
+  includeUndercover: boolean = false,
+  maxMisterWhites: number = 1,
+  preFetchedWords: PreFetchedWord[],
+  currentWordIndex: number,
+  startingPlayerIndex: number = 0,
+  roundNumber: number = 1,
+  category?: string
+): LocalGameData {
+  // Get the next word from pre-fetched words
+  const wordToUse = preFetchedWords[currentWordIndex] || null;
+  
+  if (wordToUse) {
+    // Use pre-fetched word
+    console.log(`🎯 [DEBUG] Round ${roundNumber}: Using pre-fetched word from database: "${wordToUse.civilian}" (index ${currentWordIndex})`);
+    const gameData = initializeGameWithRotation(
+      playerNames,
+      difficulty,
+      includeUndercover,
+      maxMisterWhites,
+      {
+        civilian: wordToUse.civilian,
+        undercover: wordToUse.undercover,
+        category: wordToUse.category
+      },
+      startingPlayerIndex,
+      roundNumber,
+      // Pass the correct originalConfig to preserve useDatabase: true
+      {
+        players: playerNames,
+        difficulty,
+        includeUndercover,
+        maxMisterWhites,
+        useDatabase: true,
+        category
+      }
+    );
+    
+    return {
+      ...gameData,
+      preFetchedWords,
+      currentWordIndex
+    };
+  } else {
+    // Fallback to static words if we run out of pre-fetched words
+    console.warn(`⚠️ [DEBUG] Round ${roundNumber}: No more pre-fetched words available (index ${currentWordIndex}), falling back to STATIC WORDS`);
+    return initializeGameWithRotation(
+      playerNames, 
+      difficulty, 
+      includeUndercover, 
+      maxMisterWhites, 
+      undefined, 
+      startingPlayerIndex, 
+      roundNumber,
+      // Even in fallback, preserve the original database config
+      {
+        players: playerNames,
+        difficulty,
+        includeUndercover,
+        maxMisterWhites,
+        useDatabase: true,
+        category
+      }
+    );
   }
 }
 
