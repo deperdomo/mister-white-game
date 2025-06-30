@@ -52,6 +52,7 @@ interface UseOnlineGameState {
   startGame: (words: { currentWord: string; undercoverWord: string }) => Promise<boolean>;
   submitDescription: (description: string, playerName: string) => Promise<boolean>;
   submitVote: (votedFor: string, playerName: string) => Promise<boolean>;
+  loadRoom: (roomCode: string) => Promise<void>;
   refreshRoom: () => Promise<void>;
 }
 
@@ -97,6 +98,24 @@ export function useOnlineGame(): UseOnlineGameState {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Load room data from API by room code
+  const loadRoom = useCallback(async (roomCode: string) => {
+    if (!roomCode) return;
+
+    try {
+      const response = await fetch(`/api/rooms/${roomCode}`);
+      if (response.ok) {
+        const data = await response.json();
+        setRoom(data.room);
+        setPlayers(data.players);
+      } else {
+        console.error('Failed to load room, status:', response.status);
+      }
+    } catch (error) {
+      console.error('Failed to load room:', error);
+    }
+  }, []);
+
   // Refresh room data from API
   const refreshRoom = useCallback(async () => {
     if (!room?.roomCode) return;
@@ -107,8 +126,9 @@ export function useOnlineGame(): UseOnlineGameState {
         const data = await response.json();
         setRoom(data.room);
         setPlayers(data.players);
-      }      } catch (error) {
-        console.error('Failed to refresh room:', error);
+      }
+    } catch (error) {
+      console.error('Failed to refresh room:', error);
     }
   }, [room?.roomCode]);
 
@@ -272,13 +292,41 @@ export function useOnlineGame(): UseOnlineGameState {
     if (!room) return false;
 
     try {
+      // 1. Asignar roles automáticamente
+      const rolesResponse = await fetch('/api/rooms/assign-roles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomCode: room.roomCode }),
+      });
+
+      if (!rolesResponse.ok) {
+        showError('Failed to assign roles');
+        return false;
+      }
+
+      // 2. Obtener palabras del juego si no se proporcionaron
+      let gameWords = words;
+      if (!words.currentWord || !words.undercoverWord) {
+        const wordsResponse = await fetch('/api/words?difficulty=medium&count=2');
+        if (wordsResponse.ok) {
+          const wordsData = await wordsResponse.json();
+          if (wordsData.words && wordsData.words.length >= 2) {
+            gameWords = {
+              currentWord: wordsData.words[0].word,
+              undercoverWord: wordsData.words[1].word
+            };
+          }
+        }
+      }
+
+      // 3. Iniciar el juego
       const response = await fetch(`/api/rooms/${room.roomCode}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'start_game',
-          currentWord: words.currentWord,
-          undercoverWord: words.undercoverWord,
+          currentWord: gameWords.currentWord,
+          undercoverWord: gameWords.undercoverWord,
         }),
       });
 
@@ -369,6 +417,7 @@ export function useOnlineGame(): UseOnlineGameState {
     startGame,
     submitDescription,
     submitVote,
+    loadRoom,
     refreshRoom,
   };
 }

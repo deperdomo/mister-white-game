@@ -124,10 +124,10 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                <li>• Hasta 20 jugadores simultáneos</li>
+                <li>• Hasta 8 jugadores simultáneos</li>
                 <li>• Salas privadas con código único</li>
                 <li>• Sincronización en tiempo real</li>
-                <li>• Nuevos roles: Payaso (8+ jugadores)</li>
+                <li>• Nuevos roles: Payaso (8 jugadores)</li>
                 <li>• Undercover opcional</li>
               </ul>
               <div className="flex flex-col sm:flex-row gap-2">
