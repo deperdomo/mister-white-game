@@ -25,10 +25,37 @@ function WaitingRoomContent() {
   const currentPlayer = players.find(p => p.name === playerName);
   const isHost = currentPlayer?.isHost || false;
 
+  // Función para forzar actualización
+  const triggerRefresh = () => {
+    if (roomCode) {
+      loadRoomAndSubscribe(roomCode);
+    }
+  };
+
+  // Debug logging
+  useEffect(() => {
+    if (players.length > 0) {
+      console.log('Players in waiting room:', players);
+      console.log('Current player name:', playerName);
+      console.log('Current player:', currentPlayer);
+      console.log('Is host:', isHost);
+      console.log('Room status:', room?.status);
+      console.log('Player count:', players.length);
+    }
+  }, [players, playerName, currentPlayer, isHost, room?.status]);
+
   // Actualizar datos de la sala
   useEffect(() => {
     if (roomCode) {
       loadRoomAndSubscribe(roomCode);
+      
+      // Polling como respaldo para asegurar sincronización
+      const pollingInterval = setInterval(() => {
+        console.log('Polling room data as backup...');
+        loadRoomAndSubscribe(roomCode);
+      }, 5000); // Poll every 5 seconds
+      
+      return () => clearInterval(pollingInterval);
     }
   }, [roomCode, loadRoomAndSubscribe]);
 
@@ -108,6 +135,15 @@ function WaitingRoomContent() {
           >
             <Copy className="h-4 w-4" />
             <span>{copied ? 'Copiado!' : roomCode}</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={triggerRefresh}
+            className="flex items-center space-x-2"
+          >
+            <Users className="h-4 w-4" />
+            <span>Actualizar</span>
           </Button>
         </div>
       </div>

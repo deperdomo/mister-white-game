@@ -631,3 +631,109 @@ export function getRoleInfo(player: Player) {
       };
   }
 }
+
+// Interface para los resultados del juego online
+export interface OnlineGameResults {
+  winner: 'civilians' | 'mister_white' | 'undercover' | 'payaso';
+  eliminated: string | null; // nombre del jugador eliminado
+  misterWhite: string; // nombre del jugador que era Mister White
+  undercover: string | null; // nombre del jugador que era Undercover (si existe)
+  payaso: string | null; // nombre del jugador que era Payaso (si existe)
+  votes: Record<string, number>; // votos recibidos por cada jugador
+  reason: string; // razón de la victoria
+}
+
+// Interface para jugador online
+interface OnlinePlayer {
+  id: string;
+  name: string;
+  isHost: boolean;
+  role: string | null;
+  isAlive: boolean;
+  description: string | null;
+  votedFor: string | null;
+}
+
+// Calcular resultados del juego online
+export function calculateOnlineGameResults(players: OnlinePlayer[]): OnlineGameResults {
+  // Contar votos
+  const votes: Record<string, number> = {};
+  players.forEach(player => {
+    if (player.votedFor) {
+      votes[player.votedFor] = (votes[player.votedFor] || 0) + 1;
+    }
+  });
+
+  // Encontrar al jugador más votado
+  let maxVotes = 0;
+  let eliminated: string | null = null;
+  Object.entries(votes).forEach(([playerName, voteCount]) => {
+    if (voteCount > maxVotes) {
+      maxVotes = voteCount;
+      eliminated = playerName;
+    }
+  });
+
+  // Encontrar jugadores por rol
+  const misterWhite = players.find(p => p.role === 'mister_white')?.name || '';
+  const undercover = players.find(p => p.role === 'undercover')?.name || null;
+  const payaso = players.find(p => p.role === 'payaso')?.name || null;
+
+  // Determinar ganador y razón
+  let winner: OnlineGameResults['winner'];
+  let reason: string;
+
+  if (!eliminated) {
+    // Empate - ganan los civiles por defecto
+    winner = 'civilians';
+    reason = 'Hubo empate en la votación. Los civiles ganan por defecto.';
+  } else if (eliminated === payaso) {
+    // Si eliminaron al payaso, el payaso gana
+    winner = 'payaso';
+    reason = `¡${payaso} (Payaso) fue eliminado y gana la partida!`;
+  } else if (eliminated === misterWhite) {
+    // Si eliminaron a Mister White, los civiles ganan
+    winner = 'civilians';
+    reason = `¡Los civiles ganaron! Eliminaron correctamente a ${misterWhite} (Mister White).`;
+  } else if (eliminated === undercover) {
+    // Si eliminaron al undercover, los civiles ganan
+    winner = 'civilians';
+    reason = `Los civiles ganaron eliminando a ${undercover} (Undercover).`;
+  } else {
+    // Si eliminaron a un civil, Mister White gana
+    winner = 'mister_white';
+    reason = `¡${misterWhite} (Mister White) ganó! Los civiles eliminaron a ${eliminated} por error.`;
+  }
+
+  return {
+    winner,
+    eliminated,
+    misterWhite,
+    undercover,
+    payaso,
+    votes,
+    reason
+  };
+}
+
+// Función para obtener el emoji del rol
+export function getRoleEmoji(role: string | null): string {
+  switch (role) {
+    case 'civil': return '👤';
+    case 'mister_white': return '🕵️';
+    case 'undercover': return '🥸';
+    case 'payaso': return '🤡';
+    default: return '❓';
+  }
+}
+
+// Función para obtener el nombre del rol en español
+export function getRoleName(role: string | null): string {
+  switch (role) {
+    case 'civil': return 'Civil';
+    case 'mister_white': return 'Mister White';
+    case 'undercover': return 'Undercover';
+    case 'payaso': return 'Payaso';
+    default: return 'Desconocido';
+  }
+}

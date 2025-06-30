@@ -145,6 +145,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           current_word: updateData.currentWord || null,
           undercover_word: updateData.undercoverWord || null,
         };
+        console.log('Starting game with words:', {
+          currentWord: updateData.currentWord,
+          undercoverWord: updateData.undercoverWord,
+          updateFields
+        });
         pusherEvent = 'game-started';
         pusherData = {
           currentWord: updateData.currentWord,

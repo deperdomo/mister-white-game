@@ -10,6 +10,7 @@ import { Label } from "../../../components/ui/label";
 import { useOnlineGame } from "../../../hooks/useOnlineGame";
 import { useToast } from "../../../hooks/useToast";
 import { LoadingState } from "../../../components/ui/loading";
+import { calculateOnlineGameResults, getRoleEmoji, getRoleName, OnlineGameResults } from "../../../lib/game-logic";
 
 interface OnlinePlayer {
   id: string;
@@ -31,7 +32,7 @@ function OnlineGameContent() {
   const playerName = searchParams.get('name') || '';
   
   const { room, players, submitDescription, submitVote, loadRoomAndSubscribe, isLoading } = useOnlineGame();
-  const { success: showSuccess } = useToast();
+  const { success: showSuccess, error: showError } = useToast();
   
   const [currentPlayer, setCurrentPlayer] = useState<OnlinePlayer | null>(null);
   const [gamePhase, setGamePhase] = useState<'waiting' | 'role-reveal' | 'describing' | 'voting' | 'results'>('waiting');
@@ -39,19 +40,44 @@ function OnlineGameContent() {
   const [selectedVote, setSelectedVote] = useState('');
   const [showRole, setShowRole] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [gameResults, setGameResults] = useState<OnlineGameResults | null>(null);
 
   // Buscar el jugador actual
   useEffect(() => {
     if (players.length > 0 && playerName) {
       const player = players.find(p => p.name === playerName);
+      console.log('Looking for player:', playerName);
+      console.log('Available players:', players.map(p => p.name));
+      console.log('Found player:', player);
       setCurrentPlayer(player || null);
     }
   }, [players, playerName]);
+
+  // Debug logging para el estado del juego
+  useEffect(() => {
+    console.log('Game room state:', {
+      room,
+      currentWord: room?.currentWord,
+      undercoverWord: room?.undercoverWord,
+      players: players.length,
+      currentPlayer,
+      gamePhase,
+      roomStatus: room?.status
+    });
+  }, [room, players, currentPlayer, gamePhase]);
 
   // Actualizar datos de la sala
   useEffect(() => {
     if (roomCode) {
       loadRoomAndSubscribe(roomCode);
+      
+      // Polling como respaldo para asegurar sincronización
+      const pollingInterval = setInterval(() => {
+        console.log('Polling game room data as backup...');
+        loadRoomAndSubscribe(roomCode);
+      }, 3000); // Poll every 3 seconds during game
+      
+      return () => clearInterval(pollingInterval);
     }
   }, [roomCode, loadRoomAndSubscribe]);
 
@@ -74,15 +100,25 @@ function OnlineGameContent() {
           setGamePhase('voting');
         } else {
           setGamePhase('results');
+          // Calcular resultados cuando todos han votado
+          if (players.length > 0 && allVoted) {
+            const results = calculateOnlineGameResults(players);
+            setGameResults(results);
+          }
         }
         break;
       case 'finished':
         setGamePhase('results');
+        // Calcular resultados si no se han calculado ya
+        if (players.length > 0 && !gameResults) {
+          const results = calculateOnlineGameResults(players);
+          setGameResults(results);
+        }
         break;
       default:
         setGamePhase('role-reveal');
     }
-  }, [room, players]);
+  }, [room, players, gameResults]);
 
   // Funciones de manejo de acciones
   const handleSubmitDescription = useCallback(async () => {
@@ -141,6 +177,33 @@ function OnlineGameContent() {
 
   const handleLeaveRoom = () => {
     router.push('/');
+  };
+
+  const handleNextRound = async () => {
+    if (!room || !currentPlayer?.isHost) return;
+    
+    try {
+      // Reiniciar el juego para la siguiente ronda
+      const response = await fetch(`/api/rooms/${room.roomCode}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'next_round',
+        }),
+      });
+
+      if (response.ok) {
+        showSuccess('¡Nueva ronda iniciada!');
+        // Recargar los datos de la sala
+        loadRoomAndSubscribe(roomCode);
+      } else {
+        const data = await response.json();
+        showError(data.error || 'Error al iniciar nueva ronda');
+      }
+    } catch (error) {
+      console.error('Error al iniciar nueva ronda:', error);
+      showError('Error al iniciar nueva ronda');
+    }
   };
 
   if (!roomCode) {
@@ -216,8 +279,8 @@ function OnlineGameContent() {
                   <p className="font-semibold">
                     {showRole ? (
                       currentPlayer.role === 'mister_white' ? '???' :
-                      currentPlayer.role === 'undercover' ? room.undercoverWord :
-                      room.currentWord
+                      currentPlayer.role === 'undercover' ? (room.undercoverWord || 'Error: Palabra no encontrada') :
+                      (room.currentWord || 'Error: Palabra no encontrada')
                     ) : '***'}
                   </p>
                 </div>
@@ -351,10 +414,135 @@ function OnlineGameContent() {
           <CardHeader>
             <CardTitle>Resultados del Juego</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-center text-lg">
-              El juego ha terminado. Revisando resultados...
-            </p>
+          <CardContent className="space-y-6">
+            {gameResults ? (
+              <>
+                {/* Resultado principal */}
+                <div className="text-center">
+                  <div className={`inline-flex items-center px-4 py-2 rounded-lg text-white text-lg font-bold mb-4 ${
+                    gameResults.winner === 'civilians' ? 'bg-blue-500' :
+                    gameResults.winner === 'mister_white' ? 'bg-red-500' :
+                    gameResults.winner === 'undercover' ? 'bg-purple-500' :
+                    'bg-orange-500'
+                  }`}>
+                    {gameResults.winner === 'civilians' && '👥 ¡Civiles Ganaron!'}
+                    {gameResults.winner === 'mister_white' && '🕵️ ¡Mister White Ganó!'}
+                    {gameResults.winner === 'undercover' && '🥸 ¡Undercover Ganó!'}
+                    {gameResults.winner === 'payaso' && '🤡 ¡Payaso Ganó!'}
+                  </div>
+                  <p className="text-lg mb-4">{gameResults.reason}</p>
+                </div>
+
+                {/* Información de votación */}
+                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-3">📊 Resultados de la Votación</h4>
+                  {gameResults.eliminated ? (
+                    <p className="mb-2">
+                      <span className="font-semibold text-red-600">Eliminado:</span> {gameResults.eliminated} 
+                      ({gameResults.votes[gameResults.eliminated]} votos)
+                    </p>
+                  ) : (
+                    <p className="mb-2 text-yellow-600">Hubo empate en la votación</p>
+                  )}
+                  
+                  <div className="space-y-1">
+                    {Object.entries(gameResults.votes).map(([playerName, voteCount]) => (
+                      <div key={playerName} className="flex justify-between">
+                        <span>{playerName}</span>
+                        <span className="font-semibold">{voteCount} votos</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Revelación de roles */}
+                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-3">🎭 Revelación de Roles</h4>
+                  <div className="space-y-2">
+                    {players.map(player => (
+                      <div key={player.id} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span>{getRoleEmoji(player.role)}</span>
+                          <span className="font-semibold">{player.name}</span>
+                          {player.name === currentPlayer.name && (
+                            <span className="text-blue-500 text-sm">(Tú)</span>
+                          )}
+                        </div>
+                        <div className={`px-2 py-1 rounded text-sm font-semibold ${
+                          player.role === 'civil' ? 'bg-blue-100 text-blue-800' :
+                          player.role === 'mister_white' ? 'bg-red-100 text-red-800' :
+                          player.role === 'undercover' ? 'bg-purple-100 text-purple-800' :
+                          player.role === 'payaso' ? 'bg-orange-100 text-orange-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {getRoleName(player.role)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Palabras del juego */}
+                {room.currentWord && (
+                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+                    <h4 className="font-semibold mb-3">📝 Palabras del Juego</h4>
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">Palabra Civil:</span>
+                        <p className="font-semibold">{room.currentWord}</p>
+                      </div>
+                      {room.undercoverWord && (
+                        <div>
+                          <span className="text-sm text-slate-600 dark:text-slate-400">Palabra Undercover:</span>
+                          <p className="font-semibold">{room.undercoverWord}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-center text-lg">
+                Calculando resultados...
+              </p>
+            )}
+            
+            {/* Botones de acción */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+              {currentPlayer?.isHost ? (
+                <>
+                  <Button 
+                    onClick={handleNextRound}
+                    className="flex-1 sm:flex-none"
+                    size="lg"
+                  >
+                    Siguiente Ronda
+                  </Button>
+                  <Button 
+                    onClick={handleLeaveRoom}
+                    variant="outline"
+                    className="flex-1 sm:flex-none"
+                    size="lg"
+                  >
+                    Salir del Juego
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-center text-slate-600 dark:text-slate-400 mb-3">
+                    Esperando a que el host decida...
+                  </p>
+                  <Button 
+                    onClick={handleLeaveRoom}
+                    variant="outline"
+                    className="flex-1 sm:flex-none"
+                    size="lg"
+                  >
+                    Salir del Juego
+                  </Button>
+                </>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}

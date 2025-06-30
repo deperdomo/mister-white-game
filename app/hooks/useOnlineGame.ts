@@ -100,20 +100,30 @@ export function useOnlineGame(): UseOnlineGameState {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load room data from API by room code
-  const loadRoom = useCallback(async (roomCode: string) => {
+  const loadRoom = useCallback(async (roomCode: string, retryCount = 0) => {
     if (!roomCode) return;
 
     try {
+      console.log(`Loading room ${roomCode}, attempt ${retryCount + 1}`);
       const response = await fetch(`/api/rooms/${roomCode}`);
       if (response.ok) {
         const data = await response.json();
+        console.log('Room data loaded:', data);
         setRoom(data.room);
         setPlayers(data.players);
       } else {
         console.error('Failed to load room, status:', response.status);
+        // Retry up to 3 times with exponential backoff
+        if (retryCount < 3) {
+          setTimeout(() => loadRoom(roomCode, retryCount + 1), Math.pow(2, retryCount) * 1000);
+        }
       }
     } catch (error) {
       console.error('Failed to load room:', error);
+      // Retry up to 3 times with exponential backoff
+      if (retryCount < 3) {
+        setTimeout(() => loadRoom(roomCode, retryCount + 1), Math.pow(2, retryCount) * 1000);
+      }
     }
   }, []);
 
@@ -144,63 +154,79 @@ export function useOnlineGame(): UseOnlineGameState {
     // Player joined event
     roomChannel.bind('player-joined', (data: unknown) => {
       const eventData = data as { playerName: string };
-      showSuccess(`${eventData.playerName} joined the room`);
-      // Refresh room data when a player joins
-      loadRoom(roomCode);
+      console.log('Player joined event:', eventData);
+      showSuccess(`${eventData.playerName} se unió a la sala`);
+      // Use setTimeout to ensure immediate reload
+      setTimeout(() => loadRoom(roomCode), 100);
     });
 
     // Game started event
-    roomChannel.bind('game-started', () => {
-      showSuccess('Game has started!');
-      // Refresh room data when game starts
-      loadRoom(roomCode);
+    roomChannel.bind('game-started', (data: unknown) => {
+      console.log('Game started event:', data);
+      showSuccess('¡El juego ha comenzado!');
+      // Use setTimeout to ensure immediate reload
+      setTimeout(() => loadRoom(roomCode), 100);
     });
 
     // Description submitted event
     roomChannel.bind('description-submitted', (data: unknown) => {
       const eventData = data as { playerName: string };
-      showInfo(`${eventData.playerName} submitted their description`);
-      // Refresh room data when description is submitted
-      loadRoom(roomCode);
+      console.log('Description submitted event:', eventData);
+      showInfo(`${eventData.playerName} envió su descripción`);
+      // Use setTimeout to ensure immediate reload
+      setTimeout(() => loadRoom(roomCode), 100);
     });
 
     // Vote submitted event
     roomChannel.bind('vote-submitted', (data: unknown) => {
       const eventData = data as { playerName: string };
-      showInfo(`${eventData.playerName} voted`);
-      // Refresh room data when vote is submitted
-      loadRoom(roomCode);
+      console.log('Vote submitted event:', eventData);
+      showInfo(`${eventData.playerName} votó`);
+      // Use setTimeout to ensure immediate reload
+      setTimeout(() => loadRoom(roomCode), 100);
     });
 
     // Player eliminated event
     roomChannel.bind('player-eliminated', (data: unknown) => {
       const eventData = data as { playerName: string };
-      showWarning(`${eventData.playerName} was eliminated!`);
-      // Refresh room data when player is eliminated
-      loadRoom(roomCode);
+      console.log('Player eliminated event:', eventData);
+      showWarning(`¡${eventData.playerName} fue eliminado!`);
+      // Use setTimeout to ensure immediate reload
+      setTimeout(() => loadRoom(roomCode), 100);
     });
 
     // Game ended event
     roomChannel.bind('game-ended', (data: unknown) => {
       const eventData = data as { winner: string };
-      showSuccess(`Game ended! Winner: ${eventData.winner}`);
-      // Refresh room data when game ends
-      loadRoom(roomCode);
+      console.log('Game ended event:', eventData);
+      showSuccess(`¡Juego terminado! Ganador: ${eventData.winner}`);
+      // Use setTimeout to ensure immediate reload
+      setTimeout(() => loadRoom(roomCode), 100);
     });
 
     // Room deleted event
     roomChannel.bind('room-deleted', () => {
-      showError('Room was deleted');
+      console.log('Room deleted event');
+      showError('La sala fue eliminada');
       setRoom(null);
       setPlayers([]);
     });
+
+    console.log(`Subscribed to channel: ${channelName}`);
 
   }, [pusher, showSuccess, showInfo, showWarning, showError, loadRoom]);
 
   // Function to load room and subscribe to events
   const loadRoomAndSubscribe = useCallback(async (roomCode: string) => {
+    console.log('Loading room and subscribing to:', roomCode);
     await loadRoom(roomCode);
     subscribeToRoom(roomCode);
+    
+    // Additional safety check - reload again after a short delay
+    setTimeout(async () => {
+      console.log('Safety reload for room:', roomCode);
+      await loadRoom(roomCode);
+    }, 1000);
   }, [loadRoom, subscribeToRoom]);
 
   // Create room
@@ -320,19 +346,21 @@ export function useOnlineGame(): UseOnlineGameState {
       // 2. Obtener palabras del juego si no se proporcionaron
       let gameWords = words;
       if (!words.currentWord || !words.undercoverWord) {
-        const wordsResponse = await fetch('/api/words?difficulty=medium&count=2');
+        const wordsResponse = await fetch('/api/words?difficulty=medium&count=1');
         if (wordsResponse.ok) {
           const wordsData = await wordsResponse.json();
-          if (wordsData.words && wordsData.words.length >= 2) {
+          if (wordsData.success && wordsData.word) {
             gameWords = {
-              currentWord: wordsData.words[0].word,
-              undercoverWord: wordsData.words[1].word
+              currentWord: wordsData.word.civilWord,
+              undercoverWord: wordsData.word.undercoverWord
             };
+            console.log('Game words loaded:', gameWords);
           }
         }
       }
 
       // 3. Iniciar el juego
+      console.log('Starting game with words:', gameWords);
       const response = await fetch(`/api/rooms/${room.roomCode}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
