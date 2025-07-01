@@ -111,18 +111,30 @@ export function useOnlineGame(): UseOnlineGameState {
         console.log('Room data loaded:', data);
         setRoom(data.room);
         setPlayers(data.players);
+        
+        // Clear any previous errors on successful load
+        setError(null);
       } else {
         console.error('Failed to load room, status:', response.status);
+        const errorData = await response.json();
+        console.error('Error details:', errorData);
+        
         // Retry up to 3 times with exponential backoff
         if (retryCount < 3) {
+          console.log(`Retrying room load in ${Math.pow(2, retryCount)} seconds...`);
           setTimeout(() => loadRoom(roomCode, retryCount + 1), Math.pow(2, retryCount) * 1000);
+        } else {
+          setError('Failed to load room after multiple attempts');
         }
       }
     } catch (error) {
       console.error('Failed to load room:', error);
       // Retry up to 3 times with exponential backoff
       if (retryCount < 3) {
+        console.log(`Retrying room load in ${Math.pow(2, retryCount)} seconds...`);
         setTimeout(() => loadRoom(roomCode, retryCount + 1), Math.pow(2, retryCount) * 1000);
+      } else {
+        setError('Failed to load room after multiple attempts');
       }
     }
   }, []);
@@ -143,11 +155,24 @@ export function useOnlineGame(): UseOnlineGameState {
     }
   }, [room?.roomCode]);
 
-  // Subscribe to room channel
+  // Subscribe to room channel with proper cleanup
   const subscribeToRoom = useCallback((roomCode: string) => {
     if (!pusher) return;
 
     const channelName = `room-${roomCode}`;
+    
+    // Check if already subscribed to this channel
+    if (channel && channel.name === channelName) {
+      console.log(`Already subscribed to channel: ${channelName}`);
+      return;
+    }
+    
+    // Unsubscribe from previous channel if exists
+    if (channel) {
+      console.log(`Unsubscribing from previous channel: ${channel.name}`);
+      pusher.unsubscribe(channel.name);
+    }
+
     const roomChannel = pusher.subscribe(channelName);
     setChannel(roomChannel);
 
@@ -156,16 +181,55 @@ export function useOnlineGame(): UseOnlineGameState {
       const eventData = data as { playerName: string };
       console.log('Player joined event:', eventData);
       showSuccess(`${eventData.playerName} se unió a la sala`);
-      // Use setTimeout to ensure immediate reload
-      setTimeout(() => loadRoom(roomCode), 100);
+      // Debounced reload to prevent excessive calls
+      setTimeout(() => loadRoom(roomCode), 500);
+    });
+
+    // Roles assigned event
+    roomChannel.bind('roles-assigned', (data: unknown) => {
+      console.log('Roles assigned event received:', data);
+      showInfo('Roles asignados a todos los jugadores');
+      // Single reload with longer delay
+      setTimeout(() => {
+        console.log('Reloading after roles assigned');
+        loadRoom(roomCode);
+      }, 800);
     });
 
     // Game started event
     roomChannel.bind('game-started', (data: unknown) => {
-      console.log('Game started event:', data);
+      console.log('Game started event received:', data);
       showSuccess('¡El juego ha comenzado!');
-      // Use setTimeout to ensure immediate reload
-      setTimeout(() => loadRoom(roomCode), 100);
+      // Single reload with appropriate delay
+      setTimeout(() => {
+        console.log('Reloading after game-started');
+        loadRoom(roomCode);
+      }, 1000);
+    });
+
+    // Round started event
+    roomChannel.bind('round-started', (data: unknown) => {
+      const eventData = data as { round: number; currentWord?: string; undercoverWord?: string };
+      console.log('Round started event received:', eventData);
+      showSuccess(`¡Ronda ${eventData.round} iniciada!`);
+      
+      // Limpiar estados locales cuando comience una nueva ronda
+      if (typeof window !== 'undefined') {
+        // Disparar evento personalizado para que el componente limpie sus estados
+        window.dispatchEvent(new CustomEvent('round-started', { 
+          detail: { 
+            round: eventData.round,
+            currentWord: eventData.currentWord,
+            undercoverWord: eventData.undercoverWord
+          }
+        }));
+      }
+      
+      // Recarga inmediata para mostrar cambios más rápido
+      setTimeout(() => {
+        console.log('Reloading after round-started');
+        loadRoom(roomCode);
+      }, 200); // Reducido de 1200ms a 200ms
     });
 
     // Description submitted event
@@ -173,8 +237,8 @@ export function useOnlineGame(): UseOnlineGameState {
       const eventData = data as { playerName: string };
       console.log('Description submitted event:', eventData);
       showInfo(`${eventData.playerName} envió su descripción`);
-      // Use setTimeout to ensure immediate reload
-      setTimeout(() => loadRoom(roomCode), 100);
+      // Debounced reload
+      setTimeout(() => loadRoom(roomCode), 500);
     });
 
     // Vote submitted event
@@ -182,8 +246,8 @@ export function useOnlineGame(): UseOnlineGameState {
       const eventData = data as { playerName: string };
       console.log('Vote submitted event:', eventData);
       showInfo(`${eventData.playerName} votó`);
-      // Use setTimeout to ensure immediate reload
-      setTimeout(() => loadRoom(roomCode), 100);
+      // Debounced reload
+      setTimeout(() => loadRoom(roomCode), 500);
     });
 
     // Player eliminated event
@@ -191,8 +255,8 @@ export function useOnlineGame(): UseOnlineGameState {
       const eventData = data as { playerName: string };
       console.log('Player eliminated event:', eventData);
       showWarning(`¡${eventData.playerName} fue eliminado!`);
-      // Use setTimeout to ensure immediate reload
-      setTimeout(() => loadRoom(roomCode), 100);
+      // Debounced reload
+      setTimeout(() => loadRoom(roomCode), 500);
     });
 
     // Game ended event
@@ -200,8 +264,8 @@ export function useOnlineGame(): UseOnlineGameState {
       const eventData = data as { winner: string };
       console.log('Game ended event:', eventData);
       showSuccess(`¡Juego terminado! Ganador: ${eventData.winner}`);
-      // Use setTimeout to ensure immediate reload
-      setTimeout(() => loadRoom(roomCode), 100);
+      // Debounced reload
+      setTimeout(() => loadRoom(roomCode), 500);
     });
 
     // Room deleted event
@@ -214,19 +278,13 @@ export function useOnlineGame(): UseOnlineGameState {
 
     console.log(`Subscribed to channel: ${channelName}`);
 
-  }, [pusher, showSuccess, showInfo, showWarning, showError, loadRoom]);
+  }, [pusher, channel, showSuccess, showInfo, showWarning, showError, loadRoom]);
 
-  // Function to load room and subscribe to events
+  // Function to load room and subscribe to events with debouncing
   const loadRoomAndSubscribe = useCallback(async (roomCode: string) => {
     console.log('Loading room and subscribing to:', roomCode);
     await loadRoom(roomCode);
     subscribeToRoom(roomCode);
-    
-    // Additional safety check - reload again after a short delay
-    setTimeout(async () => {
-      console.log('Safety reload for room:', roomCode);
-      await loadRoom(roomCode);
-    }, 1000);
   }, [loadRoom, subscribeToRoom]);
 
   // Create room

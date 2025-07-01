@@ -1,8 +1,8 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense, useCallback } from "react";
-import { ArrowLeft, Users, Clock, Eye, EyeOff } from "lucide-react";
+import { useEffect, useState, Suspense, useCallback, useRef } from "react";
+import { ArrowLeft, Users, Clock, Eye, EyeOff, Copy } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Input } from "../../../components/ui/input";
@@ -41,6 +41,11 @@ function OnlineGameContent() {
   const [showRole, setShowRole] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [gameResults, setGameResults] = useState<OnlineGameResults | null>(null);
+  const [previousPhase, setPreviousPhase] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isStartingNextRound, setIsStartingNextRound] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Buscar el jugador actual
   useEffect(() => {
@@ -49,9 +54,19 @@ function OnlineGameContent() {
       console.log('Looking for player:', playerName);
       console.log('Available players:', players.map(p => p.name));
       console.log('Found player:', player);
-      setCurrentPlayer(player || null);
+      
+      if (player) {
+        setCurrentPlayer(player);
+      } else if (!currentPlayer) {
+        // Solo recargar si no tenemos un jugador actual y es la primera vez
+        console.warn('Player not found in players list, this might be the sync issue');
+        if (roomCode) {
+          console.log('Forcing room reload due to missing player - one time only');
+          loadRoomAndSubscribe(roomCode);
+        }
+      }
     }
-  }, [players, playerName]);
+  }, [players, playerName, roomCode, loadRoomAndSubscribe, currentPlayer]);
 
   // Debug logging para el estado del juego
   useEffect(() => {
@@ -71,119 +86,221 @@ function OnlineGameContent() {
     if (roomCode) {
       loadRoomAndSubscribe(roomCode);
       
-      // Polling como respaldo para asegurar sincronización
+      // Polling menos agresivo para reducir carga del servidor
       const pollingInterval = setInterval(() => {
         console.log('Polling game room data as backup...');
         loadRoomAndSubscribe(roomCode);
-      }, 3000); // Poll every 3 seconds during game
+      }, 10000); // Reducido a 10 segundos fijos para todas las fases
       
       return () => clearInterval(pollingInterval);
     }
-  }, [roomCode, loadRoomAndSubscribe]);
+  }, [roomCode, loadRoomAndSubscribe]); // Removido gamePhase de las dependencias
 
   // Determinar la fase del juego basada en el estado de la sala
   useEffect(() => {
     if (!room) return;
 
+    console.log('Determining game phase:', {
+      roomStatus: room.status,
+      playersCount: players.length,
+      playersWithDescription: players.filter(p => p.description !== null).length,
+      playersWithVote: players.filter(p => p.votedFor !== null).length,
+      currentPhase: gamePhase
+    });
+
     switch (room.status) {
       case 'waiting':
-        setGamePhase('waiting');
+        if (gamePhase !== 'waiting') {
+          console.log('Switching to waiting phase');
+          setGamePhase('waiting');
+        }
         break;
       case 'playing':
         // Determinar subfase basada en el estado de los jugadores
-        const allDescribed = players.every(p => p.description !== null);
-        const allVoted = players.every(p => p.votedFor !== null);
+        const allDescribed = players.length > 0 && players.every(p => p.description !== null);
+        const allVoted = players.length > 0 && players.every(p => p.votedFor !== null);
         
         if (!allDescribed) {
-          setGamePhase('describing');
+          if (gamePhase !== 'describing') {
+            console.log('Switching to describing phase');
+            setGamePhase('describing');
+          }
         } else if (!allVoted) {
-          setGamePhase('voting');
+          if (gamePhase !== 'voting') {
+            console.log('Switching to voting phase');
+            setGamePhase('voting');
+          }
         } else {
+          if (gamePhase !== 'results') {
+            console.log('Switching to results phase');
+            setGamePhase('results');
+            // Calcular resultados cuando todos han votado
+            if (players.length > 0 && allVoted) {
+              const results = calculateOnlineGameResults(players);
+              setGameResults(results);
+            }
+          }
+        }
+        break;
+      case 'finished':
+        if (gamePhase !== 'results') {
+          console.log('Switching to finished/results phase');
           setGamePhase('results');
-          // Calcular resultados cuando todos han votado
-          if (players.length > 0 && allVoted) {
+          // Calcular resultados si no se han calculado ya
+          if (players.length > 0 && !gameResults) {
             const results = calculateOnlineGameResults(players);
             setGameResults(results);
           }
         }
         break;
-      case 'finished':
-        setGamePhase('results');
-        // Calcular resultados si no se han calculado ya
-        if (players.length > 0 && !gameResults) {
-          const results = calculateOnlineGameResults(players);
-          setGameResults(results);
-        }
-        break;
       default:
-        setGamePhase('role-reveal');
+        if (gamePhase !== 'role-reveal') {
+          console.log('Switching to role-reveal phase');
+          setGamePhase('role-reveal');
+        }
     }
-  }, [room, players, gameResults]);
+  }, [room, players, gameResults, gamePhase]);
 
-  // Funciones de manejo de acciones
+  // Funciones de manejo de acciones con debounce
   const handleSubmitDescription = useCallback(async () => {
-    if (!description.trim() || !currentPlayer) return;
+    if (!description.trim() || !currentPlayer || isSubmitting) return;
 
-    const success = await submitDescription(description.trim(), currentPlayer.name);
-    if (success) {
-      showSuccess('Descripción enviada exitosamente');
-      setDescription('');
+    // Limpiar timeout anterior si existe
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
     }
-  }, [description, currentPlayer, submitDescription, showSuccess]);
+
+    setIsSubmitting(true);
+
+    try {
+      const success = await submitDescription(description.trim(), currentPlayer.name);
+      if (success) {
+        showSuccess('Descripción enviada exitosamente');
+        setDescription('');
+      }
+    } finally {
+      // Debounce para evitar múltiples envíos rápidos
+      submitTimeoutRef.current = setTimeout(() => {
+        setIsSubmitting(false);
+      }, 1000);
+    }
+  }, [description, currentPlayer, submitDescription, showSuccess, isSubmitting]);
 
   const handleSubmitVote = useCallback(async () => {
-    if (!selectedVote || !currentPlayer) return;
+    if (!selectedVote || !currentPlayer || isSubmitting) return;
 
-    const success = await submitVote(selectedVote, currentPlayer.name);
-    if (success) {
-      showSuccess('Voto enviado exitosamente');
-      setSelectedVote('');
+    // Limpiar timeout anterior si existe
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
     }
-  }, [selectedVote, currentPlayer, submitVote, showSuccess]);
 
-  // Timer para fases del juego
+    setIsSubmitting(true);
+
+    try {
+      const success = await submitVote(selectedVote, currentPlayer.name);
+      if (success) {
+        showSuccess('Voto enviado exitosamente');
+        setSelectedVote('');
+      }
+    } finally {
+      // Debounce para evitar múltiples envíos rápidos
+      submitTimeoutRef.current = setTimeout(() => {
+        setIsSubmitting(false);
+      }, 1000);
+    }
+  }, [selectedVote, currentPlayer, submitVote, showSuccess, isSubmitting]);
+
+  // Timer para fases del juego - solo se reinicia cuando cambia la fase
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
     if (gamePhase === 'describing' || gamePhase === 'voting') {
-      setTimeLeft(120); // 2 minutos por fase
+      // Solo resetear el timer si es una nueva fase
+      if (previousPhase !== gamePhase) {
+        console.log(`Starting timer for ${gamePhase} phase`);
+        setTimeLeft(120); // 2 minutos por fase
+        setPreviousPhase(gamePhase);
+      }
       
       interval = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
-            // Tiempo agotado - enviar acción automática
-            if (gamePhase === 'describing' && !currentPlayer?.description) {
-              handleSubmitDescription(); // Enviar descripción vacía
-            } else if (gamePhase === 'voting' && !currentPlayer?.votedFor) {
-              // Votar por alguien aleatorio
-              const availablePlayers = players.filter(p => p.name !== currentPlayer?.name && p.isAlive);
-              if (availablePlayers.length > 0) {
-                const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
-                setSelectedVote(randomPlayer.name);
-                setTimeout(() => handleSubmitVote(), 100);
-              }
-            }
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
+    } else {
+      // Si no estamos en una fase con timer, resetear a 0
+      if (timeLeft > 0) {
+        setTimeLeft(0);
+      }
+      setPreviousPhase(gamePhase);
     }
 
     return () => {
-      if (interval) clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+      }
     };
-  }, [gamePhase, currentPlayer, players, handleSubmitDescription, handleSubmitVote]);
+  }, [gamePhase, previousPhase, timeLeft]);
+
+  // Manejar acciones automáticas cuando se acaba el tiempo
+  useEffect(() => {
+    if (timeLeft === 0 && (gamePhase === 'describing' || gamePhase === 'voting')) {
+      if (gamePhase === 'describing' && currentPlayer && !currentPlayer.description) {
+        // Solo auto-enviar si no hay nada escrito y el usuario no está interactuando
+        if (!description.trim()) {
+          console.log('Time up - auto-submitting empty description');
+          handleSubmitDescription();
+        }
+      } else if (gamePhase === 'voting' && currentPlayer && !currentPlayer.votedFor) {
+        // Solo auto-votar si no se ha seleccionado nada
+        if (!selectedVote) {
+          console.log('Time up - auto-submitting random vote');
+          const availablePlayers = players.filter(p => p.name !== currentPlayer?.name && p.isAlive);
+          if (availablePlayers.length > 0) {
+            const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+            setSelectedVote(randomPlayer.name);
+            setTimeout(() => handleSubmitVote(), 100);
+          }
+        }
+      }
+    }
+  }, [timeLeft, gamePhase, currentPlayer, players, description, selectedVote, handleSubmitDescription, handleSubmitVote]);
 
   const handleLeaveRoom = () => {
     router.push('/');
   };
 
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(roomCode);
+      setCopied(true);
+      showSuccess('¡Código de sala copiado al portapapeles!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+      showError('Error al copiar el código');
+    }
+  };
+
   const handleNextRound = async () => {
-    if (!room || !currentPlayer?.isHost) return;
+    if (!room || !currentPlayer?.isHost || isStartingNextRound) return;
     
     try {
-      // Reiniciar el juego para la siguiente ronda
+      console.log('Starting next round...');
+      setIsStartingNextRound(true);
+      
+      // Limpiar estados locales primero
+      setDescription('');
+      setSelectedVote('');
+      setShowRole(false);
+      setGameResults(null);
+      setTimeLeft(0);
+      setPreviousPhase('');
+      
+      // Llamar a la API para reiniciar la ronda
       const response = await fetch(`/api/rooms/${room.roomCode}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -194,17 +311,58 @@ function OnlineGameContent() {
 
       if (response.ok) {
         showSuccess('¡Nueva ronda iniciada!');
-        // Recargar los datos de la sala
-        loadRoomAndSubscribe(roomCode);
+        
+        // Recarga inmediata para mostrar los cambios más rápido
+        setTimeout(() => {
+          console.log('Reloading room after next round');
+          loadRoomAndSubscribe(roomCode);
+          setIsStartingNextRound(false);
+        }, 300); // Reducido de 1500ms a 300ms
       } else {
         const data = await response.json();
         showError(data.error || 'Error al iniciar nueva ronda');
+        setIsStartingNextRound(false);
       }
     } catch (error) {
       console.error('Error al iniciar nueva ronda:', error);
       showError('Error al iniciar nueva ronda');
+      setIsStartingNextRound(false);
     }
   };
+
+  // Escuchar eventos de nueva ronda para limpiar estados locales
+  useEffect(() => {
+    const handleRoundStarted = (event: CustomEvent) => {
+      console.log('Handling round-started event:', event.detail);
+      // Limpiar estados locales cuando comience una nueva ronda
+      setDescription('');
+      setSelectedVote('');
+      setShowRole(false);
+      setGameResults(null);
+      setTimeLeft(0);
+      setPreviousPhase('');
+      setIsStartingNextRound(false); // Limpiar el estado de carga
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('round-started', handleRoundStarted as EventListener);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('round-started', handleRoundStarted as EventListener);
+      }
+    };
+  }, []);
+
+  // Limpiar timeouts al desmontar
+  useEffect(() => {
+    return () => {
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (!roomCode) {
     return (
@@ -231,6 +389,16 @@ function OnlineGameContent() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
             Sala: {roomCode}
           </h1>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleCopyCode}
+            className="ml-3 flex items-center space-x-2"
+            title="Copiar código de sala"
+          >
+            <Copy className="h-4 w-4" />
+            <span className="hidden sm:inline">{copied ? 'Copiado!' : 'Copiar'}</span>
+          </Button>
         </div>
         <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
           <Users className="h-4 w-4" />
@@ -340,8 +508,8 @@ function OnlineGameContent() {
                     maxLength={50}
                   />
                 </div>
-                <Button onClick={handleSubmitDescription} disabled={!description.trim()}>
-                  Enviar Descripción
+                <Button onClick={handleSubmitDescription} disabled={!description.trim() || isSubmitting}>
+                  {isSubmitting ? 'Enviando...' : 'Enviar Descripción'}
                 </Button>
               </div>
             ) : (
@@ -391,8 +559,8 @@ function OnlineGameContent() {
                       ))}
                   </div>
                 </div>
-                <Button onClick={handleSubmitVote} disabled={!selectedVote}>
-                  Confirmar Voto
+                <Button onClick={handleSubmitVote} disabled={!selectedVote || isSubmitting}>
+                  {isSubmitting ? 'Enviando...' : 'Confirmar Voto'}
                 </Button>
               </div>
             ) : (
@@ -515,8 +683,9 @@ function OnlineGameContent() {
                     onClick={handleNextRound}
                     className="flex-1 sm:flex-none"
                     size="lg"
+                    disabled={isStartingNextRound}
                   >
-                    Siguiente Ronda
+                    {isStartingNextRound ? 'Iniciando Ronda...' : 'Siguiente Ronda'}
                   </Button>
                   <Button 
                     onClick={handleLeaveRoom}

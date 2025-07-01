@@ -2,6 +2,44 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 import { pusherServer } from '../../../lib/pusher';
 
+// Función para asignar roles
+function assignRoles(playerCount: number): string[] {
+  const roles: string[] = [];
+
+  if (playerCount < 3 || playerCount > 20) {
+    throw new Error('Invalid player count');
+  }
+
+  // Siempre hay 1 Mister White
+  roles.push('mister_white');
+
+  // Lógica según número de jugadores
+  if (playerCount >= 8) {
+    // Con 8+ jugadores: 1 Mister White, 1 Payaso, resto civiles
+    roles.push('payaso');
+    
+    // Resto son civiles
+    for (let i = 2; i < playerCount; i++) {
+      roles.push('civil');
+    }
+  } else if (playerCount >= 5) {
+    // Con 5-7 jugadores: 1 Mister White, 1 Undercover, resto civiles
+    roles.push('undercover');
+    
+    // Resto son civiles
+    for (let i = 2; i < playerCount; i++) {
+      roles.push('civil');
+    }
+  } else {
+    // Con 3-4 jugadores: 1 Mister White, resto civiles
+    for (let i = 1; i < playerCount; i++) {
+      roles.push('civil');
+    }
+  }
+
+  return roles;
+}
+
 interface RouteParams {
   params: Promise<{ roomCode: string }>;
 }
@@ -158,12 +196,86 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         break;
 
       case 'next_round':
+        // Obtener nuevas palabras para la siguiente ronda
+        const wordsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/words?difficulty=medium&count=1`);
+        let newWords = { currentWord: null, undercoverWord: null };
+        
+        if (wordsResponse.ok) {
+          const wordsData = await wordsResponse.json();
+          if (wordsData.success && wordsData.word) {
+            newWords = {
+              currentWord: wordsData.word.civilWord,
+              undercoverWord: wordsData.word.undercoverWord
+            };
+            console.log('New words for next round:', newWords);
+          }
+        }
+        
+        // Obtener jugadores para reasignar roles
+        const { data: playersForRoles, error: playersError } = await supabase
+          .from('game_players')
+          .select('id, player_name')
+          .eq('room_id', room.id)
+          .order('created_at', { ascending: true });
+
+        if (playersError) {
+          console.error('Error fetching players for role assignment:', playersError);
+          return NextResponse.json(
+            { error: 'Failed to fetch players for role assignment' },
+            { status: 500 }
+          );
+        }
+
+        // Reasignar roles para la nueva ronda (Mister White será aleatorio)
+        if (playersForRoles && playersForRoles.length >= 3) {
+          const assignments = assignRoles(playersForRoles.length);
+          const shuffledPlayers = [...playersForRoles].sort(() => Math.random() - 0.5);
+
+          // Asignar nuevos roles
+          for (let i = 0; i < shuffledPlayers.length; i++) {
+            const { error: roleError } = await supabase
+              .from('game_players')
+              .update({ role: assignments[i] })
+              .eq('id', shuffledPlayers[i].id);
+
+            if (roleError) {
+              console.error('Error updating player role:', roleError);
+            }
+          }
+          console.log('Roles reassigned for next round');
+        }
+        
+        // Reiniciar el estado del juego para la siguiente ronda
         updateFields = {
           current_round: room.current_round + 1,
+          status: 'playing', // Volver a estado playing
+          current_word: newWords.currentWord,
+          undercover_word: newWords.undercoverWord,
         };
+        
+        // Resetear el estado de todos los jugadores (pero mantener los nuevos roles)
+        const { error: resetPlayersError } = await supabase
+          .from('game_players')
+          .update({ 
+            description: null, 
+            voted_for: null,
+            is_alive: true
+          })
+          .eq('room_id', room.id);
+
+        if (resetPlayersError) {
+          console.error('Error resetting players for next round:', resetPlayersError);
+          return NextResponse.json(
+            { error: 'Failed to reset players for next round' },
+            { status: 500 }
+          );
+        }
+        
         pusherEvent = 'round-started';
         pusherData = {
           round: room.current_round + 1,
+          currentWord: newWords.currentWord,
+          undercoverWord: newWords.undercoverWord,
         };
         break;
 
