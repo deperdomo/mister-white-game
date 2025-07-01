@@ -116,31 +116,38 @@ function WaitingRoomContent() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <Button variant="ghost" size="sm" className="mr-2" onClick={handleLeaveRoom}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Salir
-          </Button>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
-            Sala de Espera
-          </h1>
+      <div className="space-y-4 mb-6">
+        {/* Primera fila: Botón salir y título */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Button variant="ghost" size="sm" className="mr-2" onClick={handleLeaveRoom}>
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Salir
+            </Button>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
+              Sala de Espera
+            </h1>
+          </div>
         </div>
-        <div className="flex items-center space-x-2">
+        
+        {/* Segunda fila: Botones de acción */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-center gap-3">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={handleCopyCode}
-            className="flex items-center space-x-2"
+            className="flex items-center justify-center space-x-2 min-w-[140px]"
+            title="Copiar código de sala"
           >
             <Copy className="h-4 w-4" />
-            <span>{copied ? 'Copiado!' : roomCode}</span>
+            <span className="font-mono">{copied ? 'Copiado!' : roomCode}</span>
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={triggerRefresh}
-            className="flex items-center space-x-2"
+            className="flex items-center justify-center space-x-2 min-w-[120px]"
+            title="Actualizar estado de la sala"
           >
             <Users className="h-4 w-4" />
             <span>Actualizar</span>
