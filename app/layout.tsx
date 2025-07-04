@@ -11,9 +11,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Mister White Game - Juego Multijugador Online",
-  description: "Juega Mister White con tus amigos. Un emocionante juego de deducción social donde debes descubrir quién es el espía.",
-  keywords: ["juego", "multijugador", "online", "deducción", "social", "amigos", "familia"],
+  title: "Mister White - Juego Multijugador Online Gratis | Deducción Social",
+  description: "🎭 Juego GRATIS de deducción social para 3-20 jugadores. ¡Descubre al espía antes de que te descubran! Sin descargas, multijugador en tiempo real. Perfecto para fiestas y reuniones.",
+  keywords: ["juego gratis", "multijugador online", "juego de mesa", "deducción", "social", "amigos", "familia", "fiesta", "sin descarga", "navegador", "espía", "mister white", "party game"],
   authors: [{ name: "Mister White Game Team" }],
   creator: "Mister White Game Team",
   publisher: "Mister White Game",
@@ -24,16 +24,25 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   openGraph: {
-    title: "Mister White Game",
-    description: "Juego multijugador online de deducción social",
+    title: "Mister White - Juego Multijugador Online Gratis",
+    description: "🎭 El mejor juego de deducción social online. 3-20 jugadores, sin descargas, multijugador en tiempo real. ¡Descubre al espía!",
     type: "website",
     locale: "es_ES",
     siteName: "Mister White Game",
+    images: [
+      {
+        url: "/og-image.png", // Necesitarás crear esta imagen
+        width: 1200,
+        height: 630,
+        alt: "Mister White - Juego Multijugador Online",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mister White Game",
-    description: "Juego multijugador online de deducción social",
+    title: "Mister White - Juego Multijugador Online Gratis",
+    description: "🎭 El mejor juego de deducción social online. ¡Descubre al espía antes de que te descubran!",
+    images: ["/og-image.png"], // Misma imagen
   },
   robots: {
     index: true,
@@ -58,6 +67,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="scroll-smooth">
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+      </head>
       <body className={`${inter.variable} font-sans antialiased min-h-screen bg-white dark:bg-slate-950 transition-colors`}>
         <ToastProvider>
           <div className="flex flex-col min-h-screen">
