@@ -198,6 +198,7 @@ export function initializeGame(
       joinedAt: new Date().toISOString(),
       wordRevealed: false,
       clue: '',
+      revelationOrder: undefined, // Reset revelation order for each new game
     };
   });
 

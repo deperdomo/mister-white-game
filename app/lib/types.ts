@@ -9,6 +9,7 @@ export interface Player {
   word?: string; // The word this player knows
   clue?: string; // The clue given by this player
   wordRevealed?: boolean; // Whether the player has seen their role/word
+  revelationOrder?: number; // Order in which the player revealed their role/word (0-based)
 }
 
 export interface GameRoom {

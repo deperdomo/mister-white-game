@@ -92,8 +92,13 @@ function LocalGameContent() {
     const actualPlayerIndex = (gameData.currentPlayerIndex + gameData.startingPlayerIndex) % gameData.players.length;
     const currentPlayer = gameData.players[actualPlayerIndex];
     
+    // Assign revelation order to the current player
     const updatedPlayers = gameData.players.map(p => 
-      p.id === currentPlayer.id ? { ...p, wordRevealed: true } : p
+      p.id === currentPlayer.id ? { 
+        ...p, 
+        wordRevealed: true,
+        revelationOrder: gameData.currentPlayerIndex // Use currentPlayerIndex as the revelation order
+      } : p
     );
     
     const nextPlayerIndex = gameData.currentPlayerIndex + 1;
@@ -556,7 +561,8 @@ function LocalGameContent() {
           <CardHeader>
             <CardTitle>Todos los jugadores deben dar una pista</CardTitle>
             <CardDescription>
-              Da una pista de una palabra relacionada con tu palabra secreta (sin mencionarla directamente)
+              Da una pista de una palabra relacionada con tu palabra secreta (sin mencionarla directamente).
+              Los jugadores están ordenados según el orden en que descubrieron sus roles.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -568,8 +574,31 @@ function LocalGameContent() {
               </div>
             )}
 
+            {/* Explanation about ordering */}
+            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <div className="flex items-center justify-center w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full mt-0.5">
+                  i
+                </div>
+                <div className="text-sm text-blue-700 dark:text-blue-300">
+                  <strong>Orden de las pistas:</strong> Los jugadores están ordenados según el orden en que descubrieron sus roles. 
+                  El número junto al nombre indica este orden.
+                </div>
+              </div>
+            </div>
+
             <div className="grid gap-4">
-              {gameData.players.map((player) => (
+              {gameData.players
+                .slice() // Create a copy to avoid mutating the original array
+                .sort((a, b) => {
+                  // Sort by revelation order, putting players who revealed first at the top
+                  // Players without revelationOrder (shouldn't happen) go to the end
+                  if (a.revelationOrder === undefined && b.revelationOrder === undefined) return 0;
+                  if (a.revelationOrder === undefined) return 1;
+                  if (b.revelationOrder === undefined) return -1;
+                  return a.revelationOrder - b.revelationOrder;
+                })
+                .map((player) => (
                 <ClueInput
                   key={player.id}
                   player={player}
@@ -715,7 +744,17 @@ function LocalGameContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-2">
-                {gameData.players.map(player => (
+                {gameData.players
+                  .slice() // Create a copy to avoid mutating the original array
+                  .sort((a, b) => {
+                    // Sort by revelation order, putting players who revealed first at the top
+                    // Players without revelationOrder (shouldn't happen) go to the end
+                    if (a.revelationOrder === undefined && b.revelationOrder === undefined) return 0;
+                    if (a.revelationOrder === undefined) return 1;
+                    if (b.revelationOrder === undefined) return -1;
+                    return a.revelationOrder - b.revelationOrder;
+                  })
+                  .map(player => (
                   <label key={player.id} className="flex items-center space-x-3 p-3 border rounded cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
                     <input
                       type="radio"
@@ -725,7 +764,14 @@ function LocalGameContent() {
                       onChange={(e) => setSelectedVotedPlayer(e.target.value)}
                       className="text-blue-600"
                     />
-                    <span className="flex-1">{player.name}</span>
+                    <div className="flex items-center gap-2 flex-1">
+                      {player.revelationOrder !== undefined && (
+                        <span className="flex items-center justify-center w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-bold rounded-full">
+                          {player.revelationOrder + 1}
+                        </span>
+                      )}
+                      <span>{player.name}</span>
+                    </div>
                   </label>
                 ))}
               </div>
@@ -783,10 +829,23 @@ function LocalGameContent() {
           <Card>
             <CardHeader>
               <CardTitle>Revelación de roles</CardTitle>
+              <CardDescription>
+                Jugadores ordenados según el orden en que descubrieron sus roles
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {gameData.players.map(player => {
+                {gameData.players
+                  .slice() // Create a copy to avoid mutating the original array
+                  .sort((a, b) => {
+                    // Sort by revelation order, putting players who revealed first at the top
+                    // Players without revelationOrder (shouldn't happen) go to the end
+                    if (a.revelationOrder === undefined && b.revelationOrder === undefined) return 0;
+                    if (a.revelationOrder === undefined) return 1;
+                    if (b.revelationOrder === undefined) return -1;
+                    return a.revelationOrder - b.revelationOrder;
+                  })
+                  .map(player => {
                   const roleInfo = getRoleInfo(player);
                   const wasVoted = player.id === gameData.votedPlayerId;
                   return (
@@ -795,9 +854,16 @@ function LocalGameContent() {
                       className={`p-4 rounded border ${wasVoted ? 'border-red-300 bg-red-50 dark:bg-red-950/20' : 'border-slate-200 dark:border-slate-700'}`}
                     >
                       <div className="flex justify-between items-center">
-                        <span className="font-medium">
-                          {roleInfo.icon} {player.name} {wasVoted && '🗳️'}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {player.revelationOrder !== undefined && (
+                            <span className="flex items-center justify-center w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-bold rounded-full">
+                              {player.revelationOrder + 1}
+                            </span>
+                          )}
+                          <span className="font-medium">
+                            {roleInfo.icon} {player.name} {wasVoted && '🗳️'}
+                          </span>
+                        </div>
                         <span className={`px-3 py-1 rounded text-xs text-white ${roleInfo.color}`}>
                           {roleInfo.title.replace('Eres ', '').replace('el ', '')}
                         </span>
@@ -916,7 +982,14 @@ function ClueInput({
   return (
     <div className="p-4 border rounded">
       <div className="flex items-center justify-between mb-2">
-        <Label className="font-medium">{player.name}</Label>
+        <div className="flex items-center gap-2">
+          {player.revelationOrder !== undefined && (
+            <span className="flex items-center justify-center w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-bold rounded-full">
+              {player.revelationOrder + 1}
+            </span>
+          )}
+          <Label className="font-medium">{player.name}</Label>
+        </div>
         {disabled && <span className="text-xs text-green-600">✓ Pista enviada</span>}
       </div>
       <Input
