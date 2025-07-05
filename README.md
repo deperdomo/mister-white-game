@@ -31,6 +31,7 @@ Una implementación moderna del clásico juego de deducción social "Mister Whit
 - ✅ Dark mode automático
 - ✅ Sistema de salas privadas con códigos únicos
 - ✅ Validaciones robustas y manejo de errores
+- ✅ Video tutorial explicativo del juego
 
 ### � Diseño y UX
 - **Mobile-First**: Optimizado para dispositivos móviles
@@ -167,4 +168,4 @@ MIT License - ver el archivo [LICENSE](LICENSE) para más detalles.
 ---
 
 **Estado**: ✅ Completamente funcional  
-**Última actualización**: Junio 2025
+**Última actualización**: Julio 2025

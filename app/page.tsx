@@ -1,10 +1,15 @@
+"use client";
+
 import { PlayIcon, UsersIcon, MonitorIcon, SmartphoneIcon, VideoIcon, StarIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { ShareButton } from "./components/ui/share-button";
+import { useRef } from "react";
 
 export default function HomePage() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Hero Section */}
@@ -204,13 +209,27 @@ export default function HomePage() {
       <section className="py-12">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50">
+            <VideoIcon className="inline-block mr-2 h-8 w-8 text-blue-600 dark:text-blue-400" />
             Mira cómo se juega
           </h2>
         </div>
         <div className="flex justify-center">
-          {/* Placeholder for demo video - replace with actual video embed */}
-          <div className="w-full max-w-3xl aspect-video bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden flex items-center justify-center text-slate-400 dark:text-slate-600">
-            <VideoIcon className="h-16 w-16" />
+          <div className="w-full max-w-3xl">
+            <div className="relative pb-[56.25%] h-0 rounded-lg overflow-hidden shadow-xl bg-slate-100 dark:bg-slate-800 transition-transform hover:scale-[1.01] duration-300">
+              <video 
+                ref={videoRef}
+                className="absolute top-0 left-0 w-full h-full rounded-lg" 
+                controls
+                poster="/detective.jpg"
+                preload="metadata"
+              >
+                <source src="/video/Tutorial_modo_local.mp4" type="video/mp4" />
+                Tu navegador no soporta videos HTML5.
+              </video>
+            </div>
+            <p className="text-center mt-4 text-slate-600 dark:text-slate-400">
+              Tutorial completo de cómo jugar a Mister White en modo local
+            </p>
           </div>
         </div>
       </section>
