@@ -4,8 +4,13 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import JoinRoomForm from "../../components/forms/JoinRoomForm";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function JoinRoomPage() {
+function JoinRoomContent() {
+  const searchParams = useSearchParams();
+  const roomCodeFromUrl = searchParams.get('code') || '';
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-md">
       {/* Header con navegación */}
@@ -22,7 +27,7 @@ export default function JoinRoomPage() {
       </div>
 
       {/* Formulario para unirse a sala */}
-      <JoinRoomForm />
+      <JoinRoomForm initialRoomCode={roomCodeFromUrl} />
 
       {/* Alternativas */}
       <div className="mt-8 text-center">
@@ -36,5 +41,13 @@ export default function JoinRoomPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function JoinRoomPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <JoinRoomContent />
+    </Suspense>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -13,7 +13,11 @@ interface JoinRoomFormData {
   playerName: string;
 }
 
-export default function JoinRoomForm() {
+interface JoinRoomFormProps {
+  initialRoomCode?: string;
+}
+
+export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps) {
   const [formData, setFormData] = useState<JoinRoomFormData>({
     roomCode: '',
     playerName: '',
@@ -22,6 +26,21 @@ export default function JoinRoomForm() {
   const [errors, setErrors] = useState<Partial<JoinRoomFormData>>({});
   const { joinRoom, isLoading } = useOnlineGame();
   const router = useRouter();
+  const playerNameInputRef = useRef<HTMLInputElement>(null);
+
+  // Establecer el código inicial cuando el componente se monta o cuando cambia initialRoomCode
+  useEffect(() => {
+    if (initialRoomCode && initialRoomCode.length === 6) {
+      setFormData(prev => ({ 
+        ...prev, 
+        roomCode: initialRoomCode.toUpperCase() 
+      }));
+      // Si el código viene pre-rellenado, enfocar el campo del nombre del jugador
+      setTimeout(() => {
+        playerNameInputRef.current?.focus();
+      }, 100);
+    }
+  }, [initialRoomCode]);
 
   // Validar formulario
   const validateForm = (): boolean => {
@@ -81,6 +100,18 @@ export default function JoinRoomForm() {
       
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Mensaje informativo si el código viene de la URL */}
+          {initialRoomCode && initialRoomCode.length === 6 && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  Código de sala detectado automáticamente del enlace
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Código de la sala */}
           <div className="space-y-2">
             <Label htmlFor="roomCode">
@@ -116,6 +147,7 @@ export default function JoinRoomForm() {
             </Label>
             <Input
               id="playerName"
+              ref={playerNameInputRef}
               type="text"
               placeholder="Escribe tu nombre"
               value={formData.playerName}
