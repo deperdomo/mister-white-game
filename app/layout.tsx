@@ -58,6 +58,9 @@ export const metadata: Metadata = {
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,
   },
+  icons: {
+    icon: '/detective.png',
+  },
 };
 
 export default function RootLayout({
@@ -68,7 +71,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="scroll-smooth">
       <head>
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/detective pequeño.png" type="image/png" />
       </head>
       <body className={`${inter.variable} font-sans antialiased min-h-screen bg-white dark:bg-slate-950 transition-colors`}>
         <ToastProvider>
