@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ArrowLeft, Copy, Crown, Users } from "lucide-react";
+import { ArrowLeft, Copy, Crown, Users, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -19,6 +19,7 @@ function WaitingRoomContent() {
   const { room, players, startGame, leaveRoom, loadRoomAndSubscribe, isLoading } = useOnlineGame();
   const { success: showSuccess, error: showError } = useToast();
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
   // Buscar el jugador actual
@@ -93,6 +94,14 @@ function WaitingRoomContent() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleCopyRoomLink = () => {
+    const roomUrl = `https://mister-white-game.vercel.app/join-room?code=${roomCode}`;
+    navigator.clipboard.writeText(roomUrl);
+    setLinkCopied(true);
+    showSuccess('¡Enlace copiado! Compártelo con tus amigos');
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
   const handleLeaveRoom = () => {
     leaveRoom();
     router.push('/');
@@ -142,6 +151,20 @@ function WaitingRoomContent() {
             <Copy className="h-4 w-4" />
             <span className="font-mono">{copied ? 'Copiado!' : roomCode}</span>
           </Button>
+          
+          {isHost && (
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={handleCopyRoomLink}
+              className="flex items-center justify-center space-x-2 min-w-[140px] bg-blue-600 hover:bg-blue-700"
+              title="Copiar enlace de la sala para compartir"
+            >
+              <Share2 className="h-4 w-4" />
+              <span>{linkCopied ? '¡Copiado!' : 'Compartir Sala'}</span>
+            </Button>
+          )}
+          
           <Button 
             variant="outline" 
             size="sm" 

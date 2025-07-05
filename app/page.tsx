@@ -226,7 +226,7 @@ export default function HomePage() {
           {/* Placeholder for testimonials - replace with actual testimonials */}
           <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
             <p className="text-slate-600 dark:text-slate-400">
-              "¡Increíble juego! Me tuvo al borde de mi asiento todo el tiempo."
+              &ldquo;¡Increíble juego! Me tuvo al borde de mi asiento todo el tiempo.&rdquo;
             </p>
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center">
@@ -248,7 +248,7 @@ export default function HomePage() {
 
           <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
             <p className="text-slate-600 dark:text-slate-400">
-              "Una experiencia única, muy recomendable para jugar con amigos."
+              &ldquo;Una experiencia única, muy recomendable para jugar con amigos.&rdquo;
             </p>
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center">
