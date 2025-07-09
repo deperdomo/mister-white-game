@@ -196,22 +196,42 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         break;
 
       case 'next_round':
+        console.log('🎮 Processing next_round action for room:', normalizedRoomCode);
+        
         // Obtener nuevas palabras para la siguiente ronda
-        const wordsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/words?difficulty=medium&count=1`);
-        let newWords = { currentWord: null, undercoverWord: null };
+        const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+        console.log('📡 Fetching words from:', `${baseUrl}/api/words?difficulty=medium&count=1`);
+        
+        const wordsResponse = await fetch(`${baseUrl}/api/words?difficulty=medium&count=1`);
+        let newWords: { currentWord: string | null; undercoverWord: string | null } = { currentWord: null, undercoverWord: null };
         
         if (wordsResponse.ok) {
           const wordsData = await wordsResponse.json();
+          console.log('📝 Words API response:', wordsData);
           if (wordsData.success && wordsData.word) {
             newWords = {
               currentWord: wordsData.word.civilWord,
               undercoverWord: wordsData.word.undercoverWord
             };
-            console.log('New words for next round:', newWords);
+            console.log('✅ New words for next round:', newWords);
+          } else {
+            console.warn('⚠️ Words API returned success=false or no word');
           }
+        } else {
+          console.error('❌ Words API failed:', wordsResponse.status, wordsResponse.statusText);
+        }
+        
+        // Si no se obtuvieron palabras, usar palabras por defecto
+        if (!newWords.currentWord) {
+          console.log('🔄 Using fallback words');
+          newWords = {
+            currentWord: 'Gato',
+            undercoverWord: 'Perro'
+          };
         }
         
         // Obtener jugadores para reasignar roles
+        console.log('👥 Fetching players for role assignment...');
         const { data: playersForRoles, error: playersError } = await supabase
           .from('game_players')
           .select('id, player_name')
@@ -219,17 +239,21 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           .order('created_at', { ascending: true });
 
         if (playersError) {
-          console.error('Error fetching players for role assignment:', playersError);
+          console.error('❌ Error fetching players for role assignment:', playersError);
           return NextResponse.json(
             { error: 'Failed to fetch players for role assignment' },
             { status: 500 }
           );
         }
 
+        console.log('👥 Players for role assignment:', playersForRoles?.length);
+
         // Reasignar roles para la nueva ronda (Mister White será aleatorio)
         if (playersForRoles && playersForRoles.length >= 3) {
           const assignments = assignRoles(playersForRoles.length);
           const shuffledPlayers = [...playersForRoles].sort(() => Math.random() - 0.5);
+
+          console.log('🎭 Assigning roles:', assignments);
 
           // Asignar nuevos roles
           for (let i = 0; i < shuffledPlayers.length; i++) {
@@ -239,10 +263,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
               .eq('id', shuffledPlayers[i].id);
 
             if (roleError) {
-              console.error('Error updating player role:', roleError);
+              console.error('❌ Error updating player role:', roleError);
+            } else {
+              console.log(`✅ Assigned ${assignments[i]} to ${shuffledPlayers[i].player_name}`);
             }
           }
-          console.log('Roles reassigned for next round');
+          console.log('✅ Roles reassigned for next round');
         }
         
         // Reiniciar el estado del juego para la siguiente ronda
@@ -253,7 +279,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           undercover_word: newWords.undercoverWord,
         };
         
+        console.log('🔄 Update fields for room:', updateFields);
+        
         // Resetear el estado de todos los jugadores (pero mantener los nuevos roles)
+        console.log('🧹 Resetting player states...');
         const { error: resetPlayersError } = await supabase
           .from('game_players')
           .update({ 
@@ -264,12 +293,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           .eq('room_id', room.id);
 
         if (resetPlayersError) {
-          console.error('Error resetting players for next round:', resetPlayersError);
+          console.error('❌ Error resetting players for next round:', resetPlayersError);
           return NextResponse.json(
             { error: 'Failed to reset players for next round' },
             { status: 500 }
           );
         }
+        
+        console.log('✅ Player states reset');
         
         pusherEvent = 'round-started';
         pusherData = {
@@ -277,6 +308,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           currentWord: newWords.currentWord,
           undercoverWord: newWords.undercoverWord,
         };
+        
+        console.log('📡 Pusher event data:', { pusherEvent, pusherData });
         break;
 
       case 'end_game':
@@ -297,24 +330,39 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     // Update room
+    console.log('💾 Updating room with fields:', updateFields);
     const { error: updateError } = await supabase
       .from('game_rooms')
       .update(updateFields)
       .eq('id', room.id);
 
     if (updateError) {
-      console.error('Error updating room:', updateError);
+      console.error('❌ Error updating room:', updateError);
       return NextResponse.json(
         { error: 'Failed to update room' },
         { status: 500 }
       );
     }
 
+    console.log('✅ Room updated successfully');
+
     // Trigger event via Pusher
     if (pusherEvent) {
-      await pusherServer.trigger(`room-${normalizedRoomCode}`, pusherEvent, pusherData);
+      console.log('📡 Sending Pusher event:', { 
+        channel: `room-${normalizedRoomCode}`, 
+        event: pusherEvent, 
+        data: pusherData 
+      });
+      
+      try {
+        await pusherServer.trigger(`room-${normalizedRoomCode}`, pusherEvent, pusherData);
+        console.log('✅ Pusher event sent successfully');
+      } catch (pusherError) {
+        console.error('❌ Failed to send Pusher event:', pusherError);
+      }
     }
 
+    console.log('🎉 Room action completed successfully:', action);
     return NextResponse.json({
       success: true,
       message: `Room ${action} completed successfully`,
