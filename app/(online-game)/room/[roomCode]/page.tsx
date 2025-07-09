@@ -70,32 +70,16 @@ function OnlineGameContent() {
 
   // Debug logging para el estado del juego
   useEffect(() => {
-    console.log('🎮 Game room state update:', {
-      room: room ? {
-        roomCode: room.roomCode,
-        status: room.status,
-        currentRound: room.currentRound,
-        currentWord: room.currentWord,
-        undercoverWord: room.undercoverWord
-      } : null,
-      playersCount: players.length,
-      players: players.map(p => ({
-        name: p.name,
-        role: p.role,
-        description: p.description,
-        votedFor: p.votedFor,
-        isHost: p.isHost
-      })),
-      currentPlayer: currentPlayer ? {
-        name: currentPlayer.name,
-        role: currentPlayer.role,
-        isHost: currentPlayer.isHost
-      } : null,
+    console.log('Game room state:', {
+      room,
+      currentWord: room?.currentWord,
+      undercoverWord: room?.undercoverWord,
+      players: players.length,
+      currentPlayer,
       gamePhase,
-      roomStatus: room?.status,
-      isStartingNextRound
+      roomStatus: room?.status
     });
-  }, [room, players, currentPlayer, gamePhase, isStartingNextRound]);
+  }, [room, players, currentPlayer, gamePhase]);
 
   // Actualizar datos de la sala
   useEffect(() => {
@@ -118,24 +102,22 @@ function OnlineGameContent() {
 
     // No interferir con la lógica de cambio directo durante nueva ronda
     if (isStartingNextRound) {
-      console.log('⏸️ Skipping phase determination during round start');
+      console.log('Skipping phase determination during round start');
       return;
     }
 
-    console.log('🔍 Determining game phase:', {
+    console.log('Determining game phase:', {
       roomStatus: room.status,
       playersCount: players.length,
       playersWithDescription: players.filter(p => p.description !== null).length,
       playersWithVote: players.filter(p => p.votedFor !== null).length,
-      currentPhase: gamePhase,
-      roomCode: room.roomCode,
-      currentRound: room.currentRound
+      currentPhase: gamePhase
     });
 
     switch (room.status) {
       case 'waiting':
         if (gamePhase !== 'waiting') {
-          console.log('📝 Switching to waiting phase');
+          console.log('Switching to waiting phase');
           setGamePhase('waiting');
         }
         break;
@@ -144,26 +126,19 @@ function OnlineGameContent() {
         const allDescribed = players.length > 0 && players.every(p => p.description !== null);
         const allVoted = players.length > 0 && players.every(p => p.votedFor !== null);
         
-        console.log('🎮 Playing phase analysis:', {
-          allDescribed,
-          allVoted,
-          playersWithDescription: players.map(p => ({ name: p.name, hasDescription: !!p.description })),
-          playersWithVote: players.map(p => ({ name: p.name, hasVote: !!p.votedFor }))
-        });
-        
         if (!allDescribed) {
           if (gamePhase !== 'describing') {
-            console.log('📝 Switching to describing phase');
+            console.log('Switching to describing phase');
             setGamePhase('describing');
           }
         } else if (!allVoted) {
           if (gamePhase !== 'voting') {
-            console.log('🗳️ Switching to voting phase');
+            console.log('Switching to voting phase');
             setGamePhase('voting');
           }
         } else {
           if (gamePhase !== 'results') {
-            console.log('🏆 Switching to results phase');
+            console.log('Switching to results phase');
             setGamePhase('results');
             // Calcular resultados cuando todos han votado
             if (players.length > 0 && allVoted) {
@@ -175,7 +150,7 @@ function OnlineGameContent() {
         break;
       case 'finished':
         if (gamePhase !== 'results') {
-          console.log('🔚 Switching to finished/results phase');
+          console.log('Switching to finished/results phase');
           setGamePhase('results');
           // Calcular resultados si no se han calculado ya
           if (players.length > 0 && !gameResults) {
@@ -185,9 +160,8 @@ function OnlineGameContent() {
         }
         break;
       default:
-        console.log('❓ Unknown room status, switching to role-reveal:', room.status);
         if (gamePhase !== 'role-reveal') {
-          console.log('🎭 Switching to role-reveal phase');
+          console.log('Switching to role-reveal phase');
           setGamePhase('role-reveal');
         }
     }
@@ -318,26 +292,10 @@ function OnlineGameContent() {
   };
 
   const handleNextRound = async () => {
-    console.log('🎮 handleNextRound called with state:', {
-      room: room?.roomCode,
-      currentPlayer: currentPlayer?.name,
-      isHost: currentPlayer?.isHost,
-      isStartingNextRound,
-      roomStatus: room?.status
-    });
-
-    if (!room || !currentPlayer?.isHost || isStartingNextRound) {
-      console.warn('❌ handleNextRound blocked:', {
-        hasRoom: !!room,
-        isHost: currentPlayer?.isHost,
-        isStartingNextRound,
-        currentPlayer: currentPlayer?.name
-      });
-      return;
-    }
+    if (!room || !currentPlayer?.isHost || isStartingNextRound) return;
     
     try {
-      console.log('🚀 Starting next round process...');
+      console.log('Starting next round...');
       setIsStartingNextRound(true);
       
       // Limpiar estados locales primero
@@ -348,8 +306,6 @@ function OnlineGameContent() {
       setTimeLeft(0);
       setPreviousPhase('');
       
-      console.log('📡 Calling API to start next round...');
-      
       // Llamar a la API para reiniciar la ronda
       const response = await fetch(`/api/rooms/${room.roomCode}`, {
         method: 'PATCH',
@@ -359,34 +315,23 @@ function OnlineGameContent() {
         }),
       });
 
-      console.log('📡 API Response:', {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText
-      });
-
       if (response.ok) {
-        const responseData = await response.json();
-        console.log('✅ API Success:', responseData);
-        
         showSuccess('¡Nueva ronda iniciada!');
         
         // Cambiar inmediatamente a la fase de descripción
-        console.log('🎯 Switching immediately to describing phase');
+        console.log('Switching immediately to describing phase');
         setGamePhase('describing');
         setIsStartingNextRound(false);
         
         // Recarga en paralelo para sincronizar datos del servidor
-        console.log('🔄 Reloading room data...');
         loadRoomAndSubscribe(roomCode);
       } else {
         const data = await response.json();
-        console.error('❌ API Error:', data);
         showError(data.error || 'Error al iniciar nueva ronda');
         setIsStartingNextRound(false);
       }
     } catch (error) {
-      console.error('💥 Exception in handleNextRound:', error);
+      console.error('Error al iniciar nueva ronda:', error);
       showError('Error al iniciar nueva ronda');
       setIsStartingNextRound(false);
     }
@@ -395,9 +340,7 @@ function OnlineGameContent() {
   // Escuchar eventos de nueva ronda para limpiar estados locales
   useEffect(() => {
     const handleRoundStarted = (event: CustomEvent) => {
-      console.log('🎊 Handling round-started event:', event.detail);
-      console.log('🧹 Cleaning local states for new round...');
-      
+      console.log('Handling round-started event:', event.detail);
       // Limpiar estados locales cuando comience una nueva ronda
       setDescription('');
       setSelectedVote('');
@@ -408,18 +351,16 @@ function OnlineGameContent() {
       setIsStartingNextRound(false); // Limpiar el estado de carga
       
       // Cambiar inmediatamente a la fase de descripción
-      console.log('🎯 Switching immediately to describing phase from round-started event');
+      console.log('Switching immediately to describing phase from round-started event');
       setGamePhase('describing');
     };
 
     if (typeof window !== 'undefined') {
-      console.log('📡 Adding round-started event listener');
       window.addEventListener('round-started', handleRoundStarted as EventListener);
     }
 
     return () => {
       if (typeof window !== 'undefined') {
-        console.log('📡 Removing round-started event listener');
         window.removeEventListener('round-started', handleRoundStarted as EventListener);
       }
     };
@@ -764,23 +705,6 @@ function OnlineGameContent() {
                     size="lg"
                   >
                     Salir del Juego
-                  </Button>
-                  {/* Debug button - remove after testing */}
-                  <Button 
-                    onClick={() => {
-                      console.log('🐛 DEBUG STATE:', {
-                        room,
-                        players,
-                        currentPlayer,
-                        gamePhase,
-                        isStartingNextRound,
-                        gameResults
-                      });
-                    }}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    Debug
                   </Button>
                 </>
               ) : (

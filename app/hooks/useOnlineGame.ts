@@ -210,12 +210,11 @@ export function useOnlineGame(): UseOnlineGameState {
     // Round started event
     roomChannel.bind('round-started', (data: unknown) => {
       const eventData = data as { round: number; currentWord?: string; undercoverWord?: string };
-      console.log('🎊 Round started event received in hook:', eventData);
+      console.log('Round started event received:', eventData);
       showSuccess(`¡Ronda ${eventData.round} iniciada!`);
       
       // Limpiar estados locales cuando comience una nueva ronda
       if (typeof window !== 'undefined') {
-        console.log('📡 Dispatching round-started custom event');
         // Disparar evento personalizado para que el componente limpie sus estados
         window.dispatchEvent(new CustomEvent('round-started', { 
           detail: { 
@@ -227,9 +226,8 @@ export function useOnlineGame(): UseOnlineGameState {
       }
       
       // Recarga inmediata para mostrar cambios más rápido
-      console.log('🔄 Scheduling room reload after round-started');
       setTimeout(() => {
-        console.log('🔄 Executing room reload after round-started');
+        console.log('Reloading after round-started');
         loadRoom(roomCode);
       }, 200); // Reducido de 1200ms a 200ms
     });
