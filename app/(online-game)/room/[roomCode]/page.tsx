@@ -100,6 +100,12 @@ function OnlineGameContent() {
   useEffect(() => {
     if (!room) return;
 
+    // No interferir con la lógica de cambio directo durante nueva ronda
+    if (isStartingNextRound) {
+      console.log('Skipping phase determination during round start');
+      return;
+    }
+
     console.log('Determining game phase:', {
       roomStatus: room.status,
       playersCount: players.length,
@@ -159,7 +165,7 @@ function OnlineGameContent() {
           setGamePhase('role-reveal');
         }
     }
-  }, [room, players, gameResults, gamePhase]);
+  }, [room, players, gameResults, gamePhase, isStartingNextRound]);
 
   // Funciones de manejo de acciones con debounce
   const handleSubmitDescription = useCallback(async () => {
@@ -312,12 +318,13 @@ function OnlineGameContent() {
       if (response.ok) {
         showSuccess('¡Nueva ronda iniciada!');
         
-        // Recarga inmediata para mostrar los cambios más rápido
-        setTimeout(() => {
-          console.log('Reloading room after next round');
-          loadRoomAndSubscribe(roomCode);
-          setIsStartingNextRound(false);
-        }, 300); // Reducido de 1500ms a 300ms
+        // Cambiar inmediatamente a la fase de descripción
+        console.log('Switching immediately to describing phase');
+        setGamePhase('describing');
+        setIsStartingNextRound(false);
+        
+        // Recarga en paralelo para sincronizar datos del servidor
+        loadRoomAndSubscribe(roomCode);
       } else {
         const data = await response.json();
         showError(data.error || 'Error al iniciar nueva ronda');
@@ -342,6 +349,10 @@ function OnlineGameContent() {
       setTimeLeft(0);
       setPreviousPhase('');
       setIsStartingNextRound(false); // Limpiar el estado de carga
+      
+      // Cambiar inmediatamente a la fase de descripción
+      console.log('Switching immediately to describing phase from round-started event');
+      setGamePhase('describing');
     };
 
     if (typeof window !== 'undefined') {
@@ -757,6 +768,15 @@ function OnlineGameContent() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Indicador de carga para nueva ronda */}
+      {isStartingNextRound && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-8 border shadow-lg">
+            <LoadingState message="Iniciando nueva ronda..." size="lg" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
