@@ -31,9 +31,9 @@ export const metadata: Metadata = {
     siteName: "Mister White Game",
     images: [
       {
-        url: "/og-image.png", // Necesitarás crear esta imagen
-        width: 1200,
-        height: 630,
+        url: "/detective.png",
+        width: 512,
+        height: 512,
         alt: "Mister White - Juego Multijugador Online",
       },
     ],
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Mister White - Juego Multijugador Online Gratis",
     description: "🎭 El mejor juego de deducción social online. ¡Descubre al espía antes de que te descubran!",
-    images: ["/og-image.png"], // Misma imagen
+    images: ["/detective.png"],
   },
   robots: {
     index: true,

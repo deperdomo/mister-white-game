@@ -2,7 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense, useCallback, useRef } from "react";
-import { ArrowLeft, Users, Clock, Eye, EyeOff, Copy } from "lucide-react";
+import { ArrowLeft, Users, Clock, Eye, EyeOff, Share } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Input } from "../../../components/ui/input";
@@ -281,13 +281,35 @@ function OnlineGameContent() {
 
   const handleCopyCode = async () => {
     try {
-      await navigator.clipboard.writeText(roomCode);
-      setCopied(true);
-      showSuccess('¡Código de sala copiado al portapapeles!');
-      setTimeout(() => setCopied(false), 2000);
+      const gameUrl = `${window.location.origin}/room/${roomCode}?name=`;
+      const shareText = `🕵️ ¡Te invito a jugar Mister White!\n\nSala: ${roomCode}\nEnlace: ${gameUrl}\n\n¡Descubre al espía antes de que te descubran! 🎭`;
+      
+      if (navigator.share) {
+        // Usar Web Share API si está disponible (móviles)
+        await navigator.share({
+          title: `Mister White - Sala ${roomCode}`,
+          text: shareText,
+          url: gameUrl
+        });
+      } else {
+        // Fallback: copiar al portapapeles
+        await navigator.clipboard.writeText(shareText);
+        setCopied(true);
+        showSuccess('¡Enlace de invitación copiado al portapapeles!');
+        setTimeout(() => setCopied(false), 2000);
+      }
     } catch (error) {
-      console.error('Error copying to clipboard:', error);
-      showError('Error al copiar el código');
+      console.error('Error sharing/copying:', error);
+      // Fallback final: solo copiar el código
+      try {
+        await navigator.clipboard.writeText(roomCode);
+        setCopied(true);
+        showSuccess('¡Código de sala copiado al portapapeles!');
+        setTimeout(() => setCopied(false), 2000);
+      } catch (error) {
+        console.error('Error sharing/copying:', error);
+        showError('Error al copiar el código');
+      }
     }
   };
 
@@ -405,10 +427,10 @@ function OnlineGameContent() {
             size="sm" 
             onClick={handleCopyCode}
             className="ml-3 flex items-center space-x-2"
-            title="Copiar código de sala"
+            title="Compartir enlace de invitación"
           >
-            <Copy className="h-4 w-4" />
-            <span className="hidden sm:inline">{copied ? 'Copiado!' : 'Copiar'}</span>
+            <Share className="h-4 w-4" />
+            <span className="hidden sm:inline">{copied ? 'Copiado!' : 'Invitar'}</span>
           </Button>
         </div>
         <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
