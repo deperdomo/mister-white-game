@@ -496,11 +496,11 @@ function OnlineGameContent() {
         <Card className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20">
           <CardContent className="py-4">
             <div className="flex items-center justify-center space-x-2">
-              <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-              <span className="text-lg font-semibold text-orange-600 dark:text-orange-400">
+              <Clock className="h-5 w-5 mt-4 text-orange-600 dark:text-orange-400" />
+              <span className="text-lg mt-4 font-semibold text-orange-600 dark:text-orange-400">
                 {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
               </span>
-              <span className="text-sm text-orange-600 dark:text-orange-400">
+              <span className="text-sm mt-4 text-orange-600 dark:text-orange-400">
                 restantes
               </span>
             </div>

@@ -223,7 +223,7 @@ export default function HomePage() {
                 poster="/detective.jpg"
                 preload="metadata"
               >
-                <source src="/video/Tutorial_modo_local.mp4" type="video/mp4" />
+                <source src="/video/Tutorial_modo_local.mov" type="video/mp4" />
                 Tu navegador no soporta videos HTML5.
               </video>
             </div>
