@@ -65,7 +65,7 @@ function GameContent() {
   if (!roomCode) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
-        <p className="mb-4 text-slate-400">Código de sala no válido</p>
+        <p className="mb-4 text-muted">Código de sala no válido</p>
         <Button onClick={() => router.push('/')}>Volver al inicio</Button>
       </div>
     );
@@ -81,9 +81,9 @@ function GameContent() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="h-4 rounded animate-pulse bg-slate-700" />
-              <div className="h-4 rounded animate-pulse w-3/4 bg-slate-700" />
-              <div className="h-4 rounded animate-pulse w-1/2 bg-slate-700" />
+              <div className="h-4 rounded animate-pulse bg-elevated" />
+              <div className="h-4 rounded animate-pulse w-3/4 bg-elevated" />
+              <div className="h-4 rounded animate-pulse w-1/2 bg-elevated" />
             </div>
           </CardContent>
         </Card>
@@ -100,12 +100,12 @@ function GameContent() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Salir
           </Button>
-          <h1 className="text-xl font-bold text-slate-50">
+          <h1 className="text-xl font-bold text-fg">
             Sala {roomCode}
           </h1>
         </div>
         
-        <div className="flex items-center space-x-2 text-sm text-slate-400">
+        <div className="flex items-center space-x-2 text-sm text-muted">
           <Users className="h-4 w-4" />
           <span>{players.length} jugadores</span>
         </div>
@@ -121,8 +121,8 @@ function GameContent() {
               {currentPhase === 'voting' && 'Fase de votación'}
             </CardTitle>
             <div className="flex items-center space-x-1">
-              <Clock className="h-4 w-4 text-slate-500" />
-              <span className="text-sm text-slate-500">En progreso</span>
+              <Clock className="h-4 w-4 text-faint" />
+              <span className="text-sm text-faint">En progreso</span>
             </div>
           </div>
           <CardDescription>
@@ -136,7 +136,7 @@ function GameContent() {
             {currentPhase === 'assigning' && (
               <div className="text-center py-8">
                 <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-                <p className="text-slate-400">
+                <p className="text-muted">
                   Los roles se están asignando automáticamente...
                 </p>
               </div>
@@ -164,14 +164,14 @@ function GameContent() {
         <CardContent>
           <div className="space-y-3">
             {players.map((player) => (
-              <div key={player.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-800">
+              <div key={player.id} className="flex items-center justify-between p-3 rounded-lg bg-panel">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-900">
                     <span className="text-sm font-medium text-blue-400">
                       {player.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <span className="font-medium text-slate-50">
+                  <span className="font-medium text-fg">
                     {player.name}
                   </span>
                   {player.isHost && (
@@ -183,7 +183,7 @@ function GameContent() {
                 
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  <span className="text-sm text-slate-500">Conectado</span>
+                  <span className="text-sm text-faint">Conectado</span>
                 </div>
               </div>
             ))}
@@ -209,7 +209,7 @@ export default function GamePage() {
   return (
     <Suspense fallback={
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
-        <p className="text-slate-400">Cargando...</p>
+        <p className="text-muted">Cargando...</p>
       </div>
     }>
       <GameContent />

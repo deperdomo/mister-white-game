@@ -14,12 +14,12 @@ const sizeClasses = {
 
 export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) {
   return (
-    <Loader2 
+    <Loader2
       className={cn(
-        'animate-spin text-slate-500', 
-        sizeClasses[size], 
+        'animate-spin text-muted',
+        sizeClasses[size],
         className
-      )} 
+      )}
     />
   );
 }
@@ -33,7 +33,7 @@ export function LoadingState({ message = 'Cargando...', size = 'md' }: LoadingSt
   return (
     <div className="flex flex-col items-center justify-center p-8 space-y-4">
       <LoadingSpinner size={size} />
-      <p className="text-sm text-slate-400">{message}</p>
+      <p className="text-sm text-muted">{message}</p>
     </div>
   );
 }

@@ -97,7 +97,7 @@ export default function CreateRoomForm() {
                 <span>{errors.playerName}</span>
               </div>
             )}
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted">
               Máximo 20 caracteres
             </p>
           </div>
@@ -110,7 +110,7 @@ export default function CreateRoomForm() {
               value={formData.maxPlayers}
               onChange={(e) => handleInputChange('maxPlayers', parseInt(e.target.value))}
               disabled={isLoading}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed border-slate-600 bg-slate-700 text-slate-100"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed border-white/10 bg-elevated text-fg"
             >
               {[3, 4, 5, 6, 7, 8].map(num => (
                 <option key={num} value={num}>
@@ -124,7 +124,7 @@ export default function CreateRoomForm() {
                 <span>{errors.maxPlayers}</span>
               </div>
             )}
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted">
               Entre 3 y 8 jugadores
             </p>
           </div>

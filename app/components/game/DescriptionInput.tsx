@@ -60,7 +60,7 @@ export default function DescriptionInput({ playerName, onSubmit }: DescriptionIn
           disabled={isSubmitting}
           className="mt-1"
         />
-        <p className="text-xs text-slate-500 mt-1">
+        <p className="text-xs text-faint mt-1">
           {description.length}/200 caracteres
         </p>
       </div>
@@ -73,7 +73,7 @@ export default function DescriptionInput({ playerName, onSubmit }: DescriptionIn
         {isSubmitting ? 'Enviando...' : 'Enviar descripción'}
       </Button>
 
-      <div className="text-xs space-y-1 text-slate-400">
+      <div className="text-xs space-y-1 text-muted">
         <p><strong>💡 Consejos:</strong></p>
         <ul className="list-disc list-inside space-y-1">
           <li>Sé específico pero no obvio</li>

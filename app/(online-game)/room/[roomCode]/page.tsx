@@ -400,7 +400,7 @@ function OnlineGameContent() {
   if (!roomCode) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
-        <p className="mb-4 text-slate-400">Código de sala no válido</p>
+        <p className="mb-4 text-muted">Código de sala no válido</p>
         <Button onClick={() => router.push('/')}>Volver al inicio</Button>
       </div>
     );
@@ -419,7 +419,7 @@ function OnlineGameContent() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Salir
           </Button>
-          <h1 className="text-2xl font-bold text-slate-50">
+          <h1 className="text-2xl font-bold text-fg">
             Sala: {roomCode}
           </h1>
           <Button 
@@ -433,7 +433,7 @@ function OnlineGameContent() {
             <span className="hidden sm:inline">{copied ? 'Copiado!' : 'Invitar'}</span>
           </Button>
         </div>
-        <div className="flex items-center space-x-2 text-slate-400">
+        <div className="flex items-center space-x-2 text-muted">
           <Users className="h-4 w-4" />
           <span>{players.length}/{room.maxPlayers}</span>
         </div>
@@ -459,13 +459,13 @@ function OnlineGameContent() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label className="text-sm text-slate-400">Nombre</Label>
+              <Label className="text-sm text-muted">Nombre</Label>
               <p className="font-semibold">{currentPlayer.name}</p>
             </div>
             {gamePhase !== 'waiting' && (
               <>
                 <div>
-                  <Label className="text-sm text-slate-400">Rol</Label>
+                  <Label className="text-sm text-muted">Rol</Label>
                   <p className="font-semibold">
                     {showRole ? (
                       currentPlayer.role === 'civil' ? 'Civil' :
@@ -476,7 +476,7 @@ function OnlineGameContent() {
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm text-slate-400">Palabra</Label>
+                  <Label className="text-sm text-muted">Palabra</Label>
                   <p className="font-semibold">
                     {showRole ? (
                       currentPlayer.role === 'mister_white' ? '???' :
@@ -550,7 +550,7 @@ function OnlineGameContent() {
                 <p className="text-green-400">
                   ✓ Tu descripción ha sido enviada: &quot;{currentPlayer.description}&quot;
                 </p>
-                <p className="mt-2 text-slate-400">
+                <p className="mt-2 text-muted">
                   Esperando a que los demás jugadores envíen sus descripciones...
                 </p>
               </div>
@@ -601,7 +601,7 @@ function OnlineGameContent() {
                 <p className="text-green-400">
                   ✓ Has votado por: {currentPlayer.votedFor}
                 </p>
-                <p className="mt-2 text-slate-400">
+                <p className="mt-2 text-muted">
                   Esperando a que los demás jugadores voten...
                 </p>
               </div>
@@ -620,7 +620,7 @@ function OnlineGameContent() {
               <>
                 {/* Resultado principal */}
                 <div className="text-center">
-                  <div className={`inline-flex items-center px-4 py-2 rounded-lg text-white text-lg font-bold mb-4 ${
+                  <div className={`inline-flex items-center px-4 py-2 rounded-lg text-fg text-lg font-bold mb-4 ${
                     gameResults.winner === 'civilians' ? 'bg-blue-500' :
                     gameResults.winner === 'mister_white' ? 'bg-red-500' :
                     gameResults.winner === 'undercover' ? 'bg-purple-500' :
@@ -635,7 +635,7 @@ function OnlineGameContent() {
                 </div>
 
                 {/* Información de votación */}
-                <div className="p-4 rounded-lg bg-slate-800">
+                <div className="p-4 rounded-lg bg-panel">
                   <h4 className="font-semibold mb-3">📊 Resultados de la Votación</h4>
                   {gameResults.eliminated ? (
                     <p className="mb-2">
@@ -657,7 +657,7 @@ function OnlineGameContent() {
                 </div>
 
                 {/* Revelación de roles */}
-                <div className="p-4 rounded-lg bg-slate-800">
+                <div className="p-4 rounded-lg bg-panel">
                   <h4 className="font-semibold mb-3">🎭 Revelación de Roles</h4>
                   <div className="space-y-2">
                     {players.map(player => (
@@ -685,16 +685,16 @@ function OnlineGameContent() {
 
                 {/* Palabras del juego */}
                 {room.currentWord && (
-                  <div className="p-4 rounded-lg bg-slate-800">
+                  <div className="p-4 rounded-lg bg-panel">
                     <h4 className="font-semibold mb-3">📝 Palabras del Juego</h4>
                     <div className="space-y-2">
                       <div>
-                        <span className="text-sm text-slate-400">Palabra Civil:</span>
+                        <span className="text-sm text-muted">Palabra Civil:</span>
                         <p className="font-semibold">{room.currentWord}</p>
                       </div>
                       {room.undercoverWord && (
                         <div>
-                          <span className="text-sm text-slate-400">Palabra Undercover:</span>
+                          <span className="text-sm text-muted">Palabra Undercover:</span>
                           <p className="font-semibold">{room.undercoverWord}</p>
                         </div>
                       )}
@@ -731,7 +731,7 @@ function OnlineGameContent() {
                 </>
               ) : (
                 <>
-                  <p className="text-center mb-3 text-slate-400">
+                  <p className="text-center mb-3 text-muted">
                     Esperando a que el host decida...
                   </p>
                   <Button 
@@ -762,7 +762,7 @@ function OnlineGameContent() {
                 className={`p-3 border rounded-lg ${
                   player.name === currentPlayer.name 
                     ? 'border-blue-500 bg-blue-900/20' 
-                    : 'border-slate-700'
+                    : 'border-white/10'
                 } ${!player.isAlive ? 'opacity-50' : ''}`}
               >
                 <div className="flex items-center justify-between">
@@ -773,12 +773,12 @@ function OnlineGameContent() {
                       {player.name === currentPlayer.name && <span className="ml-2 text-blue-500">(Tú)</span>}
                     </p>
                     {gamePhase === 'describing' && (
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-muted">
                         {player.description ? `Descripción: "${player.description}"` : 'Pensando...'}
                       </p>
                     )}
                     {gamePhase === 'voting' && (
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-muted">
                         {player.votedFor ? 'Votó' : 'Votando...'}
                       </p>
                     )}
@@ -794,7 +794,7 @@ function OnlineGameContent() {
       {/* Indicador de carga para nueva ronda */}
       {isStartingNextRound && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-          <div className="rounded-lg p-8 border shadow-lg bg-slate-800">
+          <div className="rounded-lg p-8 border shadow-lg bg-panel">
             <LoadingState message="Iniciando nueva ronda..." size="lg" />
           </div>
         </div>

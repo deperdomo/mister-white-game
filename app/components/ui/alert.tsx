@@ -12,9 +12,9 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
       role="alert"
       className={cn(
         "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
-        variant === "default" 
-          ? "bg-slate-950 text-slate-50 border-slate-800"
-          : "[&>svg]:text-red-600 border-red-500 text-red-50 bg-red-950/10",
+        variant === "default"
+          ? "bg-panel text-fg border-white/10 [&>svg]:text-accent"
+          : "border-red-500/30 bg-red-500/10 text-red-200 [&>svg]:text-red-400",
         className
       )}
       {...props}

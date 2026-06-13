@@ -300,12 +300,12 @@ function LocalGameContent() {
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             {/* Overlay */}
             <div 
-              className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
               onClick={cancelExit}
             ></div>
             
             {/* Modal */}
-            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-slate-800">
+            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-panel">
               <div className="flex items-center mb-4">
                 <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-yellow-900/20">
                   <AlertTriangle className="w-6 h-6 text-yellow-400" />
@@ -313,10 +313,10 @@ function LocalGameContent() {
               </div>
               
               <div className="text-center">
-                <h3 className="text-lg font-medium leading-6 mb-2 text-white">
+                <h3 className="text-lg font-medium leading-6 mb-2 text-fg">
                   ¿Estás seguro de que quieres salir?
                 </h3>
-                <p className="text-sm mb-6 text-gray-400">
+                <p className="text-sm mb-6 text-muted">
                   Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
                 </p>
               </div>
@@ -342,7 +342,7 @@ function LocalGameContent() {
         )}
         
         <div className="container mx-auto px-4 py-8 max-w-md text-center">
-          <p className="mb-4 text-slate-400">Cargando juego...</p>
+          <p className="mb-4 text-muted">Cargando juego...</p>
           <Button onClick={handleGoBack}>Volver atrás</Button>
         </div>
       </>
@@ -359,7 +359,7 @@ function LocalGameContent() {
     if (!currentPlayer) {
       return (
         <div className="container mx-auto px-4 py-8 max-w-md text-center">
-          <p className="mb-4 text-slate-400">Error: Jugador no encontrado. Reiniciando...</p>
+          <p className="mb-4 text-muted">Error: Jugador no encontrado. Reiniciando...</p>
           <Button onClick={() => router.push('/local')}>Volver al inicio</Button>
         </div>
       );
@@ -374,12 +374,12 @@ function LocalGameContent() {
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             {/* Overlay */}
             <div 
-              className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
               onClick={cancelExit}
             ></div>
             
             {/* Modal */}
-            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-slate-800">
+            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-panel">
               <div className="flex items-center mb-4">
                 <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-yellow-900/20">
                   <AlertTriangle className="w-6 h-6 text-yellow-400" />
@@ -387,10 +387,10 @@ function LocalGameContent() {
               </div>
               
               <div className="text-center">
-                <h3 className="text-lg font-medium leading-6 mb-2 text-white">
+                <h3 className="text-lg font-medium leading-6 mb-2 text-fg">
                   ¿Estás seguro de que quieres salir?
                 </h3>
-                <p className="text-sm mb-6 text-gray-400">
+                <p className="text-sm mb-6 text-muted">
                   Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
                 </p>
               </div>
@@ -421,7 +421,7 @@ function LocalGameContent() {
               <ArrowLeft className="h-4 w-4 mr-1" />
               Volver
           </Button>
-          <h1 className="text-xl font-bold text-slate-50">
+          <h1 className="text-xl font-bold text-fg">
             Ronda {gameData.round} - Revelar Roles
           </h1>
           
@@ -438,10 +438,10 @@ function LocalGameContent() {
             {!showRole ? (
               <>
                 <div className="space-y-4">
-                  <p className="text-slate-400">
+                  <p className="text-muted">
                     <strong>{currentPlayer.name}</strong>, es tu turno de ver tu rol secreto.
                   </p>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-faint">
                     Asegúrate de que otros jugadores no puedan ver la pantalla.
                   </p>
                 </div>
@@ -453,7 +453,7 @@ function LocalGameContent() {
               </>
             ) : (
               <>
-                <div className={`p-6 rounded-lg ${roleInfo.color} text-white`}>
+                <div className={`p-6 rounded-lg ${roleInfo.color} text-fg`}>
                   <div className="text-4xl mb-2">{roleInfo.icon}</div>
                   <h3 className="text-xl font-bold mb-2">{roleInfo.title}</h3>
                   <p className="text-sm mb-4">{roleInfo.description}</p>
@@ -464,7 +464,7 @@ function LocalGameContent() {
                 </div>
 
                 {gameData.category && (
-                  <div className="space-y-2 text-sm text-slate-400">
+                  <div className="space-y-2 text-sm text-muted">
                     <p><strong>Categoría:</strong> {gameData.category}</p>
                   </div>
                 )}
@@ -480,13 +480,13 @@ function LocalGameContent() {
 
         {/* Progress */}
         <div className="mt-6">
-          <div className="flex justify-between text-sm mb-2 text-slate-400">
+          <div className="flex justify-between text-sm mb-2 text-muted">
             <span>Progreso</span>
             <span>{gameData.currentPlayerIndex + 1}/{gameData.players.length}</span>
           </div>
-          <div className="w-full rounded-full h-2 bg-slate-700">
+          <div className="w-full rounded-full h-2 bg-elevated">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-accent h-2 rounded-full transition-all duration-300"
               style={{ width: `${((gameData.currentPlayerIndex + 1) / gameData.players.length) * 100}%` }}
             />
           </div>
@@ -505,12 +505,12 @@ function LocalGameContent() {
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             {/* Overlay */}
             <div 
-              className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
               onClick={cancelExit}
             ></div>
             
             {/* Modal */}
-            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-slate-800">
+            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-panel">
               <div className="flex items-center mb-4">
                 <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-yellow-900/20">
                   <AlertTriangle className="w-6 h-6 text-yellow-400" />
@@ -518,10 +518,10 @@ function LocalGameContent() {
               </div>
               
               <div className="text-center">
-                <h3 className="text-lg font-medium leading-6 mb-2 text-white">
+                <h3 className="text-lg font-medium leading-6 mb-2 text-fg">
                   ¿Estás seguro de que quieres salir?
                 </h3>
-                <p className="text-sm mb-6 text-gray-400">
+                <p className="text-sm mb-6 text-muted">
                   Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
                 </p>
               </div>
@@ -552,7 +552,7 @@ function LocalGameContent() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Volver
           </Button>
-          <h1 className="text-xl font-bold text-slate-50">
+          <h1 className="text-xl font-bold text-fg">
             Ronda {gameData.round} - Pistas
           </h1>
         </div>
@@ -567,20 +567,20 @@ function LocalGameContent() {
           </CardHeader>
           <CardContent className="space-y-6">
             {gameData.category && (
-              <div className="text-center p-4 rounded bg-slate-800">
-                <p className="text-sm text-slate-400">
+              <div className="text-center p-4 rounded bg-panel">
+                <p className="text-sm text-muted">
                   Categoría: <strong>{gameData.category}</strong>
                 </p>
               </div>
             )}
 
             {/* Explanation about ordering */}
-            <div className="border rounded-lg p-3 bg-blue-950 border-blue-800">
-              <div className="flex items-start gap-2">
-                <div className="flex items-center justify-center w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full mt-0.5">
+            <div className="rounded-xl p-3 bg-accent/10 border border-accent/20">
+              <div className="flex items-start gap-2.5">
+                <div className="flex items-center justify-center w-5 h-5 bg-accent text-white text-xs font-bold rounded-full mt-0.5">
                   i
                 </div>
-                <div className="text-sm text-blue-300">
+                <div className="text-sm text-muted">
                   <strong>Orden de las pistas:</strong> Los jugadores están ordenados según el orden en que descubrieron sus roles. 
                   El número junto al nombre indica este orden.
                 </div>
@@ -619,22 +619,22 @@ function LocalGameContent() {
                   <Send className="h-5 w-5 mr-2" />
                   Enviar pistas
                 </Button>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-muted">
                   Todos los jugadores deben escribir una pista antes de continuar
                 </p>
                 
                 {/* Botón para saltar pistas */}
-                <div className="pt-4 border-t border-slate-700">
+                <div className="pt-4 border-t border-white/10">
                   <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={handleSkipClues}
-                    className="text-slate-600"
+                    className="text-muted"
                   >
                     <SkipForward className="h-4 w-4 mr-2" />
                     Saltar pistas e ir a votación
                   </Button>
-                  <p className="text-xs mt-1 text-slate-400">
+                  <p className="text-xs mt-1 text-muted">
                     Los jugadores sin pista aparecerán como &ldquo;(Sin pista)&rdquo;
                   </p>
                 </div>
@@ -664,12 +664,12 @@ function LocalGameContent() {
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             {/* Overlay */}
             <div 
-              className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
               onClick={cancelExit}
             ></div>
             
             {/* Modal */}
-            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-slate-800">
+            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-panel">
               <div className="flex items-center mb-4">
                 <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-yellow-900/20">
                   <AlertTriangle className="w-6 h-6 text-yellow-400" />
@@ -677,10 +677,10 @@ function LocalGameContent() {
               </div>
               
               <div className="text-center">
-                <h3 className="text-lg font-medium leading-6 mb-2 text-white">
+                <h3 className="text-lg font-medium leading-6 mb-2 text-fg">
                   ¿Estás seguro de que quieres salir?
                 </h3>
-                <p className="text-sm mb-6 text-gray-400">
+                <p className="text-sm mb-6 text-muted">
                   Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
                 </p>
               </div>
@@ -711,7 +711,7 @@ function LocalGameContent() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Volver
           </Button>
-          <h1 className="text-xl font-bold text-slate-50">
+          <h1 className="text-xl font-bold text-fg">
             Ronda {gameData.round} - Votación
           </h1>
         </div>
@@ -725,9 +725,9 @@ function LocalGameContent() {
             <CardContent>
               <div className="grid gap-3">
                 {gameData.players.map((player) => (
-                  <div key={player.id} className="p-3 rounded bg-slate-800">
+                  <div key={player.id} className="p-3 rounded bg-panel">
                     <p className="text-sm font-medium">{player.name}:</p>
-                    <p className="text-sm text-slate-400">&ldquo;{player.clue}&rdquo;</p>
+                    <p className="text-sm text-muted">&ldquo;{player.clue}&rdquo;</p>
                   </div>
                 ))}
               </div>
@@ -755,7 +755,7 @@ function LocalGameContent() {
                     return a.revelationOrder - b.revelationOrder;
                   })
                   .map(player => (
-                  <label key={player.id} className="flex items-center space-x-3 p-3 border rounded cursor-pointer hover:bg-slate-800">
+                  <label key={player.id} className="flex items-center space-x-3 p-3 border rounded cursor-pointer hover:bg-panel">
                     <input
                       type="radio"
                       name="vote"
@@ -804,7 +804,7 @@ function LocalGameContent() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Nuevo juego
           </Button>
-          <h1 className="text-xl font-bold text-slate-50">
+          <h1 className="text-xl font-bold text-fg">
             ¡Juego terminado!
           </h1>
         </div>
@@ -851,7 +851,7 @@ function LocalGameContent() {
                   return (
                     <div 
                       key={player.id} 
-                      className={`p-4 rounded border ${wasVoted ? 'border-red-300 bg-red-950/20' : 'border-slate-700'}`}
+                      className={`p-4 rounded border ${wasVoted ? 'border-red-300 bg-red-950/20' : 'border-white/10'}`}
                     >
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
@@ -864,11 +864,11 @@ function LocalGameContent() {
                             {roleInfo.icon} {player.name} {wasVoted && '🗳️'}
                           </span>
                         </div>
-                        <span className={`px-3 py-1 rounded text-xs text-white ${roleInfo.color}`}>
+                        <span className={`px-3 py-1 rounded text-xs text-fg ${roleInfo.color}`}>
                           {roleInfo.title.replace('Eres ', '').replace('el ', '')}
                         </span>
                       </div>
-                      <div className="mt-2 text-sm text-slate-400">
+                      <div className="mt-2 text-sm text-muted">
                         <p>Palabra: <strong>{player.word !== '???' ? player.word : 'No conocía la palabra'}</strong></p>
                         <p>Pista: <em>&ldquo;{player.clue}&rdquo;</em></p>
                       </div>
@@ -920,12 +920,12 @@ function LocalGameContent() {
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           {/* Overlay */}
           <div 
-            className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
             onClick={cancelExit}
           ></div>
           
           {/* Modal */}
-          <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-slate-800">
+          <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-panel">
             <div className="flex items-center mb-4">
               <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-yellow-900/20">
                 <AlertTriangle className="w-6 h-6 text-yellow-400" />
@@ -933,10 +933,10 @@ function LocalGameContent() {
             </div>
             
             <div className="text-center">
-              <h3 className="text-lg font-medium leading-6 mb-2 text-white">
+              <h3 className="text-lg font-medium leading-6 mb-2 text-fg">
                 ¿Estás seguro de que quieres salir?
               </h3>
-              <p className="text-sm mb-6 text-gray-400">
+              <p className="text-sm mb-6 text-muted">
                 Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
               </p>
             </div>
@@ -1008,7 +1008,7 @@ export default function LocalGamePage() {
   return (
     <Suspense fallback={
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
-        <p className="text-slate-400">Preparando juego local...</p>
+        <p className="text-muted">Preparando juego local...</p>
       </div>
     }>
       <LocalGameContent />

@@ -135,7 +135,7 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
                 <span>{errors.roomCode}</span>
               </div>
             )}
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted">
               Código de 6 caracteres proporcionado por el anfitrión
             </p>
           </div>
@@ -162,7 +162,7 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
                 <span>{errors.playerName}</span>
               </div>
             )}
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted">
               Máximo 20 caracteres
             </p>
           </div>

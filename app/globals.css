@@ -30,6 +30,13 @@
 }
 
 @layer base {
+  /* Borde por defecto = hairline sutil (las utilidades border-{color} lo sobreescriben) */
+  *,
+  ::before,
+  ::after {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
   html {
     scroll-behavior: smooth;
   }

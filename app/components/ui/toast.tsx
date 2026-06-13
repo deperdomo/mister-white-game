@@ -12,10 +12,10 @@ interface ToastProps {
 }
 
 const toastStyles = {
-  success: 'bg-green-950 border-green-800 text-green-200',
-  error: 'bg-red-950 border-red-800 text-red-200',
-  warning: 'bg-yellow-950 border-yellow-800 text-yellow-200',
-  info: 'bg-blue-950 border-blue-800 text-blue-200',
+  success: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-200 [&>svg]:text-emerald-400',
+  error: 'bg-red-500/10 border-red-500/25 text-red-200 [&>svg]:text-red-400',
+  warning: 'bg-amber-500/10 border-amber-500/25 text-amber-200 [&>svg]:text-amber-400',
+  info: 'bg-accent/10 border-accent/25 text-fg [&>svg]:text-accent',
 };
 
 const toastIcons = {
@@ -44,7 +44,7 @@ export function Toast({
 
   return (
     <div className={cn(
-      'flex items-start space-x-3 p-4 border rounded-lg shadow-sm animate-fade-in',
+      'flex items-start space-x-3 p-4 border rounded-xl shadow-float backdrop-blur-xl animate-fade-in',
       toastStyles[type]
     )}>
       <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />

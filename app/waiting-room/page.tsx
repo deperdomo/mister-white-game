@@ -110,7 +110,7 @@ function WaitingRoomContent() {
   if (!roomCode) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
-        <p className="mb-4 text-slate-400">Código de sala no válido</p>
+        <p className="mb-4 text-muted">Código de sala no válido</p>
         <Link href="/">
           <Button>Volver al inicio</Button>
         </Link>
@@ -133,7 +133,7 @@ function WaitingRoomContent() {
               <ArrowLeft className="h-4 w-4 mr-1" />
               Salir
             </Button>
-            <h1 className="text-2xl font-bold text-slate-50">
+            <h1 className="text-2xl font-bold text-fg">
               Sala de Espera
             </h1>
           </div>
@@ -181,14 +181,14 @@ function WaitingRoomContent() {
       {/* Código de sala */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center space-x-2">
-          <span className="text-lg text-slate-400">
+          <span className="text-lg text-muted">
             Código de sala:
           </span>
-          <code className="px-3 py-1 rounded-md text-lg font-mono font-bold tracking-wider bg-slate-800">
+          <code className="px-3 py-1 rounded-md text-lg font-mono font-bold tracking-wider bg-panel">
             {roomCode}
           </code>
         </div>
-        <p className="text-sm mt-2 text-slate-500">
+        <p className="text-sm mt-2 text-faint">
           Comparte este código con tus amigos para que se unan
         </p>
       </div>
@@ -214,7 +214,7 @@ function WaitingRoomContent() {
                     className={`p-3 border rounded-lg ${
                       player.name === playerName 
                         ? 'border-blue-500 bg-blue-900/20' 
-                        : 'border-slate-700'
+                        : 'border-white/10'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -224,7 +224,7 @@ function WaitingRoomContent() {
                           {player.isHost && <Crown className="ml-2 h-4 w-4 text-yellow-500" />}
                           {player.name === playerName && <span className="ml-2 text-blue-500 text-sm">(Tú)</span>}
                         </p>
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm text-muted">
                           Jugador #{index + 1}
                         </p>
                       </div>
@@ -237,10 +237,10 @@ function WaitingRoomContent() {
                 {Array.from({ length: room.maxPlayers - players.length }).map((_, index) => (
                   <div
                     key={`empty-${index}`}
-                    className="p-3 border-2 border-dashed rounded-lg border-slate-600"
+                    className="p-3 border-2 border-dashed rounded-lg border-white/10"
                   >
                     <div className="flex items-center justify-center">
-                      <p className="text-slate-500">
+                      <p className="text-faint">
                         Esperando jugador #{players.length + index + 1}
                       </p>
                     </div>
@@ -261,19 +261,19 @@ function WaitingRoomContent() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Jugadores mínimos:</span>
+                  <span className="text-muted">Jugadores mínimos:</span>
                   <span className="font-medium">3</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Jugadores actuales:</span>
+                  <span className="text-muted">Jugadores actuales:</span>
                   <span className="font-medium">{players.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Máximo:</span>
+                  <span className="text-muted">Máximo:</span>
                   <span className="font-medium">{room.maxPlayers}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Estado:</span>
+                  <span className="text-muted">Estado:</span>
                   <span className="font-medium capitalize">
                     {room.status === 'waiting' ? 'Esperando' : room.status}
                   </span>
@@ -290,7 +290,7 @@ function WaitingRoomContent() {
                     {isStarting ? 'Iniciando...' : 'Iniciar Juego'}
                   </Button>
                   {players.length < 3 && (
-                    <p className="text-xs mt-2 text-center text-slate-400">
+                    <p className="text-xs mt-2 text-center text-muted">
                       Se necesitan al menos 3 jugadores
                     </p>
                   )}
@@ -299,7 +299,7 @@ function WaitingRoomContent() {
 
               {!isHost && (
                 <div className="pt-4 border-t">
-                  <p className="text-sm text-center text-slate-400">
+                  <p className="text-sm text-center text-muted">
                     Esperando a que el host inicie el juego...
                   </p>
                 </div>
@@ -313,7 +313,7 @@ function WaitingRoomContent() {
               <CardTitle className="text-lg">Cómo Jugar</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="text-sm space-y-2 text-slate-400">
+              <ul className="text-sm space-y-2 text-muted">
                 <li>• Cada jugador recibe un rol secreto</li>
                 <li>• Los civiles conocen la palabra</li>
                 <li>• Mister White no la conoce</li>

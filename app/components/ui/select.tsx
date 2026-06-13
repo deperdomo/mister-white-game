@@ -53,14 +53,14 @@ export function SelectTrigger({ className, children, ...props }: SelectTriggerPr
   return (
     <div
       className={cn(
-        "flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 cursor-pointer border-slate-800 bg-slate-950 ring-offset-slate-950 placeholder:text-slate-400 focus:ring-slate-300",
+        "flex h-11 w-full cursor-pointer items-center justify-between rounded-xl border border-white/10 bg-panel px-4 text-[15px] text-fg transition-colors focus:outline-none focus:border-accent/70 focus:ring-2 focus:ring-accent/25 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
         className
       )}
       onClick={() => setIsOpen(!isOpen)}
       {...props}
     >
       {children}
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="h-4 w-4 text-faint" />
     </div>
   )
 }
@@ -71,8 +71,8 @@ export function SelectContent({ children }: SelectContentProps) {
   if (!isOpen) return null
 
   return (
-    <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-96 overflow-auto rounded-md border shadow-md border-slate-800 bg-slate-950 text-slate-50">
-      <div className="p-1">
+    <div className="absolute top-full left-0 right-0 z-50 mt-2 max-h-96 overflow-auto rounded-xl border border-white/10 bg-elevated text-fg shadow-float">
+      <div className="p-1.5">
         {children}
       </div>
     </div>
@@ -90,8 +90,8 @@ export function SelectItem({ value, children, className, ...props }: SelectItemP
   return (
     <div
       className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-2 text-sm outline-none cursor-pointer hover:bg-slate-800 focus:bg-slate-800",
-        selectedValue === value && "bg-slate-800",
+        "relative flex w-full cursor-pointer select-none items-center rounded-lg px-3 py-2 text-sm text-fg outline-none transition-colors hover:bg-white/5 focus:bg-white/5",
+        selectedValue === value && "bg-white/10",
         className
       )}
       onClick={handleClick}
