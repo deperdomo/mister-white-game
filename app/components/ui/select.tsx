@@ -30,16 +30,36 @@ const SelectContext = React.createContext<{
   onValueChange?: (value: string) => void
   isOpen: boolean
   setIsOpen: (open: boolean) => void
+  labels: Record<string, React.ReactNode>
 }>({
   isOpen: false,
   setIsOpen: () => {},
+  labels: {},
 })
+
+// Recorre los hijos para mapear value -> etiqueta de cada SelectItem,
+// de forma que SelectValue muestre el texto y no el valor crudo.
+function collectLabels(children: React.ReactNode, labels: Record<string, React.ReactNode>) {
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return
+    if (child.type === SelectItem) {
+      const { value, children: label } = child.props as SelectItemProps
+      labels[value] = label
+      return
+    }
+    const childProps = child.props as { children?: React.ReactNode }
+    if (childProps?.children) collectLabels(childProps.children, labels)
+  })
+}
 
 export function Select({ value, onValueChange, children }: SelectProps) {
   const [isOpen, setIsOpen] = React.useState(false)
 
+  const labels: Record<string, React.ReactNode> = {}
+  collectLabels(children, labels)
+
   return (
-    <SelectContext.Provider value={{ value, onValueChange, isOpen, setIsOpen }}>
+    <SelectContext.Provider value={{ value, onValueChange, isOpen, setIsOpen, labels }}>
       <div className="relative">
         {children}
       </div>
@@ -103,6 +123,7 @@ export function SelectItem({ value, children, className, ...props }: SelectItemP
 }
 
 export function SelectValue({ placeholder }: SelectValueProps) {
-  const { value } = React.useContext(SelectContext)
-  return <span>{value || placeholder}</span>
+  const { value, labels } = React.useContext(SelectContext)
+  const display = value != null && labels[value] != null ? labels[value] : value || placeholder
+  return <span>{display}</span>
 }

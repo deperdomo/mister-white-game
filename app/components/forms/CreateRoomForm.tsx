@@ -65,8 +65,8 @@ export default function CreateRoomForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
-        <div className="mx-auto p-3 rounded-full w-fit mb-4 bg-blue-900">
-          <Users className="h-8 w-8 text-blue-400" />
+        <div className="mx-auto p-3 rounded-full w-fit mb-4 bg-accent/15">
+          <Users className="h-8 w-8 text-accent" />
         </div>
         <CardTitle>Nueva Sala Online</CardTitle>
         <CardDescription>
@@ -110,7 +110,7 @@ export default function CreateRoomForm() {
               value={formData.maxPlayers}
               onChange={(e) => handleInputChange('maxPlayers', parseInt(e.target.value))}
               disabled={isLoading}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed border-white/10 bg-elevated text-fg"
+              className="w-full px-4 h-11 border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent/70 disabled:opacity-50 disabled:cursor-not-allowed border-white/10 bg-panel text-fg text-[15px]"
             >
               {[3, 4, 5, 6, 7, 8].map(num => (
                 <option key={num} value={num}>
@@ -147,10 +147,10 @@ export default function CreateRoomForm() {
         </form>
 
         {/* Información adicional */}
-        <div className="mt-6 p-4 rounded-lg bg-blue-900/20">
-          <div className="flex items-start space-x-2">
-            <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-400" />
-            <div className="text-sm text-blue-200">
+        <div className="mt-6 p-4 rounded-xl border border-accent/20 bg-accent/10">
+          <div className="flex items-start space-x-2.5">
+            <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-accent" />
+            <div className="text-sm text-muted">
               <p className="font-medium mb-1">¿Cómo funciona?</p>
               <ul className="space-y-1 text-xs">
                 <li>• Creas una sala con un código único</li>
