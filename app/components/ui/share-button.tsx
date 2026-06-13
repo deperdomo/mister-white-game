@@ -58,8 +58,8 @@ export function ShareButton({
     >
       {children || (
         <>
-          <ShareIcon className="mr-2 h-5 w-5" />
-          Compartir con Amigos
+          <ShareIcon className="h-5 w-5" />
+          Compartir con amigos
         </>
       )}
     </Button>

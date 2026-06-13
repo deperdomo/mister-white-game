@@ -74,7 +74,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="scroll-smooth">
-      <body className={`${inter.variable} font-sans antialiased min-h-screen transition-colors bg-slate-950`}>
+      <body className={`${inter.variable} antialiased min-h-screen bg-ink`}>
         <ToastProvider>
           <div className="flex flex-col min-h-screen">
             <Header />

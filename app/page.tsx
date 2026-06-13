@@ -1,297 +1,278 @@
-"use client";
-
-import { PlayIcon, UsersIcon, MonitorIcon, SmartphoneIcon, VideoIcon, StarIcon } from "lucide-react";
+import { Users, Monitor, ArrowRight, Hash, Check } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
+import { Card } from "./components/ui/card";
 import { ShareButton } from "./components/ui/share-button";
-import { useRef } from "react";
+import { Logo } from "./components/ui/logo";
+
+const steps = [
+  {
+    n: "1",
+    title: "Recibe tu rol",
+    body: "Civil, Undercover o Mister White. Solo tú ves tu carta… y el impostor no conoce la palabra.",
+  },
+  {
+    n: "2",
+    title: "Da una pista",
+    body: "Una palabra relacionada con la secreta, sin delatarte. Todos a la vez: cuidado con pasarte de obvio.",
+  },
+  {
+    n: "3",
+    title: "Vota",
+    body: "Señala al sospechoso. ¿Cae el impostor o se sale con la suya adivinando la palabra?",
+  },
+];
 
 export default function HomePage() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Hero Section */}
-      <section className="text-center py-12 sm:py-16 lg:py-20">
-        <div className="animate-fade-in">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-slate-50">
-            ¡Bienvenido a{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Mister White
-            </span>
-            !
-          </h1>
-          <p className="text-lg sm:text-xl mb-8 max-w-2xl mx-auto text-slate-400">
-            Un emocionante juego de deducción social donde la astucia y la observación son clave. 
-            ¿Podrás descubrir quién es el espía antes de que te descubran?
-          </p>
-        </div>
-        
-        {/* Botones de acción principales */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-          <Link href="/create-room">
-            <Button size="lg" className="w-full sm:w-auto">
-              <UsersIcon className="mr-2 h-5 w-5" />
-              Crear Sala Online
-            </Button>
-          </Link>
-          <Link href="/join-room">
-            <Button variant="outline" size="lg" className="w-full sm:w-auto">
-              <PlayIcon className="mr-2 h-5 w-5" />
-              Unirse a Sala
-            </Button>
-          </Link>
-          <Link href="/local">
-            <Button variant="secondary" size="lg" className="w-full sm:w-auto">
-              <MonitorIcon className="mr-2 h-5 w-5" />
-              Juego Local
-            </Button>
-          </Link>
-        </div>
-      </section>
+    <div>
+      {/* ───────────────── Hero ───────────────── */}
+      <section className="relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[640px] spotlight" />
 
-      {/* Características del juego */}
-      <section className="py-12">
-        <h2 className="text-3xl font-bold text-center mb-8 text-slate-50">
-          ¿Cómo se juega?
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="animate-fade-in">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <div className="p-2 rounded-lg mr-3 bg-blue-900">
-                  <UsersIcon className="h-6 w-6 text-blue-400" />
-                </div>
-                Roles Secretos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Cada jugador recibe un rol: <strong>Civil</strong> (conoce la palabra), 
-                <strong> Undercover</strong> (palabra relacionada, opcional), <strong>Mister White</strong> (no conoce la palabra),
-                o <strong>Payaso</strong> (conoce la palabra, gana si es votado como Mister White - 8+ jugadores).
-              </CardDescription>
-            </CardContent>
-          </Card>
+        <div className="container mx-auto max-w-screen-xl px-4">
+          <div className="relative mx-auto max-w-3xl pt-20 pb-10 text-center sm:pt-28">
+            <p className="eyebrow animate-fade-in">Juego de deducción social</p>
 
-          <Card className="animate-fade-in">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <div className="p-2 rounded-lg mr-3 bg-green-900">
-                  <PlayIcon className="h-6 w-6 text-green-400" />
-                </div>
-                Dar Pistas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Todos los jugadores dan una pista de una palabra relacionada con su palabra secreta 
-                <strong>al mismo tiempo</strong>. Luego se procede a la votación.
-              </CardDescription>
-            </CardContent>
-          </Card>
+            <h1 className="animate-rise mt-5 text-balance text-5xl font-semibold leading-[1.02] tracking-display text-fg sm:text-6xl lg:text-7xl">
+              Alguien está{" "}
+              <span className="text-gradient">fingiendo</span>.
+            </h1>
 
-          <Card className="animate-fade-in">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <div className="p-2 rounded-lg mr-3 bg-purple-900">
-                  <MonitorIcon className="h-6 w-6 text-purple-400" />
-                </div>
-                Votar
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Después de las descripciones, todos votan para eliminar al sospechoso. 
-                ¡Identifica a Mister White antes de que adivine la palabra!
-              </CardDescription>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+            <p className="animate-rise mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
+              Da pistas, detecta al impostor y no dejes que te descubran.
+              Mister White es el juego perfecto para fiestas y reuniones,
+              de 3 a 20 jugadores.
+            </p>
 
-      {/* Modos de juego */}
-      <section className="py-12">
-        <h2 className="text-3xl font-bold text-center mb-8 text-slate-50">
-          Modos de Juego
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Modo Online */}
-          <Card className="animate-fade-in border-2 border-blue-800">
-            <CardHeader>
-              <CardTitle className="flex items-center text-blue-400">
-                <UsersIcon className="mr-3 h-8 w-8" />
-                Modo Online
-              </CardTitle>
-              <CardDescription>
-                Juega con amigos desde cualquier lugar del mundo
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>• Hasta 8 jugadores simultáneos</li>
-                <li>• Salas privadas con código único</li>
-                <li>• Sincronización en tiempo real</li>
-                <li>• Nuevos roles: Payaso (8 jugadores)</li>
-                <li>• Undercover opcional</li>
-              </ul>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Link href="/create-room" className="flex-1">
-                  <Button className="w-full">Crear Sala</Button>
-                </Link>
-                <Link href="/join-room" className="flex-1">
-                  <Button variant="outline" className="w-full">Unirse</Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Modo Local */}
-          <Card className="animate-fade-in border-2 border-green-800">
-            <CardHeader>
-              <CardTitle className="flex items-center text-green-400">
-                <MonitorIcon className="mr-3 h-8 w-8" />
-                Modo Local
-              </CardTitle>
-              <CardDescription>
-                Perfecto para reuniones presenciales
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>• De 3 a 20 jugadores en persona</li>
-                <li>• No requiere conexión a internet</li>
-                <li>• Rol Payaso para 8+ jugadores</li>
-                <li>• Undercover opcional</li>
-                <li>• Categorías solo en dificultad fácil</li>
-                <li>• Ideal para fiestas y reuniones</li>
-              </ul>
-              <Link href="/local">
-                <Button variant="success" className="w-full">
-                  <SmartphoneIcon className="mr-2 h-4 w-4" />
-                  Empezar Modo Local
+            <div className="animate-rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href="/create-room" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto">
+                  <Users className="h-5 w-5" />
+                  Crear sala online
                 </Button>
               </Link>
-            </CardContent>
+              <Link href="/local" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                  <Monitor className="h-5 w-5" />
+                  Jugar en local
+                </Button>
+              </Link>
+            </div>
+
+            <Link
+              href="/join-room"
+              className="mt-5 inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-fg"
+            >
+              <Hash className="h-4 w-4" />
+              ¿Tienes un código? Únete a una sala
+            </Link>
+          </div>
+
+          {/* Elemento firma: la carta con la palabra censurada */}
+          <div className="relative mx-auto max-w-sm pb-16">
+            <div className="animate-rise rounded-3xl border border-white/[0.08] bg-surface p-7 shadow-float">
+              <div className="flex items-center justify-between">
+                <span className="eyebrow">Tu rol</span>
+                <Logo className="h-7 w-7" />
+              </div>
+
+              <p className="mt-7 text-3xl font-semibold tracking-tight text-fg">
+                Mister White
+              </p>
+              <p className="mt-1.5 text-sm text-muted">
+                No conoces la palabra secreta.
+              </p>
+
+              <div className="mt-7">
+                <p className="eyebrow mb-2">Palabra</p>
+                <div className="flex items-center justify-center rounded-xl border border-white/10 bg-panel py-5">
+                  <span className="select-none text-xl font-semibold tracking-[0.35em] text-faint blur-[7px]">
+                    SECRETO
+                  </span>
+                </div>
+              </div>
+
+              <p className="mt-6 text-center text-sm text-muted">
+                Disimula. Que no te descubran.
+              </p>
+            </div>
+          </div>
+
+          {/* Línea de confianza, discreta */}
+          <p className="pb-20 text-center text-sm text-faint">
+            3–20 jugadores · ~15 min por partida · Sin descargas · Gratis
+          </p>
+        </div>
+      </section>
+
+      {/* ───────────────── Cómo se juega ───────────────── */}
+      <section className="container mx-auto max-w-screen-xl px-4 py-20">
+        <div className="max-w-2xl">
+          <p className="eyebrow">Cómo se juega</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
+            Tres pasos. Una sola mentira que sostener.
+          </h2>
+        </div>
+
+        <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
+          {steps.map((step) => (
+            <div
+              key={step.n}
+              className="rounded-2xl border border-white/[0.06] bg-surface/60 p-6"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 text-sm font-semibold text-fg">
+                {step.n}
+              </div>
+              <h3 className="mt-5 text-lg font-semibold tracking-tight text-fg">
+                {step.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                {step.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ───────────────── Modos de juego ───────────────── */}
+      <section className="container mx-auto max-w-screen-xl px-4 py-20">
+        <div className="max-w-2xl">
+          <p className="eyebrow">Dos formas de jugar</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
+            En la misma mesa o a distancia.
+          </h2>
+        </div>
+
+        <div className="mt-12 grid grid-cols-1 gap-5 lg:grid-cols-2">
+          {/* Online */}
+          <Card className="flex flex-col p-7">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold tracking-tight text-fg">
+                  Online
+                </h3>
+                <p className="text-sm text-muted">
+                  Cada quien en su pantalla, en tiempo real
+                </p>
+              </div>
+            </div>
+            <ul className="mt-6 space-y-2.5 text-sm text-muted">
+              {[
+                "Hasta 8 jugadores simultáneos",
+                "Salas privadas con código único",
+                "Sincronización en tiempo real",
+                "Roles avanzados: Undercover y Payaso",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2.5">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-auto flex gap-3 pt-7">
+              <Link href="/create-room" className="flex-1">
+                <Button className="w-full">Crear sala</Button>
+              </Link>
+              <Link href="/join-room" className="flex-1">
+                <Button variant="secondary" className="w-full">
+                  Unirse
+                </Button>
+              </Link>
+            </div>
+          </Card>
+
+          {/* Local */}
+          <Card className="flex flex-col p-7">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                <Monitor className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold tracking-tight text-fg">
+                  Local
+                </h3>
+                <p className="text-sm text-muted">
+                  Un solo dispositivo que va pasando de mano en mano
+                </p>
+              </div>
+            </div>
+            <ul className="mt-6 space-y-2.5 text-sm text-muted">
+              {[
+                "De 3 a 20 jugadores en persona",
+                "No necesita conexión a internet",
+                "Categorías y dificultad ajustables",
+                "Ideal para fiestas y reuniones",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2.5">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-auto pt-7">
+              <Link href="/local">
+                <Button variant="secondary" className="w-full">
+                  Empezar modo local
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </Card>
         </div>
       </section>
 
-      {/* Estadísticas */}
-      <section className="py-12 rounded-lg bg-slate-900">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold mb-8 text-slate-50">
-            Mister White en números
+      {/* ───────────────── Demo ───────────────── */}
+      <section className="container mx-auto max-w-screen-xl px-4 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="eyebrow">En movimiento</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
+            Míralo en acción
           </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold mb-2 text-blue-400">3-20</div>
-              <div className="text-sm text-slate-400">Jugadores</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold mb-2 text-green-400">15min</div>
-              <div className="text-sm text-slate-400">Por partida</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold mb-2 text-purple-400">100%</div>
-              <div className="text-sm text-slate-400">Gratis</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold mb-2 text-orange-400">∞</div>
-              <div className="text-sm text-slate-400">Diversión</div>
-            </div>
+          <p className="mt-4 text-base leading-relaxed text-muted">
+            Una partida completa en modo local, de principio a fin.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-12 max-w-3xl">
+          <div className="overflow-hidden rounded-2xl border border-white/[0.08] shadow-float">
+            <video
+              className="aspect-video w-full"
+              controls
+              poster="/detective.jpg"
+              preload="metadata"
+            >
+              <source src="/video/Tutorial_modo_local.mp4" type="video/mp4" />
+              Tu navegador no soporta videos HTML5.
+            </video>
           </div>
         </div>
       </section>
 
-      {/* Demo Video */}
-      <section className="py-12">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-50">
-            <VideoIcon className="inline-block mr-2 h-8 w-8 text-blue-400" />
-            Mira cómo se juega
-          </h2>
-        </div>
-        <div className="flex justify-center">
-          <div className="w-full max-w-3xl">
-            <div className="relative pb-[56.25%] h-0 rounded-lg overflow-hidden shadow-xl transition-transform hover:scale-[1.01] duration-300 bg-slate-800">
-              <video 
-                ref={videoRef}
-                className="absolute top-0 left-0 w-full h-full rounded-lg" 
-                controls
-                poster="/detective.jpg"
-                preload="metadata"
-              >
-                <source src="/video/Tutorial_modo_local.mov" type="video/mp4" />
-                Tu navegador no soporta videos HTML5.
-              </video>
+      {/* ───────────────── CTA final ───────────────── */}
+      <section className="container mx-auto max-w-screen-xl px-4 pb-24 pt-4">
+        <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-surface px-6 py-16 text-center">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-72 spotlight" />
+          <div className="relative">
+            <h2 className="mx-auto max-w-xl text-balance text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
+              Reúne a tus amigos y descubre quién sabe mentir mejor.
+            </h2>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href="/create-room" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto">
+                  Empezar a jugar
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+              </Link>
+              <ShareButton
+                className="w-full sm:w-auto"
+                title="Mister White - Juego de deducción social"
+                text="¡Descubre este juego de deducción social para jugar con amigos!"
+              />
             </div>
-            <p className="text-center mt-4 text-slate-400">
-              Tutorial completo de cómo jugar a Mister White en modo local
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action Final */}
-      <section className="py-16 text-center bg-gradient-to-r rounded-lg from-blue-950 to-purple-950">
-        <h2 className="text-3xl font-bold mb-4 text-slate-50">
-          ¿Listo para la diversión?
-        </h2>
-        <p className="text-lg mb-8 max-w-2xl mx-auto text-slate-400">
-          Reúne a tus amigos y descubre quién sabe mentir mejor.
-          ¡Perfecto para fiestas, reuniones familiares o noches con amigos!
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Link href="/create-room">
-            <Button size="lg" className="w-full sm:w-auto">
-              <PlayIcon className="mr-2 h-5 w-5" />
-              ¡Empezar a Jugar Ya!
-            </Button>
-          </Link>
-          <ShareButton 
-            className="w-full sm:w-auto"
-            title="Mister White - Juego de Deducción Social"
-            text="¡Descubre este increíble juego multijugador online!"
-          />
-        </div>
-      </section>
-
-      {/* Estadísticas destacadas */}
-      <section className="py-12">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4 text-slate-50">
-            ¿Por qué elegir Mister White?
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center">
-            <div className="p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-green-900">
-              <StarIcon className="h-8 w-8 text-green-400" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Sin Descargas</h3>
-            <p className="text-slate-400">
-              Juega directamente desde tu navegador, sin instalaciones
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-blue-900">
-              <UsersIcon className="h-8 w-8 text-blue-400" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Multijugador Real</h3>
-            <p className="text-slate-400">
-              Conecta con amigos desde cualquier dispositivo en tiempo real
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-purple-900">
-              <MonitorIcon className="h-8 w-8 text-purple-400" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Fácil de Aprender</h3>
-            <p className="text-slate-400">
-              Reglas simples, diversión infinita para todas las edades
-            </p>
           </div>
         </div>
       </section>

@@ -2,45 +2,41 @@ import { Github, Heart } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="border-t border-slate-800 bg-slate-950">
-      <div className="container mx-auto max-w-screen-xl px-4 py-8">
-        <div className="flex flex-col items-center justify-between space-y-4 sm:flex-row sm:space-y-0">
+    <footer className="border-t border-white/[0.06] bg-ink">
+      <div className="container mx-auto max-w-screen-xl px-4 py-10">
+        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           {/* Información del proyecto */}
-          <div className="flex flex-col items-center space-y-2 sm:items-start">
-            <p className="text-sm text-slate-400">
-              © 2025 Mister White Game. Hecho con{' '}
-              <Heart className="inline h-4 w-4 text-red-500" />{' '}
+          <div className="flex flex-col items-center gap-1.5 sm:items-start">
+            <p className="text-sm text-muted">
+              © 2025 Mister White. Hecho con{' '}
+              <Heart className="inline h-4 w-4 text-accent" />{' '}
               para la diversión.
             </p>
-            <p className="text-xs text-slate-500">
-              Next.js 14 • TypeScript • Tailwind CSS • Supabase • Pusher
+            <p className="text-xs text-faint">
+              Next.js • TypeScript • Tailwind CSS • Supabase • Pusher
             </p>
           </div>
 
           {/* Enlaces */}
-          <div className="flex items-center space-x-4">
-            <a
-              href="https://github.com/deperdomo/mister-white-game"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-1 text-sm transition-colors text-slate-400 hover:text-slate-50"
-            >
-              <Github className="h-4 w-4" />
-              <span className="hidden sm:inline">GitHub</span>
-            </a>
-          </div>
+          <a
+            href="https://github.com/deperdomo/mister-white-game"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-fg"
+          >
+            <Github className="h-4 w-4" />
+            <span className="hidden sm:inline">GitHub</span>
+          </a>
         </div>
 
         {/* Divider */}
-        <div className="mt-6 border-t pt-6 border-slate-800">
-          <div className="text-center">
-            <p className="text-xs text-slate-500">
-              Este juego es una versión digital del clásico juego de mesa.
-              <br className="sm:hidden" />
-              <span className="hidden sm:inline"> • </span>
-              Disfruta jugando con amigos y familia.
-            </p>
-          </div>
+        <div className="mt-8 border-t border-white/[0.06] pt-6">
+          <p className="text-center text-xs text-faint">
+            Una versión digital del clásico juego de mesa.
+            <span className="hidden sm:inline"> · </span>
+            <br className="sm:hidden" />
+            Disfruta jugando con amigos y familia.
+          </p>
         </div>
       </div>
     </footer>

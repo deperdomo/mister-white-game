@@ -1,44 +1,98 @@
 @import "tailwindcss";
 
-/* Variables CSS personalizadas (tema oscuro único) */
+/* ───────────────────────────────────────────────────────────
+   Sistema de diseño — "Noir Apple"
+   Negros por capas con elevación real, tipografía precisa y el
+   degradado de marca usado solo como foco de luz.
+   ─────────────────────────────────────────────────────────── */
+@theme {
+  --color-ink: #0a0a0b;        /* fondo base (casi negro) */
+  --color-surface: #141416;    /* tarjetas / paneles */
+  --color-panel: #1b1b1f;      /* inputs / superficies secundarias */
+  --color-elevated: #26262b;   /* hover / capas superiores */
+
+  --color-fg: #f5f5f7;         /* texto principal (off-white Apple) */
+  --color-muted: #a1a1aa;      /* texto secundario */
+  --color-faint: #6f6f78;      /* texto terciario / captions */
+
+  --color-accent: #7c5cff;     /* acento de marca (violeta) */
+  --color-iris: #2e7bff;       /* fin del degradado (azul) */
+
+  --radius: 0.875rem;
+}
+
 :root {
-  --background: #0a0a0a;
-  --foreground: #f8fafc;
-  --card: #0a0a0a;
-  --card-foreground: #f8fafc;
-  --popover: #0a0a0a;
-  --popover-foreground: #f8fafc;
-  --primary: #f8fafc;
-  --primary-foreground: #0f172a;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --destructive: #ef4444;
-  --destructive-foreground: #f8fafc;
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #94a3b8;
-  --radius: 0.5rem;
+  color-scheme: dark;
+  --shadow-card: 0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
+    0 24px 50px -30px rgba(0, 0, 0, 0.85);
+  --shadow-float: 0 1px 0 0 rgba(255, 255, 255, 0.07) inset,
+    0 50px 90px -36px rgba(0, 0, 0, 0.92);
 }
 
-/* Estilos base */
-* {
-  border-color: var(--border);
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, var(--font-sans),
+      "Segoe UI", Roboto, sans-serif;
+    background-color: var(--color-ink);
+    color: var(--color-fg);
+    line-height: 1.5;
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-accent) 38%, transparent);
+    color: #ffffff;
+  }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer components {
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-float {
+    box-shadow: var(--shadow-float);
+  }
+
+  /* Eyebrow: etiqueta pequeña en mayúsculas con tracking amplio */
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /* Texto con degradado de marca (usado con moderación) */
+  .text-gradient {
+    background: linear-gradient(100deg, #c9b8ff 0%, var(--color-accent) 45%, var(--color-iris) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Foco de luz radial detrás del hero */
+  .spotlight {
+    background: radial-gradient(
+      58% 50% at 50% 0%,
+      rgba(124, 92, 255, 0.22),
+      rgba(46, 123, 255, 0.09) 42%,
+      transparent 72%
+    );
+  }
 }
 
-/* Mejoras de accesibilidad */
+/* Tracking ajustado para titulares grandes (estilo SF Display) */
+.tracking-display {
+  letter-spacing: -0.03em;
+}
+
+/* Accesibilidad: respeta reduce-motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -50,94 +104,79 @@ body {
   }
 }
 
-/* Focus visible personalizado */
-.focus-visible:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-/* Animaciones personalizadas */
+/* Animaciones */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-@keyframes slideIn {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.animate-slide-in {
-  animation: slideIn 0.3s ease-out;
+.animate-rise {
+  animation: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.animate-pulse-custom {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Estilos para scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
-
 ::-webkit-scrollbar-track {
-  background: var(--muted);
+  background: var(--color-ink);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--muted-foreground);
-  border-radius: 4px;
+  background: var(--color-elevated);
+  border-radius: 8px;
+  border: 2px solid var(--color-ink);
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--foreground);
+  background: #34343b;
 }
 
-/* Estilos para selección de texto */
-::selection {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-
-/* Layout responsive helpers */
+/* Container responsive */
 .container {
   width: 100%;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
 }
-
 @media (min-width: 640px) {
   .container {
     max-width: 640px;
   }
 }
-
 @media (min-width: 768px) {
   .container {
     max-width: 768px;
   }
 }
-
 @media (min-width: 1024px) {
   .container {
     max-width: 1024px;
   }
 }
-
 @media (min-width: 1280px) {
   .container {
-    max-width: 1280px;
+    max-width: 1180px;
   }
 }
