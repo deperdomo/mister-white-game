@@ -15,14 +15,14 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="text-center py-12 sm:py-16 lg:py-20">
         <div className="animate-fade-in">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-slate-50 mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-slate-50">
             ¡Bienvenido a{" "}
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Mister White
             </span>
             !
           </h1>
-          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl mb-8 max-w-2xl mx-auto text-slate-400">
             Un emocionante juego de deducción social donde la astucia y la observación son clave. 
             ¿Podrás descubrir quién es el espía antes de que te descubran?
           </p>
@@ -53,15 +53,15 @@ export default function HomePage() {
 
       {/* Características del juego */}
       <section className="py-12">
-        <h2 className="text-3xl font-bold text-center text-slate-900 dark:text-slate-50 mb-8">
+        <h2 className="text-3xl font-bold text-center mb-8 text-slate-50">
           ¿Cómo se juega?
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-lg mr-3">
-                  <UsersIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-2 rounded-lg mr-3 bg-blue-900">
+                  <UsersIcon className="h-6 w-6 text-blue-400" />
                 </div>
                 Roles Secretos
               </CardTitle>
@@ -78,8 +78,8 @@ export default function HomePage() {
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <div className="bg-green-100 dark:bg-green-900 p-2 rounded-lg mr-3">
-                  <PlayIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="p-2 rounded-lg mr-3 bg-green-900">
+                  <PlayIcon className="h-6 w-6 text-green-400" />
                 </div>
                 Dar Pistas
               </CardTitle>
@@ -95,8 +95,8 @@ export default function HomePage() {
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded-lg mr-3">
-                  <MonitorIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <div className="p-2 rounded-lg mr-3 bg-purple-900">
+                  <MonitorIcon className="h-6 w-6 text-purple-400" />
                 </div>
                 Votar
               </CardTitle>
@@ -113,14 +113,14 @@ export default function HomePage() {
 
       {/* Modos de juego */}
       <section className="py-12">
-        <h2 className="text-3xl font-bold text-center text-slate-900 dark:text-slate-50 mb-8">
+        <h2 className="text-3xl font-bold text-center mb-8 text-slate-50">
           Modos de Juego
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Modo Online */}
-          <Card className="animate-fade-in border-2 border-blue-200 dark:border-blue-800">
+          <Card className="animate-fade-in border-2 border-blue-800">
             <CardHeader>
-              <CardTitle className="flex items-center text-blue-600 dark:text-blue-400">
+              <CardTitle className="flex items-center text-blue-400">
                 <UsersIcon className="mr-3 h-8 w-8" />
                 Modo Online
               </CardTitle>
@@ -129,7 +129,7 @@ export default function HomePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+              <ul className="space-y-2 text-sm text-slate-400">
                 <li>• Hasta 8 jugadores simultáneos</li>
                 <li>• Salas privadas con código único</li>
                 <li>• Sincronización en tiempo real</li>
@@ -148,9 +148,9 @@ export default function HomePage() {
           </Card>
 
           {/* Modo Local */}
-          <Card className="animate-fade-in border-2 border-green-200 dark:border-green-800">
+          <Card className="animate-fade-in border-2 border-green-800">
             <CardHeader>
-              <CardTitle className="flex items-center text-green-600 dark:text-green-400">
+              <CardTitle className="flex items-center text-green-400">
                 <MonitorIcon className="mr-3 h-8 w-8" />
                 Modo Local
               </CardTitle>
@@ -159,7 +159,7 @@ export default function HomePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+              <ul className="space-y-2 text-sm text-slate-400">
                 <li>• De 3 a 20 jugadores en persona</li>
                 <li>• No requiere conexión a internet</li>
                 <li>• Rol Payaso para 8+ jugadores</li>
@@ -179,27 +179,27 @@ export default function HomePage() {
       </section>
 
       {/* Estadísticas */}
-      <section className="py-12 bg-slate-50 dark:bg-slate-900 rounded-lg">
+      <section className="py-12 rounded-lg bg-slate-900">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50 mb-8">
-            ¿Por qué elegir Mister White?
+          <h2 className="text-3xl font-bold mb-8 text-slate-50">
+            Mister White en números
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">3-20</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Jugadores</div>
+              <div className="text-3xl font-bold mb-2 text-blue-400">3-20</div>
+              <div className="text-sm text-slate-400">Jugadores</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">15min</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Por partida</div>
+              <div className="text-3xl font-bold mb-2 text-green-400">15min</div>
+              <div className="text-sm text-slate-400">Por partida</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">100%</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Gratis</div>
+              <div className="text-3xl font-bold mb-2 text-purple-400">100%</div>
+              <div className="text-sm text-slate-400">Gratis</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">∞</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Diversión</div>
+              <div className="text-3xl font-bold mb-2 text-orange-400">∞</div>
+              <div className="text-sm text-slate-400">Diversión</div>
             </div>
           </div>
         </div>
@@ -208,14 +208,14 @@ export default function HomePage() {
       {/* Demo Video */}
       <section className="py-12">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50">
-            <VideoIcon className="inline-block mr-2 h-8 w-8 text-blue-600 dark:text-blue-400" />
+          <h2 className="text-3xl font-bold text-slate-50">
+            <VideoIcon className="inline-block mr-2 h-8 w-8 text-blue-400" />
             Mira cómo se juega
           </h2>
         </div>
         <div className="flex justify-center">
           <div className="w-full max-w-3xl">
-            <div className="relative pb-[56.25%] h-0 rounded-lg overflow-hidden shadow-xl bg-slate-100 dark:bg-slate-800 transition-transform hover:scale-[1.01] duration-300">
+            <div className="relative pb-[56.25%] h-0 rounded-lg overflow-hidden shadow-xl transition-transform hover:scale-[1.01] duration-300 bg-slate-800">
               <video 
                 ref={videoRef}
                 className="absolute top-0 left-0 w-full h-full rounded-lg" 
@@ -227,75 +227,20 @@ export default function HomePage() {
                 Tu navegador no soporta videos HTML5.
               </video>
             </div>
-            <p className="text-center mt-4 text-slate-600 dark:text-slate-400">
+            <p className="text-center mt-4 text-slate-400">
               Tutorial completo de cómo jugar a Mister White en modo local
             </p>
           </div>
         </div>
       </section>
 
-      {/* Testimonios (Placeholder) */}
-      <section className="py-12 bg-slate-50 dark:bg-slate-900 rounded-lg">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50">
-            Lo que dicen nuestros jugadores
-          </h2>
-        </div>
-        <div className="max-w-2xl mx-auto space-y-4">
-          {/* Placeholder for testimonials - replace with actual testimonials */}
-          <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-            <p className="text-slate-600 dark:text-slate-400">
-              &ldquo;¡Increíble juego! Me tuvo al borde de mi asiento todo el tiempo.&rdquo;
-            </p>
-            <div className="flex items-center justify-between mt-2">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 mr-3"></div>
-                <div className="text-sm">
-                  <p className="font-semibold text-slate-900 dark:text-slate-50">Juan Pérez</p>
-                  <p className="text-slate-600 dark:text-slate-400">Jugador habitual</p>
-                </div>
-              </div>
-              <div className="text-yellow-500">
-                <StarIcon className="h-5 w-5 inline" />
-                <StarIcon className="h-5 w-5 inline" />
-                <StarIcon className="h-5 w-5 inline" />
-                <StarIcon className="h-5 w-5 inline" />
-                <StarIcon className="h-5 w-5 inline" />
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-            <p className="text-slate-600 dark:text-slate-400">
-              &ldquo;Una experiencia única, muy recomendable para jugar con amigos.&rdquo;
-            </p>
-            <div className="flex items-center justify-between mt-2">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 mr-3"></div>
-                <div className="text-sm">
-                  <p className="font-semibold text-slate-900 dark:text-slate-50">María Gómez</p>
-                  <p className="text-slate-600 dark:text-slate-400">Nueva en el juego</p>
-                </div>
-              </div>
-              <div className="text-yellow-500">
-                <StarIcon className="h-5 w-5 inline" />
-                <StarIcon className="h-5 w-5 inline" />
-                <StarIcon className="h-5 w-5 inline" />
-                <StarIcon className="h-5 w-5 inline" />
-                <StarIcon className="h-5 w-5 inline" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Call to Action Final */}
-      <section className="py-16 text-center bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 rounded-lg">
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50 mb-4">
+      <section className="py-16 text-center bg-gradient-to-r rounded-lg from-blue-950 to-purple-950">
+        <h2 className="text-3xl font-bold mb-4 text-slate-50">
           ¿Listo para la diversión?
         </h2>
-        <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
-          Únete a miles de jugadores que ya disfrutan de Mister White. 
+        <p className="text-lg mb-8 max-w-2xl mx-auto text-slate-400">
+          Reúne a tus amigos y descubre quién sabe mentir mejor.
           ¡Perfecto para fiestas, reuniones familiares o noches con amigos!
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -316,35 +261,35 @@ export default function HomePage() {
       {/* Estadísticas destacadas */}
       <section className="py-12">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50 mb-4">
+          <h2 className="text-3xl font-bold mb-4 text-slate-50">
             ¿Por qué elegir Mister White?
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center">
-            <div className="bg-green-100 dark:bg-green-900 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <StarIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
+            <div className="p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-green-900">
+              <StarIcon className="h-8 w-8 text-green-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Sin Descargas</h3>
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="text-slate-400">
               Juega directamente desde tu navegador, sin instalaciones
             </p>
           </div>
           <div className="text-center">
-            <div className="bg-blue-100 dark:bg-blue-900 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <UsersIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+            <div className="p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-blue-900">
+              <UsersIcon className="h-8 w-8 text-blue-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Multijugador Real</h3>
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="text-slate-400">
               Conecta con amigos desde cualquier dispositivo en tiempo real
             </p>
           </div>
           <div className="text-center">
-            <div className="bg-purple-100 dark:bg-purple-900 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <MonitorIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+            <div className="p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-purple-900">
+              <MonitorIcon className="h-8 w-8 text-purple-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Fácil de Aprender</h3>
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="text-slate-400">
               Reglas simples, diversión infinita para todas las edades
             </p>
           </div>

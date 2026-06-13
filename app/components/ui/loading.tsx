@@ -33,7 +33,7 @@ export function LoadingState({ message = 'Cargando...', size = 'md' }: LoadingSt
   return (
     <div className="flex flex-col items-center justify-center p-8 space-y-4">
       <LoadingSpinner size={size} />
-      <p className="text-sm text-slate-500 dark:text-slate-400">{message}</p>
+      <p className="text-sm text-slate-400">{message}</p>
     </div>
   );
 }

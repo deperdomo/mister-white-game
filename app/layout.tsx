@@ -73,7 +73,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/detective pequeño.png" type="image/png" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased min-h-screen bg-white dark:bg-slate-950 transition-colors`}>
+      <body className={`${inter.variable} font-sans antialiased min-h-screen transition-colors bg-slate-950`}>
         <ToastProvider>
           <div className="flex flex-col min-h-screen">
             <Header />

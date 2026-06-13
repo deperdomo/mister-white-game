@@ -31,18 +31,18 @@ export default function WaitingRoom({
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header de la sala */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50 mb-2">
+        <h1 className="text-3xl font-bold mb-2 text-slate-50">
           Sala de Espera
         </h1>
         <div className="flex items-center justify-center space-x-2">
-          <span className="text-lg text-slate-600 dark:text-slate-400">
+          <span className="text-lg text-slate-400">
             Código de sala:
           </span>
-          <code className="bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-md text-lg font-mono font-bold tracking-wider">
+          <code className="px-3 py-1 rounded-md text-lg font-mono font-bold tracking-wider bg-slate-800">
             {roomCode}
           </code>
         </div>
-        <p className="text-sm text-slate-500 dark:text-slate-500 mt-2">
+        <p className="text-sm mt-2 text-slate-500">
           Comparte este código con tus amigos para que se unan
         </p>
       </div>
@@ -54,7 +54,7 @@ export default function WaitingRoom({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Jugadores ({players.length}/{maxPlayers})</span>
-                <div className="flex items-center space-x-1 text-green-600 dark:text-green-400">
+                <div className="flex items-center space-x-1 text-green-400">
                   <Wifi className="h-4 w-4" />
                   <span className="text-sm">Online</span>
                 </div>
@@ -93,26 +93,26 @@ export default function WaitingRoom({
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">Jugadores mínimos:</span>
+                  <span className="text-slate-400">Jugadores mínimos:</span>
                   <span className="font-medium">3</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">Jugadores actuales:</span>
+                  <span className="text-slate-400">Jugadores actuales:</span>
                   <span className="font-medium">{players.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">Jugadores máximos:</span>
+                  <span className="text-slate-400">Jugadores máximos:</span>
                   <span className="font-medium">{maxPlayers}</span>
                 </div>
               </div>
               
               {/* Barra de progreso */}
               <div className="space-y-2">
-                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-500">
+                <div className="flex justify-between text-xs text-slate-500">
                   <span>Progreso</span>
                   <span>{Math.min(100, (players.length / 3) * 100).toFixed(0)}%</span>
                 </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                <div className="w-full rounded-full h-2 bg-slate-700">
                   <div 
                     className="bg-green-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${Math.min(100, (players.length / 3) * 100)}%` }}
@@ -123,11 +123,11 @@ export default function WaitingRoom({
               {/* Estado */}
               <div className="text-center">
                 {players.length < 3 ? (
-                  <div className="text-amber-600 dark:text-amber-400 text-sm">
+                  <div className="text-sm text-amber-400">
                     ⏳ Esperando más jugadores...
                   </div>
                 ) : (
-                  <div className="text-green-600 dark:text-green-400 text-sm">
+                  <div className="text-sm text-green-400">
                     ✅ ¡Listo para empezar!
                   </div>
                 )}
@@ -150,19 +150,19 @@ export default function WaitingRoom({
                       'w-full py-3 px-4 rounded-lg font-medium transition-all',
                       canStartGame
                         ? 'bg-green-600 hover:bg-green-700 text-white'
-                        : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+                        : 'cursor-not-allowed bg-slate-700 text-slate-400'
                     )}
                   >
                     {isLoading ? 'Iniciando...' : 'Iniciar Juego'}
                   </button>
-                  <p className="text-xs text-center text-slate-500 dark:text-slate-500">
+                  <p className="text-xs text-center text-slate-500">
                     Solo el anfitrión puede iniciar el juego
                   </p>
                 </>
               ) : (
                 <div className="text-center">
-                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                  <div className="rounded-lg p-4 bg-slate-800">
+                    <p className="text-sm text-slate-400">
                       Esperando a que el anfitrión inicie el juego...
                     </p>
                   </div>
@@ -172,7 +172,7 @@ export default function WaitingRoom({
               <button
                 onClick={onLeaveRoom}
                 disabled={isLoading}
-                className="w-full py-2 px-4 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 transition-colors disabled:opacity-50"
+                className="w-full py-2 px-4 border rounded-lg transition-colors disabled:opacity-50 border-red-700 text-red-400 hover:bg-red-950"
               >
                 Salir de la Sala
               </button>
@@ -185,7 +185,7 @@ export default function WaitingRoom({
               <CardTitle className="text-lg">¿Cómo jugar?</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+              <div className="space-y-2 text-sm text-slate-400">
                 <p>1. Cada jugador recibe un rol secreto</p>
                 <p>2. Por turnos, describen la palabra</p>
                 <p>3. Votan para eliminar sospechosos</p>
@@ -211,14 +211,14 @@ function PlayerCard({ player, isCurrentPlayer, playerNumber }: PlayerCardProps) 
     <div className={cn(
       'flex items-center space-x-3 p-3 rounded-lg border transition-all',
       isCurrentPlayer 
-        ? 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800' 
-        : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+        ? 'bg-blue-950 border-blue-800' 
+        : 'bg-slate-800 border-slate-700'
     )}>
       <div className={cn(
         'w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm',
         isCurrentPlayer 
-          ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' 
-          : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+          ? 'bg-blue-900 text-blue-400' 
+          : 'bg-slate-700 text-slate-400'
       )}>
         {playerNumber}
       </div>
@@ -227,7 +227,7 @@ function PlayerCard({ player, isCurrentPlayer, playerNumber }: PlayerCardProps) 
         <div className="flex items-center space-x-2">
           <p className={cn(
             'font-medium truncate',
-            isCurrentPlayer ? 'text-blue-900 dark:text-blue-100' : 'text-slate-900 dark:text-slate-100'
+            isCurrentPlayer ? 'text-blue-100' : 'text-slate-100'
           )}>
             {player.name}
           </p>
@@ -235,14 +235,14 @@ function PlayerCard({ player, isCurrentPlayer, playerNumber }: PlayerCardProps) 
             <Crown className="h-4 w-4 text-yellow-500" />
           )}
           {isCurrentPlayer && (
-            <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 px-2 py-1 rounded">
+            <span className="text-xs px-2 py-1 rounded bg-blue-900 text-blue-400">
               Tú
             </span>
           )}
         </div>
         <div className="flex items-center space-x-1 mt-1">
           <Wifi className="h-3 w-3 text-green-500" />
-          <span className="text-xs text-green-600 dark:text-green-400">Conectado</span>
+          <span className="text-xs text-green-400">Conectado</span>
         </div>
       </div>
     </div>
@@ -252,18 +252,18 @@ function PlayerCard({ player, isCurrentPlayer, playerNumber }: PlayerCardProps) 
 // Componente para slots vacíos
 function EmptyPlayerSlot({ slotNumber }: { slotNumber: number }) {
   return (
-    <div className="flex items-center space-x-3 p-3 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 opacity-60">
-      <div className="w-10 h-10 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center">
-        <User className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+    <div className="flex items-center space-x-3 p-3 rounded-lg border border-dashed opacity-60 border-slate-600 bg-slate-800">
+      <div className="w-10 h-10 rounded-full border-2 border-dashed flex items-center justify-center border-slate-600">
+        <User className="h-4 w-4 text-slate-500" />
       </div>
       
       <div className="flex-1">
-        <p className="text-slate-500 dark:text-slate-400 text-sm">
+        <p className="text-sm text-slate-400">
           Esperando jugador {slotNumber}...
         </p>
         <div className="flex items-center space-x-1 mt-1">
-          <WifiOff className="h-3 w-3 text-slate-400 dark:text-slate-500" />
-          <span className="text-xs text-slate-400 dark:text-slate-500">Desconectado</span>
+          <WifiOff className="h-3 w-3 text-slate-500" />
+          <span className="text-xs text-slate-500">Desconectado</span>
         </div>
       </div>
     </div>

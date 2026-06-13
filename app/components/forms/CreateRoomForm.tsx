@@ -65,8 +65,8 @@ export default function CreateRoomForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
-        <div className="mx-auto bg-blue-100 dark:bg-blue-900 p-3 rounded-full w-fit mb-4">
-          <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+        <div className="mx-auto p-3 rounded-full w-fit mb-4 bg-blue-900">
+          <Users className="h-8 w-8 text-blue-400" />
         </div>
         <CardTitle>Nueva Sala Online</CardTitle>
         <CardDescription>
@@ -92,12 +92,12 @@ export default function CreateRoomForm() {
               className={errors.playerName ? 'border-red-500 focus:border-red-500' : ''}
             />
             {errors.playerName && (
-              <div className="flex items-center space-x-1 text-sm text-red-600 dark:text-red-400">
+              <div className="flex items-center space-x-1 text-sm text-red-400">
                 <AlertCircle className="h-4 w-4" />
                 <span>{errors.playerName}</span>
               </div>
             )}
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-400">
               Máximo 20 caracteres
             </p>
           </div>
@@ -110,10 +110,7 @@ export default function CreateRoomForm() {
               value={formData.maxPlayers}
               onChange={(e) => handleInputChange('maxPlayers', parseInt(e.target.value))}
               disabled={isLoading}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md 
-                bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed border-slate-600 bg-slate-700 text-slate-100"
             >
               {[3, 4, 5, 6, 7, 8].map(num => (
                 <option key={num} value={num}>
@@ -122,12 +119,12 @@ export default function CreateRoomForm() {
               ))}
             </select>
             {errors.maxPlayers && (
-              <div className="flex items-center space-x-1 text-sm text-red-600 dark:text-red-400">
+              <div className="flex items-center space-x-1 text-sm text-red-400">
                 <AlertCircle className="h-4 w-4" />
                 <span>{errors.maxPlayers}</span>
               </div>
             )}
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-400">
               Entre 3 y 8 jugadores
             </p>
           </div>
@@ -150,10 +147,10 @@ export default function CreateRoomForm() {
         </form>
 
         {/* Información adicional */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <div className="mt-6 p-4 rounded-lg bg-blue-900/20">
           <div className="flex items-start space-x-2">
-            <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-blue-800 dark:text-blue-200">
+            <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-400" />
+            <div className="text-sm text-blue-200">
               <p className="font-medium mb-1">¿Cómo funciona?</p>
               <ul className="space-y-1 text-xs">
                 <li>• Creas una sala con un código único</li>

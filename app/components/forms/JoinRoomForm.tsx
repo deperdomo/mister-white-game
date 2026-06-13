@@ -89,8 +89,8 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
-        <div className="mx-auto bg-green-100 dark:bg-green-900 p-3 rounded-full w-fit mb-4">
-          <UserPlus className="h-8 w-8 text-green-600 dark:text-green-400" />
+        <div className="mx-auto p-3 rounded-full w-fit mb-4 bg-green-900">
+          <UserPlus className="h-8 w-8 text-green-400" />
         </div>
         <CardTitle>Unirse a Sala</CardTitle>
         <CardDescription>
@@ -102,10 +102,10 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Mensaje informativo si el código viene de la URL */}
           {initialRoomCode && initialRoomCode.length === 6 && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="p-3 rounded-lg border bg-blue-900/20 border-blue-800">
               <div className="flex items-center space-x-2">
-                <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <p className="text-sm text-blue-800 dark:text-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-400" />
+                <p className="text-sm text-blue-200">
                   Código de sala detectado automáticamente del enlace
                 </p>
               </div>
@@ -130,12 +130,12 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
               }`}
             />
             {errors.roomCode && (
-              <div className="flex items-center space-x-1 text-sm text-red-600 dark:text-red-400">
+              <div className="flex items-center space-x-1 text-sm text-red-400">
                 <AlertCircle className="h-4 w-4" />
                 <span>{errors.roomCode}</span>
               </div>
             )}
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-400">
               Código de 6 caracteres proporcionado por el anfitrión
             </p>
           </div>
@@ -157,12 +157,12 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
               className={errors.playerName ? 'border-red-500 focus:border-red-500' : ''}
             />
             {errors.playerName && (
-              <div className="flex items-center space-x-1 text-sm text-red-600 dark:text-red-400">
+              <div className="flex items-center space-x-1 text-sm text-red-400">
                 <AlertCircle className="h-4 w-4" />
                 <span>{errors.playerName}</span>
               </div>
             )}
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-400">
               Máximo 20 caracteres
             </p>
           </div>
@@ -185,10 +185,10 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
         </form>
 
         {/* Información adicional */}
-        <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+        <div className="mt-6 p-4 rounded-lg bg-green-900/20">
           <div className="flex items-start space-x-2">
-            <AlertCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-green-800 dark:text-green-200">
+            <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-green-400" />
+            <div className="text-sm text-green-200">
               <p className="font-medium mb-1">¿No tienes un código?</p>
               <ul className="space-y-1 text-xs">
                 <li>• Pídele al anfitrión que te comparta el código</li>

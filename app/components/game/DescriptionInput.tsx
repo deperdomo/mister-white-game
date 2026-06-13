@@ -73,7 +73,7 @@ export default function DescriptionInput({ playerName, onSubmit }: DescriptionIn
         {isSubmitting ? 'Enviando...' : 'Enviar descripción'}
       </Button>
 
-      <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
+      <div className="text-xs space-y-1 text-slate-400">
         <p><strong>💡 Consejos:</strong></p>
         <ul className="list-disc list-inside space-y-1">
           <li>Sé específico pero no obvio</li>

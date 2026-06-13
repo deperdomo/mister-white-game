@@ -65,7 +65,7 @@ function GameContent() {
   if (!roomCode) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
-        <p className="text-slate-600 dark:text-slate-400 mb-4">Código de sala no válido</p>
+        <p className="mb-4 text-slate-400">Código de sala no válido</p>
         <Button onClick={() => router.push('/')}>Volver al inicio</Button>
       </div>
     );
@@ -81,9 +81,9 @@ function GameContent() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-3/4" />
-              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-1/2" />
+              <div className="h-4 rounded animate-pulse bg-slate-700" />
+              <div className="h-4 rounded animate-pulse w-3/4 bg-slate-700" />
+              <div className="h-4 rounded animate-pulse w-1/2 bg-slate-700" />
             </div>
           </CardContent>
         </Card>
@@ -100,12 +100,12 @@ function GameContent() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Salir
           </Button>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-50">
+          <h1 className="text-xl font-bold text-slate-50">
             Sala {roomCode}
           </h1>
         </div>
         
-        <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
+        <div className="flex items-center space-x-2 text-sm text-slate-400">
           <Users className="h-4 w-4" />
           <span>{players.length} jugadores</span>
         </div>
@@ -136,18 +136,18 @@ function GameContent() {
             {currentPhase === 'assigning' && (
               <div className="text-center py-8">
                 <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-slate-400">
                   Los roles se están asignando automáticamente...
                 </p>
               </div>
             )}
             
             {currentPhase === 'describing' && (
-              <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-4">
-                <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+              <div className="rounded-lg p-4 bg-blue-950">
+                <h3 className="font-medium mb-2 text-blue-100">
                   Tu rol ha sido asignado
                 </h3>
-                <p className="text-sm text-blue-800 dark:text-blue-200">
+                <p className="text-sm text-blue-200">
                   Pronto podrás ver tu rol y palabra secreta. El juego comenzará cuando todos estén listos.
                 </p>
               </div>
@@ -164,18 +164,18 @@ function GameContent() {
         <CardContent>
           <div className="space-y-3">
             {players.map((player) => (
-              <div key={player.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div key={player.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-800">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-900">
+                    <span className="text-sm font-medium text-blue-400">
                       {player.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <span className="font-medium text-slate-900 dark:text-slate-50">
+                  <span className="font-medium text-slate-50">
                     {player.name}
                   </span>
                   {player.isHost && (
-                    <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                    <span className="text-xs px-2 py-1 rounded bg-yellow-900 text-yellow-300">
                       Anfitrión
                     </span>
                   )}
@@ -192,11 +192,11 @@ function GameContent() {
       </Card>
 
       {/* Información del juego */}
-      <div className="mt-6 bg-amber-50 dark:bg-amber-950 rounded-lg p-4">
-        <h3 className="font-medium text-amber-900 dark:text-amber-100 mb-2">
+      <div className="mt-6 rounded-lg p-4 bg-amber-950">
+        <h3 className="font-medium mb-2 text-amber-100">
           ⏳ El juego está iniciando
         </h3>
-        <p className="text-sm text-amber-800 dark:text-amber-200">
+        <p className="text-sm text-amber-200">
           En unos momentos verás tu rol secreto y podrás comenzar a jugar. 
           Mantente atento a las notificaciones.
         </p>
@@ -209,7 +209,7 @@ export default function GamePage() {
   return (
     <Suspense fallback={
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
-        <p className="text-slate-600 dark:text-slate-400">Cargando...</p>
+        <p className="text-slate-400">Cargando...</p>
       </div>
     }>
       <GameContent />

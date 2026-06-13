@@ -16,7 +16,7 @@ export default function CreateRoomPage() {
             Volver
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
+        <h1 className="text-2xl font-bold text-slate-50">
           Crear Sala
         </h1>
       </div>
@@ -26,7 +26,7 @@ export default function CreateRoomPage() {
 
       {/* Alternativas */}
       <div className="mt-8 text-center">
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+        <p className="text-sm mb-4 text-slate-400">
           ¿Ya tienes un código de sala?
         </p>
         <Link href="/join-room">

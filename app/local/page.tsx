@@ -237,7 +237,7 @@ function LocalGameSetupContent() {
           <ArrowLeft className="h-4 w-4 mr-1" />
           Volver
         </Button>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
+        <h1 className="text-2xl font-bold text-slate-50">
           {isEditingMode ? 'Editar Configuración' : 'Configurar Juego Local'}
         </h1>
       </div>
@@ -269,7 +269,7 @@ function LocalGameSetupContent() {
                 </SelectContent>
               </Select>
               {difficulty === 'easy' && (
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-slate-400">
                   En dificultad fácil se mostrará la categoría de la palabra.
                 </p>
               )}
@@ -279,7 +279,7 @@ function LocalGameSetupContent() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="undercover">Incluir rol Undercover</Label>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-slate-400">
                   Un jugador tendrá una palabra similar pero diferente
                 </p>
               </div>
@@ -309,7 +309,7 @@ function LocalGameSetupContent() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="use-database">Usar palabras de la base de datos</Label>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-slate-400">
                   Usar palabras almacenadas en línea (requiere conexión)
                 </p>
               </div>
@@ -370,7 +370,7 @@ function LocalGameSetupContent() {
             {players.map((player, index) => (
               <div 
                 key={index} 
-                className="flex gap-2 items-center bg-slate-50 dark:bg-slate-800 p-2 rounded border hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                className="flex gap-2 items-center p-2 rounded border transition-colors bg-slate-800 hover:bg-slate-700"
                 draggable
                 onDragStart={(e) => handleDragStart(e, index)}
                 onDragOver={handleDragOver}
@@ -381,7 +381,7 @@ function LocalGameSetupContent() {
                     className="h-4 w-4 text-slate-400 cursor-grab active:cursor-grabbing" 
                   />
                 </div>
-                <span className="text-sm text-slate-600 dark:text-slate-400 min-w-[20px] flex-shrink-0">
+                <span className="text-sm min-w-[20px] flex-shrink-0 text-slate-400">
                   {index + 1}.
                 </span>
                 <Input

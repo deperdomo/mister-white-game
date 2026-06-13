@@ -99,8 +99,8 @@ export default function PlayerNameForm({ onSubmit, isLoading = false }: PlayerNa
       {/* Configuración del juego local */}
       <Card>
         <CardHeader className="text-center">
-          <div className="mx-auto bg-green-100 dark:bg-green-900 p-3 rounded-full w-fit mb-4">
-            <Monitor className="h-8 w-8 text-green-600 dark:text-green-400" />
+          <div className="mx-auto p-3 rounded-full w-fit mb-4 bg-green-900">
+            <Monitor className="h-8 w-8 text-green-400" />
           </div>
           <CardTitle>Configurar Juego Local</CardTitle>
           <CardDescription>
@@ -118,7 +118,7 @@ export default function PlayerNameForm({ onSubmit, isLoading = false }: PlayerNa
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
                 disabled={loading}
-                className="w-full h-10 px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-md bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-slate-300 disabled:opacity-50"
+                className="w-full h-10 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 disabled:opacity-50 border-slate-800 bg-slate-950 focus:ring-slate-300"
               >
                 <option value="easy">Fácil - Palabras comunes</option>
                 <option value="medium">Medio - Variedad equilibrada</option>
@@ -130,7 +130,7 @@ export default function PlayerNameForm({ onSubmit, isLoading = false }: PlayerNa
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label>Nombres de los jugadores ({validPlayerCount}/8)</Label>
-                <div className="text-sm text-slate-500 dark:text-slate-400">
+                <div className="text-sm text-slate-400">
                   Mínimo 3 jugadores
                 </div>
               </div>
@@ -185,12 +185,12 @@ export default function PlayerNameForm({ onSubmit, isLoading = false }: PlayerNa
 
             {/* Errores */}
             {errors.length > 0 && (
-              <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="border rounded-lg p-4 bg-red-950 border-red-800">
                 <div className="flex items-start space-x-2">
-                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                  <AlertCircle className="h-5 w-5 mt-0.5 text-red-400" />
                   <div className="space-y-1">
                     {errors.map((error, index) => (
-                      <p key={index} className="text-sm text-red-600 dark:text-red-400">
+                      <p key={index} className="text-sm text-red-400">
                         {error}
                       </p>
                     ))}
@@ -200,17 +200,17 @@ export default function PlayerNameForm({ onSubmit, isLoading = false }: PlayerNa
             )}
 
             {/* Resumen */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-              <h3 className="font-medium text-sm text-slate-900 dark:text-slate-50 mb-2">
+            <div className="rounded-lg p-4 bg-slate-900">
+              <h3 className="font-medium text-sm mb-2 text-slate-50">
                 Resumen del juego
               </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Jugadores:</span>
+                  <span className="text-slate-400">Jugadores:</span>
                   <span className="ml-2 font-medium">{validPlayerCount}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Dificultad:</span>
+                  <span className="text-slate-400">Dificultad:</span>
                   <span className="ml-2 font-medium capitalize">{difficulty}</span>
                 </div>
               </div>
@@ -247,37 +247,37 @@ export default function PlayerNameForm({ onSubmit, isLoading = false }: PlayerNa
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-lg w-fit mx-auto mb-2">
-                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 rounded-lg w-fit mx-auto mb-2 bg-blue-900">
+                <Users className="h-6 w-6 text-blue-400" />
               </div>
-              <h3 className="font-medium text-sm text-slate-900 dark:text-slate-50 mb-1">
+              <h3 className="font-medium text-sm mb-1 text-slate-50">
                 1. Configurar
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-slate-400">
                 Agrega los nombres de todos los jugadores presentes
               </p>
             </div>
 
             <div className="text-center">
-              <div className="bg-green-100 dark:bg-green-900 p-2 rounded-lg w-fit mx-auto mb-2">
-                <Monitor className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="p-2 rounded-lg w-fit mx-auto mb-2 bg-green-900">
+                <Monitor className="h-6 w-6 text-green-400" />
               </div>
-              <h3 className="font-medium text-sm text-slate-900 dark:text-slate-50 mb-1">
+              <h3 className="font-medium text-sm mb-1 text-slate-50">
                 2. Roles secretos
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-slate-400">
                 Cada jugador verá su rol en la pantalla por turnos
               </p>
             </div>
 
             <div className="text-center">
-              <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded-lg w-fit mx-auto mb-2">
-                <Play className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 rounded-lg w-fit mx-auto mb-2 bg-purple-900">
+                <Play className="h-6 w-6 text-purple-400" />
               </div>
-              <h3 className="font-medium text-sm text-slate-900 dark:text-slate-50 mb-1">
+              <h3 className="font-medium text-sm mb-1 text-slate-50">
                 3. ¡A jugar!
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-slate-400">
                 Sigue las instrucciones en pantalla para describir y votar
               </p>
             </div>

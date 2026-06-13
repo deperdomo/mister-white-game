@@ -47,10 +47,10 @@ function DefaultErrorFallback({ error, retry }: { error: Error; retry: () => voi
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto bg-red-100 dark:bg-red-900 p-3 rounded-full w-fit mb-4">
-            <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
+          <div className="mx-auto p-3 rounded-full w-fit mb-4 bg-red-900">
+            <AlertTriangle className="h-8 w-8 text-red-400" />
           </div>
-          <CardTitle className="text-red-900 dark:text-red-100">
+          <CardTitle className="text-red-100">
             ¡Oops! Algo salió mal
           </CardTitle>
           <CardDescription>
@@ -58,8 +58,8 @@ function DefaultErrorFallback({ error, retry }: { error: Error; retry: () => voi
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-3">
-            <p className="text-sm text-red-800 dark:text-red-200 font-mono">
+          <div className="border rounded-lg p-3 bg-red-950 border-red-800">
+            <p className="text-sm font-mono text-red-200">
               {error.message}
             </p>
           </div>
@@ -106,10 +106,10 @@ export function PageError({
     <div className="container mx-auto px-4 py-8 max-w-md">
       <Card>
         <CardHeader className="text-center">
-          <div className="mx-auto bg-red-100 dark:bg-red-900 p-3 rounded-full w-fit mb-4">
-            <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
+          <div className="mx-auto p-3 rounded-full w-fit mb-4 bg-red-900">
+            <AlertTriangle className="h-8 w-8 text-red-400" />
           </div>
-          <CardTitle className="text-red-900 dark:text-red-100">
+          <CardTitle className="text-red-100">
             {title}
           </CardTitle>
           <CardDescription>
@@ -118,8 +118,8 @@ export function PageError({
         </CardHeader>
         <CardContent className="space-y-4">
           {errorMessage && (
-            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-3">
-              <p className="text-sm text-red-800 dark:text-red-200">
+            <div className="border rounded-lg p-3 bg-red-950 border-red-800">
+              <p className="text-sm text-red-200">
                 {errorMessage}
               </p>
             </div>
