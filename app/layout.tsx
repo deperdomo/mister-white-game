@@ -31,10 +31,10 @@ export const metadata: Metadata = {
     siteName: "Mister White Game",
     images: [
       {
-        url: "/detective.png",
-        width: 512,
-        height: 512,
-        alt: "Mister White - Juego Multijugador Online",
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Mister White - Juego de deducción social",
       },
     ],
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Mister White - Juego Multijugador Online Gratis",
     description: "🎭 El mejor juego de deducción social online. ¡Descubre al espía antes de que te descubran!",
-    images: ["/detective.png"],
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,
@@ -59,7 +59,11 @@ export const metadata: Metadata = {
     google: process.env.GOOGLE_SITE_VERIFICATION,
   },
   icons: {
-    icon: '/detective.png',
+    icon: [
+      { url: '/logo.svg', type: 'image/svg+xml' },
+      { url: '/detective.png', type: 'image/png' },
+    ],
+    apple: '/detective.png',
   },
 };
 
@@ -70,9 +74,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="scroll-smooth">
-      <head>
-        <link rel="icon" href="/detective pequeño.png" type="image/png" />
-      </head>
       <body className={`${inter.variable} font-sans antialiased min-h-screen transition-colors bg-slate-950`}>
         <ToastProvider>
           <div className="flex flex-col min-h-screen">

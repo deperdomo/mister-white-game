@@ -1,5 +1,6 @@
-import { GamepadIcon, Home, Users } from 'lucide-react';
+import { Home, Users } from 'lucide-react';
 import Link from 'next/link';
+import { Logo } from '../ui/logo';
 
 export default function Header() {
   return (
@@ -10,7 +11,7 @@ export default function Header() {
           href="/" 
           className="flex items-center space-x-2 font-bold text-xl transition-colors text-slate-50 hover:text-blue-400"
         >
-          <GamepadIcon className="h-6 w-6" />
+          <Logo className="h-8 w-8" />
           <span>Mister White</span>
         </Link>
 

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Mister White - Juego de deducción social">
+  <defs>
+    <linearGradient id="ogBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="0.55" stop-color="#1e1b4b"/>
+      <stop offset="1" stop-color="#312e81"/>
+    </linearGradient>
+    <linearGradient id="ogMark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+    <radialGradient id="ogGlow" cx="0.5" cy="0.28" r="0.5">
+      <stop offset="0" stop-color="#6366f1" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#6366f1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#ogBg)"/>
+  <rect width="1200" height="630" fill="url(#ogGlow)"/>
+
+  <!-- Logo (fedora) escalado desde el viewBox 512 -->
+  <g transform="translate(505,86) scale(0.371)">
+    <rect width="512" height="512" rx="112" fill="url(#ogMark)"/>
+    <path d="M92 318C150 302 362 302 420 318C430 321 430 332 420 336C380 350 132 350 92 336C82 332 82 321 92 318Z" fill="#ffffff"/>
+    <path d="M184 314L196 212C198 190 210 180 224 182C238 185 246 198 256 198C266 198 274 185 288 182C302 180 314 190 316 212L328 314Z" fill="#ffffff"/>
+    <path d="M188 288L324 288L327 311L185 311Z" fill="#0b1220" opacity="0.16"/>
+  </g>
+
+  <text x="600" y="408" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="104" font-weight="800" fill="#f8fafc" letter-spacing="-2">Mister White</text>
+  <text x="600" y="472" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="600" fill="#a5b4fc">Juego de deducción social</text>
+  <text x="600" y="532" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="400" fill="#94a3b8">3–20 jugadores · Sin descargas · Gratis</text>
+</svg>
