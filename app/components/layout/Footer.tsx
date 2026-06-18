@@ -1,9 +1,13 @@
 import { Github, Heart } from 'lucide-react';
+import InvitePanel from './InvitePanel';
 
 export default function Footer() {
   return (
     <footer className="border-t border-white/[0.06] bg-ink">
       <div className="container mx-auto max-w-screen-xl px-4 py-10">
+        {/* Invitar a jugar (solo en la página principal) */}
+        <InvitePanel />
+
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           {/* Información del proyecto */}
           <div className="flex flex-col items-center gap-1.5 sm:items-start">

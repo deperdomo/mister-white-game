@@ -2,22 +2,30 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, AlertTriangle, SkipForward } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, SkipForward } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { initializeGame, initializeGameWithDatabaseWords, initializeGameWithRotation, initializeGameWithDatabaseWordsAndRotation, allPlayersRevealed, processVote, getRoleInfo } from "../lib/game-logic";
-import { Player, LocalGameData, LocalGameConfig } from "../lib/types";
+import { Player, LocalGameData, LocalGameConfig, PLAYER_ROLES } from "../lib/types";
+import { useNavigationGuard } from "../contexts/NavigationGuardContext";
 
 function LocalGameContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+  const { setGuard, requestNavigation } = useNavigationGuard();
+
   const [gameData, setGameData] = useState<LocalGameData | null>(null);
   const [showRole, setShowRole] = useState(false);
   const [selectedVotedPlayer, setSelectedVotedPlayer] = useState<string>('');
-  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+
+  // Proteger contra salidas accidentales mientras la partida está en curso
+  useEffect(() => {
+    const active = !!gameData && gameData.gamePhase !== 'results';
+    setGuard(active);
+    return () => setGuard(false);
+  }, [gameData, setGuard]);
 
   useEffect(() => {
     // Get configuration from URL parameters
@@ -164,9 +172,21 @@ function LocalGameContent() {
   // Handle voting
   const handleVote = () => {
     if (!gameData || !selectedVotedPlayer) return;
-    
+
     const finalGameData = processVote(gameData, selectedVotedPlayer);
     setGameData(finalGameData);
+  };
+
+  // Skip voting and go straight to revealing the roles (no one eliminated)
+  const handleSkipVoting = () => {
+    if (!gameData) return;
+
+    setGameData({
+      ...gameData,
+      votedPlayerId: undefined,
+      winner: null,
+      gamePhase: 'results',
+    });
   };
 
   const resetGame = () => {
@@ -174,15 +194,8 @@ function LocalGameContent() {
   };
 
   const handleGoBack = () => {
-    setShowExitConfirmation(true);
-  };
-
-  const confirmExit = () => {
-    router.push('/local');
-  };
-
-  const cancelExit = () => {
-    setShowExitConfirmation(false);
+    // Si hay una partida en curso, el guardia global muestra el aviso de salida
+    requestNavigation(() => router.push('/local'));
   };
 
   const continueWithSameConfig = async () => {
@@ -294,58 +307,10 @@ function LocalGameContent() {
 
   if (!gameData) {
     return (
-      <>
-        {/* Modal de confirmación para salir */}
-        {showExitConfirmation && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            {/* Overlay */}
-            <div 
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
-              onClick={cancelExit}
-            ></div>
-            
-            {/* Modal */}
-            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-panel">
-              <div className="flex items-center mb-4">
-                <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-yellow-900/20">
-                  <AlertTriangle className="w-6 h-6 text-yellow-400" />
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <h3 className="text-lg font-medium leading-6 mb-2 text-fg">
-                  ¿Estás seguro de que quieres salir?
-                </h3>
-                <p className="text-sm mb-6 text-muted">
-                  Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
-                </p>
-              </div>
-              
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={cancelExit}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={confirmExit}
-                  className="flex-1"
-                >
-                  Salir de todas formas
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div className="container mx-auto px-4 py-8 max-w-md text-center">
-          <p className="mb-4 text-muted">Cargando juego...</p>
-          <Button onClick={handleGoBack}>Volver atrás</Button>
-        </div>
-      </>
+      <div className="container mx-auto px-4 py-8 max-w-md text-center">
+        <p className="mb-4 text-muted">Cargando juego...</p>
+        <Button onClick={handleGoBack}>Volver atrás</Button>
+      </div>
     );
   }
 
@@ -369,129 +334,91 @@ function LocalGameContent() {
 
     return (
       <>
-        {/* Modal de confirmación para salir */}
-        {showExitConfirmation && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            {/* Overlay */}
-            <div 
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
-              onClick={cancelExit}
-            ></div>
-            
-            {/* Modal */}
-            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-panel">
-              <div className="flex items-center mb-4">
-                <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-yellow-900/20">
-                  <AlertTriangle className="w-6 h-6 text-yellow-400" />
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <h3 className="text-lg font-medium leading-6 mb-2 text-fg">
-                  ¿Estás seguro de que quieres salir?
-                </h3>
-                <p className="text-sm mb-6 text-muted">
-                  Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
-                </p>
-              </div>
-              
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={cancelExit}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={confirmExit}
-                  className="flex-1"
-                >
-                  Salir de todas formas
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
         
         <div className="container mx-auto px-4 py-8 max-w-md">
           <div className="flex items-center mb-6">
             <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
               <ArrowLeft className="h-4 w-4 mr-1" />
               Volver
-          </Button>
-          <h1 className="text-xl font-bold text-fg">
-            Ronda {gameData.round} - Revelar Roles
-          </h1>
-          
-        </div>
-
-        <Card className="animate-fade-in">
-          <CardHeader className="text-center">
-            <CardTitle>Turno de {currentPlayer.name}</CardTitle>
-            <CardDescription>
-              Jugador {gameData.currentPlayerIndex + 1} de {gameData.players.length}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 text-center">
-            {!showRole ? (
-              <>
-                <div className="space-y-4">
-                  <p className="text-muted">
-                    <strong>{currentPlayer.name}</strong>, es tu turno de ver tu rol secreto.
-                  </p>
-                  <p className="text-sm text-faint">
-                    Asegúrate de que otros jugadores no puedan ver la pantalla.
-                  </p>
-                </div>
-                
-                <Button onClick={handleRevealWord} size="lg" className="w-full">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Ver mi rol
-                </Button>
-              </>
-            ) : (
-              <>
-                <div className={`p-6 rounded-lg ${roleInfo.color} text-fg`}>
-                  <div className="text-4xl mb-2">{roleInfo.icon}</div>
-                  <h3 className="text-xl font-bold mb-2">{roleInfo.title}</h3>
-                  <p className="text-sm mb-4">{roleInfo.description}</p>
-                  <div className="bg-black bg-opacity-20 rounded p-3">
-                    <p className="text-xs mb-1">Tu palabra:</p>
-                    <p className="text-2xl font-bold">{roleInfo.word}</p>
-                  </div>
-                </div>
-
-                {gameData.category && (
-                  <div className="space-y-2 text-sm text-muted">
-                    <p><strong>Categoría:</strong> {gameData.category}</p>
-                  </div>
-                )}
-
-                <Button onClick={handleWordSeen} size="lg" className="w-full">
-                  <EyeOff className="h-4 w-4 mr-2" />
-                  {gameData.currentPlayerIndex < gameData.players.length - 1 ? 'Siguiente jugador' : 'Comenzar ronda de pistas'}
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Progress */}
-        <div className="mt-6">
-          <div className="flex justify-between text-sm mb-2 text-muted">
-            <span>Progreso</span>
-            <span>{gameData.currentPlayerIndex + 1}/{gameData.players.length}</span>
+            </Button>
+            <h1 className="text-xl font-bold text-fg">
+              Ronda {gameData.round} · Revelar Roles
+            </h1>
           </div>
-          <div className="w-full rounded-full h-2 bg-elevated">
-            <div 
-              className="bg-accent h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((gameData.currentPlayerIndex + 1) / gameData.players.length) * 100}%` }}
-            />
+
+          <Card className="animate-fade-in">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-accent/15 text-2xl font-semibold text-accent ring-1 ring-accent/20">
+                {currentPlayer.name.charAt(0).toUpperCase()}
+              </div>
+              <CardTitle>Turno de {currentPlayer.name}</CardTitle>
+              <CardDescription>
+                Jugador {gameData.currentPlayerIndex + 1} de {gameData.players.length}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {!showRole ? (
+                <>
+                  <div className="space-y-4 rounded-2xl border border-white/[0.06] bg-panel p-6 text-center">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-elevated">
+                      <Eye className="h-6 w-6 text-accent" />
+                    </div>
+                    <p className="text-fg">
+                      <strong>{currentPlayer.name}</strong>, es tu turno de ver tu rol secreto.
+                    </p>
+                    <p className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs text-faint">
+                      🔒 Que nadie más vea la pantalla
+                    </p>
+                  </div>
+
+                  <Button onClick={handleRevealWord} size="lg" className="w-full">
+                    <Eye className="h-4 w-4 mr-2" />
+                    Ver mi rol
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="overflow-hidden rounded-2xl border border-white/10">
+                    <div className={`px-6 py-6 text-center ${roleInfo.tint}`}>
+                      <div className="text-5xl mb-2">{roleInfo.icon}</div>
+                      <h3 className="text-xl font-bold">{roleInfo.title}</h3>
+                      <p className="mt-1 text-sm opacity-80">{roleInfo.description}</p>
+                    </div>
+                    <div className="bg-surface px-6 py-5 text-center">
+                      <p className="eyebrow mb-2">Tu palabra</p>
+                      <p className="text-3xl font-bold tracking-tight text-fg">{roleInfo.word}</p>
+                    </div>
+                  </div>
+
+                  {gameData.category && (
+                    <p className="text-center text-sm text-muted">
+                      Categoría: <strong className="text-fg">{gameData.category}</strong>
+                    </p>
+                  )}
+
+                  <Button onClick={handleWordSeen} size="lg" className="w-full">
+                    <EyeOff className="h-4 w-4 mr-2" />
+                    {gameData.currentPlayerIndex < gameData.players.length - 1 ? 'Siguiente jugador' : 'Comenzar ronda de pistas'}
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Progress */}
+          <div className="mt-6">
+            <div className="flex justify-between text-sm mb-2 text-muted">
+              <span>Progreso</span>
+              <span className="tabular-nums">{gameData.currentPlayerIndex + 1}/{gameData.players.length}</span>
+            </div>
+            <div className="w-full rounded-full h-2 bg-elevated">
+              <div
+                className="bg-accent h-2 rounded-full transition-all duration-300"
+                style={{ width: `${((gameData.currentPlayerIndex + 1) / gameData.players.length) * 100}%` }}
+              />
+            </div>
           </div>
         </div>
-      </div>
       </>
     );
   }
@@ -500,51 +427,6 @@ function LocalGameContent() {
   if (gameData.gamePhase === 'clues') {
     return (
       <>
-        {/* Modal de confirmación para salir */}
-        {showExitConfirmation && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            {/* Overlay */}
-            <div 
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
-              onClick={cancelExit}
-            ></div>
-            
-            {/* Modal */}
-            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-panel">
-              <div className="flex items-center mb-4">
-                <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-yellow-900/20">
-                  <AlertTriangle className="w-6 h-6 text-yellow-400" />
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <h3 className="text-lg font-medium leading-6 mb-2 text-fg">
-                  ¿Estás seguro de que quieres salir?
-                </h3>
-                <p className="text-sm mb-6 text-muted">
-                  Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
-                </p>
-              </div>
-              
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={cancelExit}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={confirmExit}
-                  className="flex-1"
-                >
-                  Salir de todas formas
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
         
         <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
@@ -659,51 +541,6 @@ function LocalGameContent() {
   if (gameData.gamePhase === 'voting') {
     return (
       <>
-        {/* Modal de confirmación para salir */}
-        {showExitConfirmation && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            {/* Overlay */}
-            <div 
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
-              onClick={cancelExit}
-            ></div>
-            
-            {/* Modal */}
-            <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-panel">
-              <div className="flex items-center mb-4">
-                <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-yellow-900/20">
-                  <AlertTriangle className="w-6 h-6 text-yellow-400" />
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <h3 className="text-lg font-medium leading-6 mb-2 text-fg">
-                  ¿Estás seguro de que quieres salir?
-                </h3>
-                <p className="text-sm mb-6 text-muted">
-                  Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
-                </p>
-              </div>
-              
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={cancelExit}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={confirmExit}
-                  className="flex-1"
-                >
-                  Salir de todas formas
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
         
         <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
@@ -776,15 +613,27 @@ function LocalGameContent() {
                 ))}
               </div>
 
-              <Button 
-                onClick={handleVote} 
+              <Button
+                onClick={handleVote}
                 disabled={!selectedVotedPlayer}
-                size="lg" 
+                size="lg"
                 className="w-full"
               >
                 <VoteIcon className="h-4 w-4 mr-2" />
                 Confirmar voto y ver resultados
               </Button>
+
+              <div className="pt-2 text-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSkipVoting}
+                  className="text-muted"
+                >
+                  <SkipForward className="h-4 w-4 mr-2" />
+                  Saltar votación y revelar roles
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -794,8 +643,19 @@ function LocalGameContent() {
   }
 
   // Results Phase
-  if (gameData.gamePhase === 'results' && gameData.winner) {
+  if (gameData.gamePhase === 'results') {
     const votedPlayer = gameData.players.find(p => p.id === gameData.votedPlayerId);
+    const votingSkipped = !gameData.winner;
+
+    // Solo se revelan los roles importantes (no civiles): Mr. White, Undercover y Payaso
+    const specialPlayers = gameData.players
+      .filter(p => p.role !== PLAYER_ROLES.CIVIL)
+      .sort((a, b) => {
+        if (a.revelationOrder === undefined && b.revelationOrder === undefined) return 0;
+        if (a.revelationOrder === undefined) return 1;
+        if (b.revelationOrder === undefined) return -1;
+        return a.revelationOrder - b.revelationOrder;
+      });
 
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -814,68 +674,76 @@ function LocalGameContent() {
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="text-3xl">
+                {votingSkipped && '🎭 Roles revelados'}
                 {gameData.winner === 'civilians' && '🎉 ¡Ganaron los Civiles!'}
                 {gameData.winner === 'mister_white' && '🕵️ ¡Ganó Mr. White!'}
                 {gameData.winner === 'undercover' && '🥸 ¡Ganó el Undercover!'}
                 {gameData.winner === 'payaso' && '🤡 ¡Ganó el Payaso!'}
               </CardTitle>
               <CardDescription>
-                {votedPlayer && `Jugador votado: ${votedPlayer.name}`}
+                {votingSkipped
+                  ? 'Se saltó la votación: nadie fue eliminado'
+                  : votedPlayer && `Jugador votado: ${votedPlayer.name}`}
               </CardDescription>
             </CardHeader>
           </Card>
 
-          {/* Role revelation */}
+          {/* Role revelation — solo roles importantes (no civiles) */}
           <Card>
             <CardHeader>
-              <CardTitle>Revelación de roles</CardTitle>
+              <CardTitle>Roles ocultos</CardTitle>
               <CardDescription>
-                Jugadores ordenados según el orden en que descubrieron sus roles
+                Estos eran los jugadores con un rol especial en esta ronda
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {gameData.players
-                  .slice() // Create a copy to avoid mutating the original array
-                  .sort((a, b) => {
-                    // Sort by revelation order, putting players who revealed first at the top
-                    // Players without revelationOrder (shouldn't happen) go to the end
-                    if (a.revelationOrder === undefined && b.revelationOrder === undefined) return 0;
-                    if (a.revelationOrder === undefined) return 1;
-                    if (b.revelationOrder === undefined) return -1;
-                    return a.revelationOrder - b.revelationOrder;
-                  })
-                  .map(player => {
-                  const roleInfo = getRoleInfo(player);
-                  const wasVoted = player.id === gameData.votedPlayerId;
-                  return (
-                    <div 
-                      key={player.id} 
-                      className={`p-4 rounded border ${wasVoted ? 'border-red-300 bg-red-950/20' : 'border-white/10'}`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          {player.revelationOrder !== undefined && (
-                            <span className="flex items-center justify-center w-6 h-6 text-xs font-bold rounded-full bg-blue-900 text-blue-300">
-                              {player.revelationOrder + 1}
+              {specialPlayers.length === 0 ? (
+                <p className="text-sm text-muted">No había roles especiales en esta ronda.</p>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {specialPlayers.map(player => {
+                    const roleInfo = getRoleInfo(player);
+                    const wasVoted = player.id === gameData.votedPlayerId;
+                    const roleLabel = roleInfo.title.replace('Eres ', '').replace('el ', '');
+                    return (
+                      <div
+                        key={player.id}
+                        className={`rounded-2xl border p-4 ${wasVoted ? 'border-rose-500/30 bg-rose-500/[0.06]' : 'border-white/[0.08] bg-panel'}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl ${roleInfo.tint}`}>
+                            {roleInfo.icon}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-medium text-fg">{player.name}</span>
+                              {wasVoted && (
+                                <span className="rounded-full bg-rose-500/15 px-2 py-0.5 text-[11px] font-medium text-rose-300">
+                                  🗳️ Eliminado
+                                </span>
+                              )}
+                            </div>
+                            <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${roleInfo.tint}`}>
+                              {roleLabel}
                             </span>
-                          )}
-                          <span className="font-medium">
-                            {roleInfo.icon} {player.name} {wasVoted && '🗳️'}
-                          </span>
+                          </div>
                         </div>
-                        <span className={`px-3 py-1 rounded text-xs text-fg ${roleInfo.color}`}>
-                          {roleInfo.title.replace('Eres ', '').replace('el ', '')}
-                        </span>
+                        <div className="mt-3 space-y-1 border-t border-white/[0.06] pt-3 text-sm text-muted">
+                          <p>
+                            Palabra:{' '}
+                            <strong className="text-fg">
+                              {player.word !== '???' ? player.word : 'No la conocía'}
+                            </strong>
+                          </p>
+                          <p>
+                            Pista: <em>&ldquo;{player.clue}&rdquo;</em>
+                          </p>
+                        </div>
                       </div>
-                      <div className="mt-2 text-sm text-muted">
-                        <p>Palabra: <strong>{player.word !== '???' ? player.word : 'No conocía la palabra'}</strong></p>
-                        <p>Pista: <em>&ldquo;{player.clue}&rdquo;</em></p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -913,55 +781,7 @@ function LocalGameContent() {
     );
   }
 
-  return (
-    <>
-      {/* Modal de confirmación para salir */}
-      {showExitConfirmation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          {/* Overlay */}
-          <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
-            onClick={cancelExit}
-          ></div>
-          
-          {/* Modal */}
-          <div className="relative w-full max-w-md p-6 shadow-xl rounded-2xl z-10 bg-panel">
-            <div className="flex items-center mb-4">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-yellow-900/20">
-                <AlertTriangle className="w-6 h-6 text-yellow-400" />
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <h3 className="text-lg font-medium leading-6 mb-2 text-fg">
-                ¿Estás seguro de que quieres salir?
-              </h3>
-              <p className="text-sm mb-6 text-muted">
-                Se perderán todos los datos de la partida actual y tendrás que empezar de nuevo.
-              </p>
-            </div>
-            
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                onClick={cancelExit}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={confirmExit}
-                className="flex-1"
-              >
-                Salir de todas formas
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+  return null;
 }
 
 // Component for clue input

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Users, Settings, Info, GripVertical } from "lucide-react";
+import { ArrowLeft, Users, Settings, Info, GripVertical, ClipboardList } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -429,15 +429,58 @@ function LocalGameSetupContent() {
         {validPlayerCount >= MIN_PLAYERS && errors.length === 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Resumen del Juego</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5 text-accent" />
+                Resumen del Juego
+              </CardTitle>
+              <CardDescription>
+                Así quedará repartida la partida
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <p><strong>Jugadores:</strong> {validPlayerCount}</p>
-              <p><strong>Dificultad:</strong> {difficulty === 'easy' ? 'Fácil' : difficulty === 'medium' ? 'Medio' : 'Difícil'}</p>
-              <p><strong>Mr. White:</strong> {maxMisterWhites}</p>
-              <p><strong>Undercover:</strong> {includeUndercover ? 'Sí' : 'No'}</p>
-              <p><strong>Payaso:</strong> {includePayaso ? 'Sí (8+ jugadores)' : 'No'}</p>
-              <p><strong>Civiles:</strong> {validPlayerCount - maxMisterWhites - (includeUndercover ? 1 : 0) - (includePayaso ? 1 : 0)}</p>
+            <CardContent className="space-y-4">
+              {/* Conteo de roles */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-2xl border border-white/[0.06] bg-panel p-4 text-center">
+                  <p className="text-3xl font-semibold tracking-tight text-fg tabular-nums">
+                    {validPlayerCount}
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-faint">Jugadores</p>
+                </div>
+                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07] p-4 text-center">
+                  <p className="text-3xl font-semibold tracking-tight text-emerald-300 tabular-nums">
+                    {validPlayerCount - maxMisterWhites - (includeUndercover ? 1 : 0) - (includePayaso ? 1 : 0)}
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-emerald-200/70">Civiles</p>
+                </div>
+                <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.07] p-4 text-center">
+                  <p className="text-3xl font-semibold tracking-tight text-red-300 tabular-nums">
+                    {maxMisterWhites}
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-red-200/70">Mr. White</p>
+                </div>
+              </div>
+
+              {/* Detalles */}
+              <div className="divide-y divide-white/[0.06] overflow-hidden rounded-2xl border border-white/[0.06]">
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span className="text-sm text-muted">Dificultad</span>
+                  <span className="text-sm font-medium text-fg">
+                    {difficulty === 'easy' ? 'Fácil' : difficulty === 'medium' ? 'Medio' : 'Difícil'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span className="text-sm text-muted">Undercover</span>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${includeUndercover ? 'bg-accent/15 text-accent' : 'bg-white/5 text-faint'}`}>
+                    {includeUndercover ? 'Sí' : 'No'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span className="text-sm text-muted">Payaso</span>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${includePayaso ? 'bg-accent/15 text-accent' : 'bg-white/5 text-faint'}`}>
+                    {includePayaso ? 'Sí · 8+ jugadores' : 'No'}
+                  </span>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}

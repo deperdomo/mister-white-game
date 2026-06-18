@@ -596,6 +596,7 @@ export function getRoleInfo(player: Player) {
         description: 'Conoces la palabra secreta. Da una pista relacionada sin mencionarla directamente.',
         word: player.word || '',
         color: 'bg-blue-500',
+        tint: 'bg-sky-500/10 text-sky-300 ring-1 ring-inset ring-sky-500/20',
         icon: '👥',
       };
     case PLAYER_ROLES.UNDERCOVER:
@@ -604,6 +605,7 @@ export function getRoleInfo(player: Player) {
         description: 'Tienes una palabra diferente pero relacionada. Da una pista sin ser descubierto.',
         word: player.word || '',
         color: 'bg-purple-500',
+        tint: 'bg-purple-500/10 text-purple-300 ring-1 ring-inset ring-purple-500/20',
         icon: '🥸',
       };
     case PLAYER_ROLES.MISTER_WHITE:
@@ -612,6 +614,7 @@ export function getRoleInfo(player: Player) {
         description: '¡No conoces la palabra! Escucha las pistas e intenta deducirla.',
         word: '???',
         color: 'bg-red-500',
+        tint: 'bg-rose-500/10 text-rose-300 ring-1 ring-inset ring-rose-500/20',
         icon: '🕵️',
       };
     case PLAYER_ROLES.PAYASO:
@@ -620,6 +623,7 @@ export function getRoleInfo(player: Player) {
         description: '¡Tu objetivo es que te voten como si fueras Mr. White! Conoces la palabra civil.',
         word: player.word || '',
         color: 'bg-orange-500',
+        tint: 'bg-orange-500/10 text-orange-300 ring-1 ring-inset ring-orange-500/20',
         icon: '🤡',
       };
     default:
@@ -628,6 +632,7 @@ export function getRoleInfo(player: Player) {
         description: '',
         word: '',
         color: 'bg-gray-500',
+        tint: 'bg-white/5 text-muted ring-1 ring-inset ring-white/10',
         icon: '❓',
       };
   }
