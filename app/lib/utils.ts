@@ -48,6 +48,11 @@ export function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
+// Semilla aleatoria de 32 bits — para barajados no deterministas
+export function randomSeed(): number {
+  return Math.floor(Math.random() * 0x100000000);
+}
+
 // Seeded random number generator (Linear Congruential Generator)
 function seededRandom(seed: number): () => number {
   let state = seed;

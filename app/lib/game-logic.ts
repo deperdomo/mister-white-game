@@ -1,5 +1,5 @@
 import { Player, LocalGameData, PLAYER_ROLES, PreFetchedWord, LocalGameConfig } from './types';
-import { shuffleArrayWithSeed } from './utils';
+import { shuffleArrayWithSeed, randomSeed } from './utils';
 import { GAME_WORDS } from './static-words';
 
 // Interface para palabras desde la base de datos
@@ -108,13 +108,10 @@ export function initializeGame(
     throw new Error(`Number of players must be between ${MIN_PLAYERS} and ${MAX_PLAYERS}`);
   }
 
-  // Use a deterministic seed based on player names and game config if no seed provided
-  const gameSeed = seedValue ?? (
-    playerNames.join('').length + 
-    (includeUndercover ? 1 : 0) + 
-    maxMisterWhites + 
-    difficulty.length
-  );
+  // Semilla realmente aleatoria salvo que se pase una explícita.
+  // (Antes era determinista en función de los nombres, así que el mismo grupo
+  //  obtenía siempre el mismo reparto de roles.)
+  const gameSeed = seedValue ?? randomSeed();
 
   // Select word pair - use custom word if provided, otherwise fallback to static words
   let selectedWord;
@@ -234,14 +231,8 @@ export function initializeGameWithRotation(
   roundNumber: number = 1,
   preserveOriginalConfig?: LocalGameConfig
 ): LocalGameData {
-  // Use round number as part of the seed to ensure different games each round
-  const seed = (
-    playerNames.join('').length + 
-    (includeUndercover ? 1 : 0) + 
-    maxMisterWhites + 
-    difficulty.length +
-    roundNumber * 1000 // Multiply to create significant difference
-  );
+  // Cada ronda usa una semilla aleatoria independiente
+  const seed = randomSeed();
 
   const gameData = initializeGame(
     playerNames,
@@ -277,13 +268,8 @@ export async function initializeGameWithDatabaseWords(
   category?: string
 ): Promise<LocalGameData> {
   try {
-    // Create deterministic seed
-    const seed = (
-      playerNames.join('').length + 
-      (includeUndercover ? 1 : 0) + 
-      maxMisterWhites + 
-      difficulty.length
-    );
+    // Semilla aleatoria para el reparto de roles
+    const seed = randomSeed();
 
     // Pre-fetch multiple words from database for subsequent rounds
     const preFetchedWords = await getMultipleWordsFromDatabase(difficulty, category, 15);
@@ -341,12 +327,7 @@ export async function initializeGameWithDatabaseWords(
     console.error('❌ [DEBUG] Round 1: Error initializing game with database words:', error);
     // Fallback a palabras estáticas en caso de error
     console.warn('⚠️ [DEBUG] Round 1: Falling back to STATIC WORDS due to error');
-    const seed = (
-      playerNames.join('').length + 
-      (includeUndercover ? 1 : 0) + 
-      maxMisterWhites + 
-      difficulty.length
-    );
+    const seed = randomSeed();
     const gameData = initializeGame(playerNames, difficulty, includeUndercover, maxMisterWhites, undefined, seed);
     return {
       ...gameData,

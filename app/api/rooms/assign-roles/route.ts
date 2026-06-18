@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 import { pusherServer } from '../../../lib/pusher';
+import { shuffleArray } from '../../../lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,9 +44,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Algoritmo de asignación de roles
+    // Algoritmo de asignación de roles.
+    // Fisher-Yates (barajado uniforme); antes se usaba sort(() => Math.random() - 0.5),
+    // que es un barajado sesgado y no reparte los roles por igual.
     const assignments = assignRoles(players.length);
-    const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
+    const shuffledPlayers = shuffleArray(players);
 
     // Asignar roles a jugadores
     const roleUpdates = shuffledPlayers.map((player, index) => ({
