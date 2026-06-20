@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, SkipForward } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, SkipForward, Lock, Check, PartyPopper, VenetianMask, Glasses, Drama } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -331,6 +331,7 @@ function LocalGameContent() {
     }
     
     const roleInfo = getRoleInfo(currentPlayer);
+    const RoleIcon = roleInfo.icon;
 
     return (
       <>
@@ -367,7 +368,7 @@ function LocalGameContent() {
                       <strong>{currentPlayer.name}</strong>, es tu turno de ver tu rol secreto.
                     </p>
                     <p className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs text-faint">
-                      🔒 Que nadie más vea la pantalla
+                      <Lock className="h-3.5 w-3.5" /> Que nadie más vea la pantalla
                     </p>
                   </div>
 
@@ -380,7 +381,7 @@ function LocalGameContent() {
                 <>
                   <div className="overflow-hidden rounded-2xl border border-white/10">
                     <div className={`px-6 py-6 text-center ${roleInfo.tint}`}>
-                      <div className="text-5xl mb-2">{roleInfo.icon}</div>
+                      <RoleIcon className="mx-auto mb-2 h-12 w-12" />
                       <h3 className="text-xl font-bold">{roleInfo.title}</h3>
                       <p className="mt-1 text-sm opacity-80">{roleInfo.description}</p>
                     </div>
@@ -430,9 +431,8 @@ function LocalGameContent() {
         
         <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
-          <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver
+          <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack} aria-label="Volver">
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-xl font-bold text-fg">
             Ronda {gameData.round} - Pistas
@@ -544,9 +544,8 @@ function LocalGameContent() {
         
         <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
-          <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver
+          <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack} aria-label="Volver">
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-xl font-bold text-fg">
             Ronda {gameData.round} - Votación
@@ -673,12 +672,12 @@ function LocalGameContent() {
           {/* Winner announcement */}
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl">
-                {votingSkipped && '🎭 Roles revelados'}
-                {gameData.winner === 'civilians' && '🎉 ¡Ganaron los Civiles!'}
-                {gameData.winner === 'mister_white' && '🕵️ ¡Ganó Mr. White!'}
-                {gameData.winner === 'undercover' && '🥸 ¡Ganó el Undercover!'}
-                {gameData.winner === 'payaso' && '🤡 ¡Ganó el Payaso!'}
+              <CardTitle className="flex items-center justify-center gap-2 text-3xl">
+                {votingSkipped && <><Drama className="h-7 w-7" /> Roles revelados</>}
+                {gameData.winner === 'civilians' && <><PartyPopper className="h-7 w-7" /> ¡Ganaron los Civiles!</>}
+                {gameData.winner === 'mister_white' && <><VenetianMask className="h-7 w-7" /> ¡Ganó Mr. White!</>}
+                {gameData.winner === 'undercover' && <><Glasses className="h-7 w-7" /> ¡Ganó el Undercover!</>}
+                {gameData.winner === 'payaso' && <><Drama className="h-7 w-7" /> ¡Ganó el Payaso!</>}
               </CardTitle>
               <CardDescription>
                 {votingSkipped
@@ -703,6 +702,7 @@ function LocalGameContent() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   {specialPlayers.map(player => {
                     const roleInfo = getRoleInfo(player);
+                    const RoleIcon = roleInfo.icon;
                     const wasVoted = player.id === gameData.votedPlayerId;
                     const roleLabel = roleInfo.title.replace('Eres ', '').replace('el ', '');
                     return (
@@ -711,15 +711,15 @@ function LocalGameContent() {
                         className={`rounded-2xl border p-4 ${wasVoted ? 'border-rose-500/30 bg-rose-500/[0.06]' : 'border-white/[0.08] bg-panel'}`}
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl ${roleInfo.tint}`}>
-                            {roleInfo.icon}
+                          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${roleInfo.tint}`}>
+                            <RoleIcon className="h-5 w-5" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="font-medium text-fg">{player.name}</span>
                               {wasVoted && (
-                                <span className="rounded-full bg-rose-500/15 px-2 py-0.5 text-[11px] font-medium text-rose-300">
-                                  🗳️ Eliminado
+                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/15 px-2 py-0.5 text-[11px] font-medium text-rose-300">
+                                  <VoteIcon className="h-3 w-3" /> Eliminado
                                 </span>
                               )}
                             </div>
@@ -810,7 +810,7 @@ function ClueInput({
           )}
           <Label className="font-medium">{player.name}</Label>
         </div>
-        {disabled && <span className="text-xs text-green-600">✓ Pista enviada</span>}
+        {disabled && <span className="inline-flex items-center gap-1 text-xs text-green-600"><Check className="h-3 w-3" /> Pista enviada</span>}
       </div>
       <Input
         value={player.clue || ''}

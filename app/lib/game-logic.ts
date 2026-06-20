@@ -1,6 +1,7 @@
 import { Player, LocalGameData, PLAYER_ROLES, PreFetchedWord, LocalGameConfig } from './types';
 import { shuffleArrayWithSeed, randomSeed } from './utils';
 import { GAME_WORDS } from './static-words';
+import { User, Users, Glasses, VenetianMask, Drama, HelpCircle, type LucideIcon } from 'lucide-react';
 
 // Interface para palabras desde la base de datos
 interface DatabaseWord {
@@ -578,7 +579,7 @@ export function getRoleInfo(player: Player) {
         word: player.word || '',
         color: 'bg-blue-500',
         tint: 'bg-sky-500/10 text-sky-300 ring-1 ring-inset ring-sky-500/20',
-        icon: '👥',
+        icon: Users,
       };
     case PLAYER_ROLES.UNDERCOVER:
       return {
@@ -587,7 +588,7 @@ export function getRoleInfo(player: Player) {
         word: player.word || '',
         color: 'bg-purple-500',
         tint: 'bg-purple-500/10 text-purple-300 ring-1 ring-inset ring-purple-500/20',
-        icon: '🥸',
+        icon: Glasses,
       };
     case PLAYER_ROLES.MISTER_WHITE:
       return {
@@ -596,7 +597,7 @@ export function getRoleInfo(player: Player) {
         word: '???',
         color: 'bg-red-500',
         tint: 'bg-rose-500/10 text-rose-300 ring-1 ring-inset ring-rose-500/20',
-        icon: '🕵️',
+        icon: VenetianMask,
       };
     case PLAYER_ROLES.PAYASO:
       return {
@@ -605,7 +606,7 @@ export function getRoleInfo(player: Player) {
         word: player.word || '',
         color: 'bg-orange-500',
         tint: 'bg-orange-500/10 text-orange-300 ring-1 ring-inset ring-orange-500/20',
-        icon: '🤡',
+        icon: Drama,
       };
     default:
       return {
@@ -614,7 +615,7 @@ export function getRoleInfo(player: Player) {
         word: '',
         color: 'bg-gray-500',
         tint: 'bg-white/5 text-muted ring-1 ring-inset ring-white/10',
-        icon: '❓',
+        icon: HelpCircle,
       };
   }
 }
@@ -704,13 +705,13 @@ export function calculateOnlineGameResults(players: OnlinePlayer[]): OnlineGameR
 }
 
 // Función para obtener el emoji del rol
-export function getRoleEmoji(role: string | null): string {
+export function getRoleIcon(role: string | null): LucideIcon {
   switch (role) {
-    case 'civil': return '👤';
-    case 'mister_white': return '🕵️';
-    case 'undercover': return '🥸';
-    case 'payaso': return '🤡';
-    default: return '❓';
+    case 'civil': return User;
+    case 'mister_white': return VenetianMask;
+    case 'undercover': return Glasses;
+    case 'payaso': return Drama;
+    default: return HelpCircle;
   }
 }
 

@@ -11,9 +11,8 @@ export default function CreateRoomPage() {
       {/* Header con navegación */}
       <div className="flex items-center mb-6">
         <Link href="/">
-          <Button variant="ghost" size="sm" className="mr-2">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver
+          <Button variant="ghost" size="sm" className="mr-2" aria-label="Volver">
+            <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <h1 className="text-2xl font-bold text-fg">

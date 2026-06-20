@@ -193,8 +193,8 @@ function GameContent() {
 
       {/* Información del juego */}
       <div className="mt-6 rounded-lg p-4 bg-amber-950">
-        <h3 className="font-medium mb-2 text-amber-100">
-          ⏳ El juego está iniciando
+        <h3 className="inline-flex items-center gap-2 font-medium mb-2 text-amber-100">
+          <Clock className="h-4 w-4" /> El juego está iniciando
         </h3>
         <p className="text-sm text-amber-200">
           En unos momentos verás tu rol secreto y podrás comenzar a jugar. 

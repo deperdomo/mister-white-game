@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { Lightbulb } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -74,7 +75,7 @@ export default function DescriptionInput({ playerName, onSubmit }: DescriptionIn
       </Button>
 
       <div className="text-xs space-y-1 text-muted">
-        <p><strong>💡 Consejos:</strong></p>
+        <p className="inline-flex items-center gap-1.5"><Lightbulb className="h-3.5 w-3.5" /> <strong>Consejos:</strong></p>
         <ul className="list-disc list-inside space-y-1">
           <li>Sé específico pero no obvio</li>
           <li>Evita mencionar la palabra directamente</li>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Users, Settings, Info, GripVertical, ClipboardList } from "lucide-react";
+import { ArrowLeft, Users, Settings, Info, GripVertical, ClipboardList, Trash2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -233,9 +233,8 @@ function LocalGameSetupContent() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       {/* Header */}
       <div className="flex items-center mb-6">
-        <Button variant="ghost" size="sm" className="mr-2" onClick={() => router.push('/')}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Volver
+        <Button variant="ghost" size="sm" className="mr-2" onClick={() => router.push('/')} aria-label="Volver">
+          <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold text-fg">
           {isEditingMode ? 'Editar Configuración' : 'Configurar Juego Local'}
@@ -392,13 +391,14 @@ function LocalGameSetupContent() {
                   className="flex-1"
                 />
                 {players.length > 1 && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => removePlayer(index)}
                     className="flex-shrink-0"
+                    aria-label="Eliminar jugador"
                   >
-                    Eliminar
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>

@@ -2,7 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense, useCallback, useRef } from "react";
-import { ArrowLeft, Users, Clock, Eye, EyeOff, Share } from "lucide-react";
+import { ArrowLeft, Users, Clock, Eye, EyeOff, Share, Check, Crown, PartyPopper, VenetianMask, Glasses, Drama, BarChart3, FileText } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Input } from "../../../components/ui/input";
@@ -10,7 +10,7 @@ import { Label } from "../../../components/ui/label";
 import { useOnlineGame } from "../../../hooks/useOnlineGame";
 import { useToast } from "../../../hooks/useToast";
 import { LoadingState } from "../../../components/ui/loading";
-import { calculateOnlineGameResults, getRoleEmoji, getRoleName, OnlineGameResults } from "../../../lib/game-logic";
+import { calculateOnlineGameResults, getRoleIcon, getRoleName, OnlineGameResults } from "../../../lib/game-logic";
 
 interface OnlinePlayer {
   id: string;
@@ -547,8 +547,8 @@ function OnlineGameContent() {
               </div>
             ) : (
               <div>
-                <p className="text-green-400">
-                  ✓ Tu descripción ha sido enviada: &quot;{currentPlayer.description}&quot;
+                <p className="inline-flex items-center gap-1.5 text-green-400">
+                  <Check className="h-4 w-4" /> Tu descripción ha sido enviada: &quot;{currentPlayer.description}&quot;
                 </p>
                 <p className="mt-2 text-muted">
                   Esperando a que los demás jugadores envíen sus descripciones...
@@ -598,8 +598,8 @@ function OnlineGameContent() {
               </div>
             ) : (
               <div>
-                <p className="text-green-400">
-                  ✓ Has votado por: {currentPlayer.votedFor}
+                <p className="inline-flex items-center gap-1.5 text-green-400">
+                  <Check className="h-4 w-4" /> Has votado por: {currentPlayer.votedFor}
                 </p>
                 <p className="mt-2 text-muted">
                   Esperando a que los demás jugadores voten...
@@ -626,17 +626,17 @@ function OnlineGameContent() {
                     gameResults.winner === 'undercover' ? 'bg-purple-500' :
                     'bg-orange-500'
                   }`}>
-                    {gameResults.winner === 'civilians' && '👥 ¡Civiles Ganaron!'}
-                    {gameResults.winner === 'mister_white' && '🕵️ ¡Mister White Ganó!'}
-                    {gameResults.winner === 'undercover' && '🥸 ¡Undercover Ganó!'}
-                    {gameResults.winner === 'payaso' && '🤡 ¡Payaso Ganó!'}
+                    {gameResults.winner === 'civilians' && <><PartyPopper className="h-5 w-5 mr-2" /> ¡Civiles Ganaron!</>}
+                    {gameResults.winner === 'mister_white' && <><VenetianMask className="h-5 w-5 mr-2" /> ¡Mister White Ganó!</>}
+                    {gameResults.winner === 'undercover' && <><Glasses className="h-5 w-5 mr-2" /> ¡Undercover Ganó!</>}
+                    {gameResults.winner === 'payaso' && <><Drama className="h-5 w-5 mr-2" /> ¡Payaso Ganó!</>}
                   </div>
                   <p className="text-lg mb-4">{gameResults.reason}</p>
                 </div>
 
                 {/* Información de votación */}
                 <div className="p-4 rounded-lg bg-panel">
-                  <h4 className="font-semibold mb-3">📊 Resultados de la Votación</h4>
+                  <h4 className="flex items-center gap-2 font-semibold mb-3"><BarChart3 className="h-4 w-4" /> Resultados de la Votación</h4>
                   {gameResults.eliminated ? (
                     <p className="mb-2">
                       <span className="font-semibold text-red-600">Eliminado:</span> {gameResults.eliminated} 
@@ -658,12 +658,14 @@ function OnlineGameContent() {
 
                 {/* Revelación de roles */}
                 <div className="p-4 rounded-lg bg-panel">
-                  <h4 className="font-semibold mb-3">🎭 Revelación de Roles</h4>
+                  <h4 className="flex items-center gap-2 font-semibold mb-3"><Drama className="h-4 w-4" /> Revelación de Roles</h4>
                   <div className="space-y-2">
-                    {players.map(player => (
+                    {players.map(player => {
+                      const RoleIcon = getRoleIcon(player.role);
+                      return (
                       <div key={player.id} className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <span>{getRoleEmoji(player.role)}</span>
+                          <RoleIcon className="h-4 w-4" />
                           <span className="font-semibold">{player.name}</span>
                           {player.name === currentPlayer.name && (
                             <span className="text-blue-500 text-sm">(Tú)</span>
@@ -679,14 +681,15 @@ function OnlineGameContent() {
                           {getRoleName(player.role)}
                         </div>
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 </div>
 
                 {/* Palabras del juego */}
                 {room.currentWord && (
                   <div className="p-4 rounded-lg bg-panel">
-                    <h4 className="font-semibold mb-3">📝 Palabras del Juego</h4>
+                    <h4 className="flex items-center gap-2 font-semibold mb-3"><FileText className="h-4 w-4" /> Palabras del Juego</h4>
                     <div className="space-y-2">
                       <div>
                         <span className="text-sm text-muted">Palabra Civil:</span>
@@ -769,7 +772,7 @@ function OnlineGameContent() {
                   <div>
                     <p className="font-semibold flex items-center">
                       {player.name}
-                      {player.isHost && <span className="ml-2 text-yellow-500">👑</span>}
+                      {player.isHost && <Crown className="ml-2 h-4 w-4 text-yellow-500" />}
                       {player.name === currentPlayer.name && <span className="ml-2 text-blue-500">(Tú)</span>}
                     </p>
                     {gamePhase === 'describing' && (

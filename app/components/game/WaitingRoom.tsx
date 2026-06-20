@@ -1,6 +1,6 @@
 import React from 'react';
 import { Player } from '../../lib/types';
-import { Crown, User, Wifi, WifiOff } from 'lucide-react';
+import { Crown, User, Wifi, WifiOff, Clock, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { cn } from '../../lib/utils';
 
@@ -123,12 +123,12 @@ export default function WaitingRoom({
               {/* Estado */}
               <div className="text-center">
                 {players.length < 3 ? (
-                  <div className="text-sm text-amber-400">
-                    ⏳ Esperando más jugadores...
+                  <div className="inline-flex items-center gap-1.5 text-sm text-amber-400">
+                    <Clock className="h-4 w-4" /> Esperando más jugadores...
                   </div>
                 ) : (
-                  <div className="text-sm text-green-400">
-                    ✅ ¡Listo para empezar!
+                  <div className="inline-flex items-center gap-1.5 text-sm text-green-400">
+                    <CheckCircle2 className="h-4 w-4" /> ¡Listo para empezar!
                   </div>
                 )}
               </div>
