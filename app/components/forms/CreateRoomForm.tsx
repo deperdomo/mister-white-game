@@ -124,9 +124,6 @@ export default function CreateRoomForm() {
                 <span>{errors.maxPlayers}</span>
               </div>
             )}
-            <p className="text-xs text-muted">
-              Entre 3 y 8 jugadores
-            </p>
           </div>
 
           {/* Botón de envío */}

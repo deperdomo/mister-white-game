@@ -9,6 +9,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Switch } from "../components/ui/switch";
+import { HelpTip } from "../components/ui/help-tip";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { MAX_PLAYERS, MIN_PLAYERS } from "../lib/types";
 import { useWords } from "../hooks/useWords";
@@ -267,20 +268,13 @@ function LocalGameSetupContent() {
                   <SelectItem value="hard">Difícil</SelectItem>
                 </SelectContent>
               </Select>
-              {difficulty === 'easy' && (
-                <p className="text-sm text-muted">
-                  En dificultad fácil se mostrará la categoría de la palabra.
-                </p>
-              )}
             </div>
 
             {/* Include Undercover */}
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
+              <div className="flex items-center gap-1.5">
                 <Label htmlFor="undercover">Incluir rol Undercover</Label>
-                <p className="text-sm text-muted">
-                  Un jugador tendrá una palabra similar pero diferente
-                </p>
+                <HelpTip text="Un jugador tendrá una palabra similar pero diferente." />
               </div>
               <Switch
                 id="undercover"
@@ -306,11 +300,9 @@ function LocalGameSetupContent() {
 
             {/* Fuente de palabras */}
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
+              <div className="flex items-center gap-1.5">
                 <Label htmlFor="use-database">Usar palabras de la base de datos</Label>
-                <p className="text-sm text-muted">
-                  Usar palabras almacenadas en línea (requiere conexión)
-                </p>
+                <HelpTip text="Usa palabras almacenadas en línea (requiere conexión)." />
               </div>
               <Switch
                 id="use-database"

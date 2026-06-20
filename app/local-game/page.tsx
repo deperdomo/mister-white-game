@@ -363,9 +363,6 @@ function LocalGameContent() {
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-elevated">
                       <Eye className="h-6 w-6 text-accent" />
                     </div>
-                    <p className="text-fg">
-                      <strong>{currentPlayer.name}</strong>, es tu turno de ver tu rol secreto.
-                    </p>
                     <p className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs text-faint">
                       <Lock className="h-3.5 w-3.5" /> Que nadie más vea la pantalla
                     </p>
