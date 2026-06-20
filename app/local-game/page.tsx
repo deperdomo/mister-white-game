@@ -338,9 +338,8 @@ function LocalGameContent() {
         
         <div className="container mx-auto px-4 py-8 max-w-md">
           <div className="flex items-center mb-6">
-            <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack}>
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Volver
+            <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack} aria-label="Volver">
+              <ArrowLeft className="h-4 w-4" />
             </Button>
             <h1 className="text-xl font-bold text-fg">
               Ronda {gameData.round} · Revelar Roles

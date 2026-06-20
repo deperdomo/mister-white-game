@@ -1,5 +1,6 @@
 import { Github, Heart } from 'lucide-react';
 import InvitePanel from './InvitePanel';
+import { version } from '../../../package.json';
 
 export default function Footer() {
   return (
@@ -41,6 +42,7 @@ export default function Footer() {
             <br className="sm:hidden" />
             Disfruta jugando con amigos y familia.
           </p>
+          <p className="mt-2 text-center text-xs text-faint">v{version}</p>
         </div>
       </div>
     </footer>
