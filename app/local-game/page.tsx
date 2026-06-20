@@ -658,9 +658,8 @@ function LocalGameContent() {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
-          <Button variant="ghost" size="sm" className="mr-2" onClick={resetGame}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Nuevo juego
+          <Button variant="ghost" size="sm" className="mr-2" onClick={resetGame} aria-label="Nuevo juego">
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-xl font-bold text-fg">
             ¡Juego terminado!
