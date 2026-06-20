@@ -597,11 +597,6 @@ function LocalGameContent() {
                       className="text-blue-600"
                     />
                     <div className="flex items-center gap-2 flex-1">
-                      {player.revelationOrder !== undefined && (
-                        <span className="flex items-center justify-center w-6 h-6 text-xs font-bold rounded-full bg-blue-900 text-blue-300">
-                          {player.revelationOrder + 1}
-                        </span>
-                      )}
                       <span>{player.name}</span>
                     </div>
                   </label>
@@ -798,11 +793,6 @@ function ClueInput({
     <div className="p-4 border rounded">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          {player.revelationOrder !== undefined && (
-            <span className="flex items-center justify-center w-6 h-6 text-xs font-bold rounded-full bg-blue-900 text-blue-300">
-              {player.revelationOrder + 1}
-            </span>
-          )}
           <Label className="font-medium">{player.name}</Label>
         </div>
         {disabled && <span className="inline-flex items-center gap-1 text-xs text-green-600"><Check className="h-3 w-3" /> Pista enviada</span>}

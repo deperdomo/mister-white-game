@@ -208,7 +208,7 @@ function WaitingRoomContent() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {players.map((player, index) => (
+                {players.map((player) => (
                   <div
                     key={player.id}
                     className={`p-3 border rounded-lg ${
@@ -224,9 +224,6 @@ function WaitingRoomContent() {
                           {player.isHost && <Crown className="ml-2 h-4 w-4 text-yellow-500" />}
                           {player.name === playerName && <span className="ml-2 text-blue-500 text-sm">(Tú)</span>}
                         </p>
-                        <p className="text-sm text-muted">
-                          Jugador #{index + 1}
-                        </p>
                       </div>
                       <div className="w-3 h-3 rounded-full bg-green-500" />
                     </div>
@@ -241,7 +238,7 @@ function WaitingRoomContent() {
                   >
                     <div className="flex items-center justify-center">
                       <p className="text-faint">
-                        Esperando jugador #{players.length + index + 1}
+                        Esperando jugador...
                       </p>
                     </div>
                   </div>

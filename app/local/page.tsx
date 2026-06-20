@@ -372,11 +372,8 @@ function LocalGameSetupContent() {
                     className="h-4 w-4 text-muted cursor-grab active:cursor-grabbing" 
                   />
                 </div>
-                <span className="text-sm min-w-[20px] flex-shrink-0 text-muted">
-                  {index + 1}.
-                </span>
                 <Input
-                  placeholder={`Jugador ${index + 1}`}
+                  placeholder="Nombre del jugador"
                   value={player}
                   onChange={(e) => updatePlayer(index, e.target.value)}
                   maxLength={20}
