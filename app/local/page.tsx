@@ -13,11 +13,13 @@ import { HelpTip } from "../components/ui/help-tip";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { MAX_PLAYERS, MIN_PLAYERS } from "../lib/types";
 import { useWords } from "../hooks/useWords";
+import { useNavigationGuard } from "../contexts/NavigationGuardContext";
 
 function LocalGameSetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { getCategories } = useWords();
+  const { setGuard, requestNavigation } = useNavigationGuard();
   
   const [players, setPlayers] = useState<string[]>(['', '', '']); // 3 espacios iniciales
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
@@ -64,6 +66,12 @@ function LocalGameSetupContent() {
       }
     }
   }, [searchParams]);
+
+  // En modo edición hay una partida en curso: proteger la salida con el aviso
+  useEffect(() => {
+    setGuard(isEditingMode);
+    return () => setGuard(false);
+  }, [isEditingMode, setGuard]);
 
   // Cargar categorías disponibles desde la base de datos
   useEffect(() => {
@@ -234,7 +242,7 @@ function LocalGameSetupContent() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       {/* Header */}
       <div className="flex items-center mb-6">
-        <Button variant="ghost" size="sm" className="mr-2" onClick={() => router.push('/')} aria-label="Volver">
+        <Button variant="ghost" size="sm" className="mr-2" onClick={() => requestNavigation(() => router.push('/'))} aria-label="Volver">
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold text-fg">

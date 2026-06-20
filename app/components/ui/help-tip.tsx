@@ -31,7 +31,7 @@ export function HelpTip({ text, label = 'Más información' }: { text: string; l
       {open && (
         <span
           role="tooltip"
-          className="absolute left-0 top-full z-50 mt-2 w-56 max-w-[80vw] rounded-lg border border-white/10 bg-elevated px-3 py-2 text-xs text-muted shadow-lg"
+          className="absolute right-0 top-full z-50 mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-lg border border-white/10 bg-elevated px-3 py-2 text-xs text-muted shadow-lg"
         >
           {text}
         </span>

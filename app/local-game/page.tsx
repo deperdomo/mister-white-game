@@ -438,10 +438,6 @@ function LocalGameContent() {
         <Card>
           <CardHeader>
             <CardTitle>Todos los jugadores deben dar una pista</CardTitle>
-            <CardDescription>
-              Da una pista de una palabra relacionada con tu palabra secreta (sin mencionarla directamente).
-              Los jugadores están ordenados según el orden en que descubrieron sus roles.
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {gameData.category && (
@@ -451,19 +447,6 @@ function LocalGameContent() {
                 </p>
               </div>
             )}
-
-            {/* Explanation about ordering */}
-            <div className="rounded-xl p-3 bg-accent/10 border border-accent/20">
-              <div className="flex items-start gap-2.5">
-                <div className="flex items-center justify-center w-5 h-5 bg-accent text-white text-xs font-bold rounded-full mt-0.5">
-                  i
-                </div>
-                <div className="text-sm text-muted">
-                  <strong>Orden de las pistas:</strong> Los jugadores están ordenados según el orden en que descubrieron sus roles. 
-                  El número junto al nombre indica este orden.
-                </div>
-              </div>
-            </div>
 
             <div className="grid gap-4">
               {gameData.players
@@ -497,10 +480,7 @@ function LocalGameContent() {
                   <Send className="h-5 w-5 mr-2" />
                   Enviar pistas
                 </Button>
-                <p className="text-sm text-muted">
-                  Todos los jugadores deben escribir una pista antes de continuar
-                </p>
-                
+
                 {/* Botón para saltar pistas */}
                 <div className="pt-4 border-t border-white/10">
                   <Button 
@@ -512,9 +492,6 @@ function LocalGameContent() {
                     <SkipForward className="h-4 w-4 mr-2" />
                     Saltar pistas e ir a votación
                   </Button>
-                  <p className="text-xs mt-1 text-muted">
-                    Los jugadores sin pista aparecerán como &ldquo;(Sin pista)&rdquo;
-                  </p>
                 </div>
               </div>
             )}
@@ -681,9 +658,6 @@ function LocalGameContent() {
           <Card>
             <CardHeader>
               <CardTitle>Roles ocultos</CardTitle>
-              <CardDescription>
-                Estos eran los jugadores con un rol especial en esta ronda
-              </CardDescription>
             </CardHeader>
             <CardContent>
               {specialPlayers.length === 0 ? (
