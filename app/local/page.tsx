@@ -245,7 +245,7 @@ function LocalGameSetupContent() {
         <Button variant="ghost" size="sm" className="mr-2" onClick={() => requestNavigation(() => router.push('/'))} aria-label="Volver">
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-bold text-fg">
+        <h1 className="text-xl sm:text-2xl font-bold text-fg">
           {isEditingMode ? 'Editar Configuración' : 'Configurar Juego Local'}
         </h1>
       </div>
@@ -258,9 +258,6 @@ function LocalGameSetupContent() {
               <Settings className="h-5 w-5" />
               Configuración del Juego
             </CardTitle>
-            <CardDescription>
-              Personaliza las reglas del juego
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Difficulty */}
@@ -309,7 +306,7 @@ function LocalGameSetupContent() {
             {/* Fuente de palabras */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Label htmlFor="use-database">Usar palabras de la base de datos</Label>
+                <Label htmlFor="use-database">Base de datos</Label>
                 <HelpTip text="Usa palabras almacenadas en línea (requiere conexión)." />
               </div>
               <Switch
@@ -367,9 +364,9 @@ function LocalGameSetupContent() {
           </CardHeader>
           <CardContent className="space-y-4">
             {players.map((player, index) => (
-              <div 
-                key={index} 
-                className="flex gap-2 items-center p-2 rounded border transition-colors bg-panel hover:bg-elevated"
+              <div
+                key={index}
+                className="flex gap-2 items-center"
                 draggable
                 onDragStart={(e) => handleDragStart(e, index)}
                 onDragOver={handleDragOver}
@@ -389,10 +386,10 @@ function LocalGameSetupContent() {
                 />
                 {players.length > 1 && (
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => removePlayer(index)}
-                    className="flex-shrink-0"
+                    className="flex-shrink-0 text-faint hover:text-rose-300 hover:bg-rose-500/10"
                     aria-label="Eliminar jugador"
                   >
                     <Trash2 className="h-4 w-4" />

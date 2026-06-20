@@ -1,6 +1,7 @@
 import { Github, Heart } from 'lucide-react';
 import InvitePanel from './InvitePanel';
-import { version } from '../../../package.json';
+
+const version = process.env.NEXT_PUBLIC_APP_VERSION;
 
 export default function Footer() {
   return (
