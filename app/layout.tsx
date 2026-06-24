@@ -64,7 +64,7 @@ export const metadata: Metadata = {
       { url: '/logo.svg', type: 'image/svg+xml' },
       { url: '/detective.png', type: 'image/png' },
     ],
-    apple: '/detective.png',
+    apple: '/apple-icon.png',
   },
 };
 
