@@ -50,6 +50,25 @@
     letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Sin rebote/pull-to-refresh que interrumpa el pase de teléfono */
+    overscroll-behavior-y: none;
+  }
+
+  /* Fluidez táctil: sin retardo de doble-tap ni flash gris al tocar */
+  button,
+  a,
+  [role="button"],
+  label {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Evita que se seleccione texto / salte la lupa al pasar el móvil y tocar.
+     Los inputs conservan su selección por defecto. */
+  button,
+  [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   ::selection {
