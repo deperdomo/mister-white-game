@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Reorder, useDragControls } from "motion/react";
 import { ArrowLeft, Users, Settings, Info, GripVertical, ClipboardList, Trash2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -15,13 +16,19 @@ import { MAX_PLAYERS, MIN_PLAYERS } from "../lib/types";
 import { useWords } from "../hooks/useWords";
 import { useNavigationGuard } from "../contexts/NavigationGuardContext";
 
+// Jugador con id estable para que el reordenado (Motion Reorder) no confunda filas.
+type PlayerRowData = { id: string; name: string };
+// Contador determinista (mismo orden en SSR y cliente -> sin desajuste de hidratación).
+let nextPlayerId = 0;
+const makePlayer = (name = ''): PlayerRowData => ({ id: `p${nextPlayerId++}`, name });
+
 function LocalGameSetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { getCategories } = useWords();
   const { setGuard, requestNavigation } = useNavigationGuard();
   
-  const [players, setPlayers] = useState<string[]>(['', '', '']); // 3 espacios iniciales
+  const [players, setPlayers] = useState<PlayerRowData[]>(() => [makePlayer(), makePlayer(), makePlayer()]); // 3 espacios iniciales
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [includeUndercover, setIncludeUndercover] = useState(false);
   const [maxMisterWhites, setMaxMisterWhites] = useState(1);
@@ -41,7 +48,7 @@ function LocalGameSetupContent() {
         
         // Pre-llenar los campos con la configuración existente
         if (config.players && Array.isArray(config.players)) {
-          setPlayers(config.players);
+          setPlayers(config.players.map((name: string) => makePlayer(name)));
         }
         
         if (config.difficulty) {
@@ -97,56 +104,26 @@ function LocalGameSetupContent() {
 
   const addPlayer = () => {
     if (players.length < MAX_PLAYERS) {
-      setPlayers([...players, '']);
+      setPlayers([...players, makePlayer()]);
     }
   };
 
-  const removePlayer = (index: number) => {
+  const removePlayer = (id: string) => {
     if (players.length > 1) {
-      setPlayers(players.filter((_, i) => i !== index));
+      setPlayers(players.filter(p => p.id !== id));
     }
   };
 
-  const updatePlayer = (index: number, name: string) => {
-    const newPlayers = [...players];
-    newPlayers[index] = name;
-    setPlayers(newPlayers);
-  };
-
-  // Drag & Drop functions
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    e.dataTransfer.setData('text/plain', index.toString());
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
-    
-    if (dragIndex === dropIndex) return;
-    
-    const newPlayers = [...players];
-    const draggedPlayer = newPlayers[dragIndex];
-    
-    // Remove the dragged item
-    newPlayers.splice(dragIndex, 1);
-    // Insert at new position
-    newPlayers.splice(dropIndex, 0, draggedPlayer);
-    
-    setPlayers(newPlayers);
+  const updatePlayer = (id: string, name: string) => {
+    setPlayers(players.map(p => (p.id === id ? { ...p, name } : p)));
   };
 
   const validateForm = useCallback((): boolean => {
     const newErrors: string[] = [];
     
     // Filter out empty player names
-    const validPlayers = players.filter(p => p.trim() !== '');
-    
+    const validPlayers = players.map(p => p.name).filter(n => n.trim() !== '');
+
     if (validPlayers.length < MIN_PLAYERS) {
       newErrors.push(`Se necesitan al menos ${MIN_PLAYERS} jugadores.`);
     }
@@ -161,9 +138,12 @@ function LocalGameSetupContent() {
       newErrors.push('Los nombres de los jugadores deben ser únicos.');
     }
     
-    // Check for empty names
+    // Check name length bounds (el input ya limita a 20, pero la edición vía URL no)
     if (validPlayers.some(p => p.trim().length < 2)) {
       newErrors.push('Los nombres deben tener al menos 2 caracteres.');
+    }
+    if (validPlayers.some(p => p.trim().length > 20)) {
+      newErrors.push('Los nombres no pueden superar los 20 caracteres.');
     }
     
     // Check Mr. White count
@@ -182,7 +162,7 @@ function LocalGameSetupContent() {
   const handleStartGame = () => {
     if (!validateForm()) return;
     
-    const validPlayers = players.filter(p => p.trim() !== '');
+    const validPlayers = players.map(p => p.name).filter(n => n.trim() !== '');
     const config = {
       players: validPlayers,
       difficulty,
@@ -204,7 +184,7 @@ function LocalGameSetupContent() {
     return categoryValue === 'all' ? 'Todas las categorías' : categoryValue;
   };
 
-  const validPlayerCount = players.filter(p => p.trim() !== '').length;
+  const validPlayerCount = players.filter(p => p.name.trim() !== '').length;
   const includePayaso = validPlayerCount >= 8;
   
   // Cálculo más flexible del máximo de Mr. White
@@ -362,44 +342,20 @@ function LocalGameSetupContent() {
               Añade los nombres de los jugadores. Arrastra el ícono ⋮⋮ para reordenar.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {players.map((player, index) => (
-              <div
-                key={index}
-                className="flex gap-2 items-center"
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-              >
-                <div className="flex-shrink-0" title="Arrastra para reordenar">
-                  <GripVertical 
-                    className="h-4 w-4 text-muted cursor-grab active:cursor-grabbing" 
-                  />
-                </div>
-                <Input
-                  placeholder="Nombre del jugador"
-                  value={player}
-                  onChange={(e) => updatePlayer(index, e.target.value)}
-                  maxLength={20}
-                  className="flex-1"
+          <CardContent>
+            <Reorder.Group axis="y" values={players} onReorder={setPlayers} className="space-y-3">
+              {players.map((player) => (
+                <PlayerRow
+                  key={player.id}
+                  player={player}
+                  canRemove={players.length > 1}
+                  onChange={updatePlayer}
+                  onRemove={removePlayer}
                 />
-                {players.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removePlayer(index)}
-                    className="flex-shrink-0 text-faint hover:text-rose-300 hover:bg-rose-500/10"
-                    aria-label="Eliminar jugador"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
-            
+              ))}
+            </Reorder.Group>
             {players.length < MAX_PLAYERS && (
-              <Button variant="outline" onClick={addPlayer}>
+              <Button variant="outline" onClick={addPlayer} className="mt-4">
                 Añadir Jugador
               </Button>
             )}
@@ -502,6 +458,58 @@ function LocalGameSetupContent() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Fila reordenable. El arrastre solo arranca desde el grip (dragListener=false
+// + controls.start) para que el Input siga siendo pulsable/escribible.
+function PlayerRow({
+  player,
+  canRemove,
+  onChange,
+  onRemove,
+}: {
+  player: PlayerRowData;
+  canRemove: boolean;
+  onChange: (id: string, name: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const controls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={player}
+      dragListener={false}
+      dragControls={controls}
+      whileDrag={{ scale: 1.03 }}
+      className="flex gap-2 items-center rounded-xl bg-panel/40"
+    >
+      <div
+        className="flex-shrink-0 touch-none cursor-grab active:cursor-grabbing p-1"
+        onPointerDown={(e) => controls.start(e)}
+        title="Arrastra para reordenar"
+      >
+        <GripVertical className="h-4 w-4 text-muted" />
+      </div>
+      <Input
+        placeholder="Nombre del jugador"
+        value={player.name}
+        onChange={(e) => onChange(player.id, e.target.value)}
+        maxLength={20}
+        className="flex-1"
+      />
+      {canRemove && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onRemove(player.id)}
+          className="flex-shrink-0 text-faint hover:text-rose-300 hover:bg-rose-500/10"
+          aria-label="Eliminar jugador"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )}
+    </Reorder.Item>
   );
 }
 
