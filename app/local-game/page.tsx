@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
+import { motion } from "motion/react";
 import { ArrowLeft, Eye, EyeOff, Send, Vote as VoteIcon, SkipForward, Lock, Check, PartyPopper, VenetianMask, Glasses, Drama } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -26,6 +27,15 @@ function LocalGameContent() {
     setGuard(!!gameData);
     return () => setGuard(false);
   }, [gameData, setGuard]);
+
+  // Confeti al llegar a resultados con un ganador (respeta prefers-reduced-motion)
+  useEffect(() => {
+    if (gameData?.gamePhase !== 'results' || !gameData.winner) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    import('canvas-confetti').then(({ default: confetti }) => {
+      confetti({ particleCount: 120, spread: 75, origin: { y: 0.3 }, disableForReducedMotion: true });
+    });
+  }, [gameData?.gamePhase, gameData?.winner]);
 
   useEffect(() => {
     // Get configuration from URL parameters
@@ -375,7 +385,12 @@ function LocalGameContent() {
                 </>
               ) : (
                 <>
-                  <div className="overflow-hidden rounded-2xl border border-white/10">
+                  <motion.div
+                    className="overflow-hidden rounded-2xl border border-white/10"
+                    initial={{ opacity: 0, scale: 0.92, rotateX: -12 }}
+                    animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                  >
                     <div className={`px-6 py-6 text-center ${roleInfo.tint}`}>
                       <RoleIcon className="mx-auto mb-2 h-12 w-12" />
                       <h3 className="text-xl font-bold">{roleInfo.title}</h3>
@@ -383,9 +398,16 @@ function LocalGameContent() {
                     </div>
                     <div className="bg-surface px-6 py-5 text-center">
                       <p className="eyebrow mb-2">Tu palabra</p>
-                      <p className="text-3xl font-bold tracking-tight text-fg">{roleInfo.word}</p>
+                      <motion.p
+                        className="text-3xl font-bold tracking-tight text-fg"
+                        initial={{ scale: 0.6, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 420, damping: 16, delay: 0.12 }}
+                      >
+                        {roleInfo.word}
+                      </motion.p>
                     </div>
-                  </div>
+                  </motion.div>
 
                   {gameData.category && (
                     <p className="text-center text-sm text-muted">
@@ -637,6 +659,11 @@ function LocalGameContent() {
 
         <div className="space-y-6">
           {/* Winner announcement */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 16 }}
+          >
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="flex items-center justify-center gap-2 text-3xl">
@@ -653,6 +680,7 @@ function LocalGameContent() {
               </CardDescription>
             </CardHeader>
           </Card>
+          </motion.div>
 
           {/* Role revelation — solo roles importantes (no civiles) */}
           <Card>
@@ -663,15 +691,22 @@ function LocalGameContent() {
               {specialPlayers.length === 0 ? (
                 <p className="text-sm text-muted">No había roles especiales en esta ronda.</p>
               ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
+                <motion.div
+                  className="grid gap-3 sm:grid-cols-2"
+                  initial="hidden"
+                  animate="show"
+                  variants={{ show: { transition: { staggerChildren: 0.09 } } }}
+                >
                   {specialPlayers.map(player => {
                     const roleInfo = getRoleInfo(player);
                     const RoleIcon = roleInfo.icon;
                     const wasVoted = player.id === gameData.votedPlayerId;
                     const roleLabel = roleInfo.title.replace('Eres ', '').replace('el ', '');
                     return (
-                      <div
+                      <motion.div
                         key={player.id}
+                        variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
                         className={`rounded-2xl border p-4 ${wasVoted ? 'border-rose-500/30 bg-rose-500/[0.06]' : 'border-white/[0.08] bg-panel'}`}
                       >
                         <div className="flex items-center gap-3">
@@ -703,10 +738,10 @@ function LocalGameContent() {
                             Pista: <em>&ldquo;{player.clue}&rdquo;</em>
                           </p>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
-                </div>
+                </motion.div>
               )}
             </CardContent>
           </Card>
