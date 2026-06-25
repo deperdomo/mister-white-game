@@ -20,10 +20,10 @@ function LocalGameContent() {
   const [showRole, setShowRole] = useState(false);
   const [selectedVotedPlayer, setSelectedVotedPlayer] = useState<string>('');
 
-  // Proteger contra salidas accidentales mientras la partida está en curso
+  // Proteger contra salidas accidentales mientras haya una partida cargada
+  // (incluida la pantalla de resultados: salir ahí también pierde la configuración).
   useEffect(() => {
-    const active = !!gameData && gameData.gamePhase !== 'results';
-    setGuard(active);
+    setGuard(!!gameData);
     return () => setGuard(false);
   }, [gameData, setGuard]);
 
@@ -627,7 +627,7 @@ function LocalGameContent() {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center mb-6">
-          <Button variant="ghost" size="sm" className="mr-2" onClick={resetGame} aria-label="Nuevo juego">
+          <Button variant="ghost" size="sm" className="mr-2" onClick={handleGoBack} aria-label="Volver">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-xl font-bold text-fg">
