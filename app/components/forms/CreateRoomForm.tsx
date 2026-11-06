@@ -10,13 +10,11 @@ import { useOnlineGame } from '../../hooks/useOnlineGame';
 
 interface CreateRoomFormData {
   playerName: string;
-  maxPlayers: number;
 }
 
 export default function CreateRoomForm() {
   const [formData, setFormData] = useState<CreateRoomFormData>({
     playerName: '',
-    maxPlayers: 6,
   });
   
   const [errors, setErrors] = useState<Partial<CreateRoomFormData>>({});
@@ -31,10 +29,6 @@ export default function CreateRoomForm() {
       newErrors.playerName = 'El nombre debe tener entre 2 y 20 caracteres';
     }
 
-    if (formData.maxPlayers < 3 || formData.maxPlayers > 8) {
-      newErrors.maxPlayers = 'Debe ser entre 3 y 8 jugadores' as never;
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -45,7 +39,7 @@ export default function CreateRoomForm() {
     
     if (!validateForm() || isLoading) return;
 
-    const roomCode = await createRoom(formData.playerName, formData.maxPlayers);
+    const roomCode = await createRoom(formData.playerName);
     if (roomCode) {
       // Redirect to waiting room with room code
       router.push(`/waiting-room?code=${roomCode}&name=${encodeURIComponent(formData.playerName)}`);
@@ -53,7 +47,7 @@ export default function CreateRoomForm() {
   };
 
   // Manejar cambios en los inputs
-  const handleInputChange = (field: keyof CreateRoomFormData, value: string | number) => {
+  const handleInputChange = (field: keyof CreateRoomFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Limpiar error del campo si existe
@@ -102,30 +96,6 @@ export default function CreateRoomForm() {
             </p>
           </div>
 
-          {/* Número máximo de jugadores */}
-          <div className="space-y-2">
-            <Label htmlFor="maxPlayers">Número máximo de jugadores</Label>
-            <select
-              id="maxPlayers"
-              value={formData.maxPlayers}
-              onChange={(e) => handleInputChange('maxPlayers', parseInt(e.target.value))}
-              disabled={isLoading}
-              className="w-full px-4 h-11 border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent/70 disabled:opacity-50 disabled:cursor-not-allowed border-white/10 bg-panel text-fg text-[15px]"
-            >
-              {[3, 4, 5, 6, 7, 8].map(num => (
-                <option key={num} value={num}>
-                  {num} jugadores
-                </option>
-              ))}
-            </select>
-            {errors.maxPlayers && (
-              <div className="flex items-center space-x-1 text-sm text-red-400">
-                <AlertCircle className="h-4 w-4" />
-                <span>{errors.maxPlayers}</span>
-              </div>
-            )}
-          </div>
-
           {/* Botón de envío */}
           <Button 
             type="submit" 
@@ -152,7 +122,7 @@ export default function CreateRoomForm() {
               <ul className="space-y-1 text-xs">
                 <li>• Creas una sala con un código único</li>
                 <li>• Compartes el código con tus amigos</li>
-                <li>• Esperan en la sala hasta que todos se unan</li>
+                <li>• Se unen hasta 20 jugadores y tú eliges los ajustes</li>
                 <li>• ¡Empiezan a jugar!</li>
               </ul>
             </div>

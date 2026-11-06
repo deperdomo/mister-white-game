@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getPusherClient } from '../lib/pusher';
 import { useToast } from './useToast';
+import type { GameSettings, Role } from '../lib/game-logic';
 
 export interface JoinRequest {
   requestId: string;
@@ -34,10 +35,8 @@ interface OnlinePlayer {
   id: string;
   name: string;
   isHost: boolean;
-  role: string | null;
+  role: Role | null;
   isAlive: boolean;
-  description: string | null;
-  votedFor: string | null;
 }
 
 interface OnlineRoom {
@@ -48,6 +47,7 @@ interface OnlineRoom {
   maxPlayers: number;
   currentWord: string | null;
   undercoverWord: string | null;
+  currentCategory: string | null;
   createdAt: string;
 }
 
@@ -61,11 +61,10 @@ interface UseOnlineGameState {
   joinRequests: JoinRequest[];
   respondJoinRequest: (req: JoinRequest, accept: boolean) => Promise<void>;
   joinRoom: (roomCode: string, playerName: string) => Promise<boolean>;
-  createRoom: (playerName: string, maxPlayers?: number) => Promise<string | null>;
+  createRoom: (playerName: string) => Promise<string | null>;
   leaveRoom: () => void;
-  startGame: (words: { currentWord: string; undercoverWord: string }) => Promise<boolean>;
-  submitDescription: (description: string, playerName: string) => Promise<boolean>;
-  submitVote: (votedFor: string, playerName: string) => Promise<boolean>;
+  startRound: (settings: GameSettings) => Promise<boolean>;
+  backToLobby: () => Promise<boolean>;
   loadRoom: (roomCode: string) => Promise<void>;
   loadRoomAndSubscribe: (roomCode: string) => Promise<void>;
   refreshRoom: () => Promise<void>;
@@ -81,7 +80,7 @@ export function useOnlineGame(): UseOnlineGameState {
   const [channel, setChannel] = useState<PusherChannel | null>(null);
   const [roomClosed, setRoomClosed] = useState(false);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
-  const { success: showSuccess, error: showError, info: showInfo, warning: showWarning } = useToast();
+  const { success: showSuccess, error: showError } = useToast();
 
   // Initialize Pusher connection
   useEffect(() => {
@@ -205,88 +204,9 @@ export function useOnlineGame(): UseOnlineGameState {
       setTimeout(() => loadRoom(roomCode), 500);
     });
 
-    // Roles assigned event
-    roomChannel.bind('roles-assigned', (data: unknown) => {
-      console.log('Roles assigned event received:', data);
-      showInfo('Roles asignados a todos los jugadores');
-      // Single reload with longer delay
-      setTimeout(() => {
-        console.log('Reloading after roles assigned');
-        loadRoom(roomCode);
-      }, 800);
-    });
-
-    // Game started event
-    roomChannel.bind('game-started', (data: unknown) => {
-      console.log('Game started event received:', data);
-      showSuccess('¡El juego ha comenzado!');
-      // Single reload with appropriate delay
-      setTimeout(() => {
-        console.log('Reloading after game-started');
-        loadRoom(roomCode);
-      }, 1000);
-    });
-
-    // Round started event
-    roomChannel.bind('round-started', (data: unknown) => {
-      const eventData = data as { round: number; currentWord?: string; undercoverWord?: string };
-      console.log('Round started event received:', eventData);
-      showSuccess(`¡Ronda ${eventData.round} iniciada!`);
-      
-      // Limpiar estados locales cuando comience una nueva ronda
-      if (typeof window !== 'undefined') {
-        // Disparar evento personalizado para que el componente limpie sus estados
-        window.dispatchEvent(new CustomEvent('round-started', { 
-          detail: { 
-            round: eventData.round,
-            currentWord: eventData.currentWord,
-            undercoverWord: eventData.undercoverWord
-          }
-        }));
-      }
-      
-      // Recarga inmediata para mostrar cambios más rápido
-      setTimeout(() => {
-        console.log('Reloading after round-started');
-        loadRoom(roomCode);
-      }, 200); // Reducido de 1200ms a 200ms
-    });
-
-    // Description submitted event
-    roomChannel.bind('description-submitted', (data: unknown) => {
-      const eventData = data as { playerName: string };
-      console.log('Description submitted event:', eventData);
-      showInfo(`${eventData.playerName} envió su descripción`);
-      // Debounced reload
-      setTimeout(() => loadRoom(roomCode), 500);
-    });
-
-    // Vote submitted event
-    roomChannel.bind('vote-submitted', (data: unknown) => {
-      const eventData = data as { playerName: string };
-      console.log('Vote submitted event:', eventData);
-      showInfo(`${eventData.playerName} votó`);
-      // Debounced reload
-      setTimeout(() => loadRoom(roomCode), 500);
-    });
-
-    // Player eliminated event
-    roomChannel.bind('player-eliminated', (data: unknown) => {
-      const eventData = data as { playerName: string };
-      console.log('Player eliminated event:', eventData);
-      showWarning(`¡${eventData.playerName} fue eliminado!`);
-      // Debounced reload
-      setTimeout(() => loadRoom(roomCode), 500);
-    });
-
-    // Game ended event
-    roomChannel.bind('game-ended', (data: unknown) => {
-      const eventData = data as { winner: string };
-      console.log('Game ended event:', eventData);
-      showSuccess(`¡Juego terminado! Ganador: ${eventData.winner}`);
-      // Debounced reload
-      setTimeout(() => loadRoom(roomCode), 500);
-    });
+    // Nueva ronda (roles y palabra nuevos) o vuelta a la sala de espera
+    roomChannel.bind('round-started', () => loadRoom(roomCode));
+    roomChannel.bind('back-to-lobby', () => loadRoom(roomCode));
 
     // Room deleted event
     roomChannel.bind('room-deleted', () => {
@@ -314,7 +234,7 @@ export function useOnlineGame(): UseOnlineGameState {
 
     console.log(`Subscribed to channel: ${channelName}`);
 
-  }, [pusher, channel, showSuccess, showInfo, showWarning, showError, loadRoom]);
+  }, [pusher, channel, showSuccess, showError, loadRoom]);
 
   // Function to load room and subscribe to events with debouncing
   const loadRoomAndSubscribe = useCallback(async (roomCode: string) => {
@@ -324,7 +244,7 @@ export function useOnlineGame(): UseOnlineGameState {
   }, [loadRoom, subscribeToRoom]);
 
   // Create room
-  const createRoom = useCallback(async (playerName: string, maxPlayers = 8): Promise<string | null> => {
+  const createRoom = useCallback(async (playerName: string): Promise<string | null> => {
     setIsLoading(true);
     setError(null);
 
@@ -332,7 +252,7 @@ export function useOnlineGame(): UseOnlineGameState {
       const response = await fetch('/api/rooms/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerName, maxPlayers }),
+        body: JSON.stringify({ playerName }),
       });
 
       const data = await response.json();
@@ -465,125 +385,29 @@ export function useOnlineGame(): UseOnlineGameState {
     }
   }, [roomCode, showError]);
 
-  // Start game
-  const startGame = useCallback(async (words: { currentWord: string; undercoverWord: string }): Promise<boolean> => {
+  // Acciones del host sobre la ronda
+  const hostRoundAction = useCallback(async (method: 'POST' | 'DELETE', settings?: GameSettings): Promise<boolean> => {
     if (!room) return false;
-
     try {
-      // 1. Asignar roles automáticamente
-      const rolesResponse = await fetch('/api/rooms/assign-roles', {
-        method: 'POST',
+      const res = await fetch(`/api/rooms/${room.roomCode}/round`, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomCode: room.roomCode }),
+        body: JSON.stringify({ hostToken: getHostToken(room.roomCode), settings }),
       });
-
-      if (!rolesResponse.ok) {
-        showError('Failed to assign roles');
+      if (!res.ok) {
+        showError((await res.json()).error || 'No se pudo completar la acción');
         return false;
       }
-
-      // 2. Obtener palabras del juego si no se proporcionaron
-      let gameWords = words;
-      if (!words.currentWord || !words.undercoverWord) {
-        const wordsResponse = await fetch('/api/words?difficulty=medium&count=1');
-        if (wordsResponse.ok) {
-          const wordsData = await wordsResponse.json();
-          if (wordsData.success && wordsData.word) {
-            gameWords = {
-              currentWord: wordsData.word.civilWord,
-              undercoverWord: wordsData.word.undercoverWord
-            };
-            console.log('Game words loaded:', gameWords);
-          }
-        }
-      }
-
-      // 3. Iniciar el juego
-      console.log('Starting game with words:', gameWords);
-      const response = await fetch(`/api/rooms/${room.roomCode}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'start_game',
-          currentWord: gameWords.currentWord,
-          undercoverWord: gameWords.undercoverWord,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        return true;
-      } else {
-        showError(data.error || 'Failed to start game');
-        return false;
-      }
-    } catch (error) {
-      console.error('Failed to start game:', error);
-      showError('Failed to start game');
+      await loadRoom(room.roomCode);
+      return true;
+    } catch {
+      showError('No se pudo completar la acción');
       return false;
     }
-  }, [room, showError]);
+  }, [room, showError, loadRoom]);
 
-  // Submit description
-  const submitDescription = useCallback(async (description: string, playerName: string): Promise<boolean> => {
-    if (!room) return false;
-
-    try {
-      const response = await fetch(`/api/rooms/${room.roomCode}/players`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'submit_description',
-          playerName,
-          description,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        return true;
-      } else {
-        showError(data.error || 'Failed to submit description');
-        return false;
-      }
-    } catch (error) {
-      console.error('Failed to submit description:', error);
-      showError('Failed to submit description');
-      return false;
-    }
-  }, [room, showError]);
-
-  // Submit vote
-  const submitVote = useCallback(async (votedFor: string, playerName: string): Promise<boolean> => {
-    if (!room) return false;
-
-    try {
-      const response = await fetch(`/api/rooms/${room.roomCode}/players`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'submit_vote',
-          playerName,
-          votedFor,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        return true;
-      } else {
-        showError(data.error || 'Failed to submit vote');
-        return false;
-      }
-    } catch (error) {
-      console.error('Failed to submit vote:', error);
-      showError('Failed to submit vote');
-      return false;
-    }
-  }, [room, showError]);
+  const startRound = useCallback((settings: GameSettings) => hostRoundAction('POST', settings), [hostRoundAction]);
+  const backToLobby = useCallback(() => hostRoundAction('DELETE'), [hostRoundAction]);
 
   return {
     room,
@@ -597,9 +421,8 @@ export function useOnlineGame(): UseOnlineGameState {
     joinRoom,
     createRoom,
     leaveRoom,
-    startGame,
-    submitDescription,
-    submitVote,
+    startRound,
+    backToLobby,
     loadRoom,
     loadRoomAndSubscribe,
     refreshRoom,

@@ -2,22 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 import { pusherServer } from '../../../lib/pusher';
 import { sweepStaleRooms } from '../../../lib/rooms';
+import { MAX_PLAYERS } from '../../../lib/game-logic';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { playerName, maxPlayers = 8 } = body;
+    const { playerName } = body;
+    const maxPlayers = MAX_PLAYERS;
 
     if (!playerName || typeof playerName !== 'string' || playerName.trim().length === 0) {
       return NextResponse.json(
         { error: 'Player name is required' },
-        { status: 400 }
-      );
-    }
-
-    if (maxPlayers < 3 || maxPlayers > 8) {
-      return NextResponse.json(
-        { error: 'Max players must be between 3 and 8' },
         { status: 400 }
       );
     }
@@ -33,6 +28,7 @@ export async function POST(request: NextRequest) {
       .insert({
         room_code: roomCode,
         status: 'waiting',
+        current_round: 0, // la primera ronda será la 1
         max_players: maxPlayers,
         host_id: crypto.randomUUID(),
       })

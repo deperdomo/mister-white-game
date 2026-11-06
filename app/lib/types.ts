@@ -68,41 +68,6 @@ export interface PlayerNameFormData {
   numberOfPlayers: number;
 }
 
-// Tipos para el juego local
-export interface LocalGameConfig {
-  players: string[];
-  difficulty: 'easy' | 'medium' | 'hard';
-  includeUndercover: boolean;
-  maxMisterWhites: number;
-  useDatabase?: boolean;
-  category?: string;
-}
-
-// Interface for pre-fetched database words
-export interface PreFetchedWord {
-  civilian: string;
-  undercover: string;
-  category: string;
-}
-
-export interface LocalGameData {
-  players: Player[];
-  civilianWord: string;
-  undercoverWord?: string;
-  category?: string; // Only shown on easy difficulty
-  gamePhase: 'wordReveal' | 'clues' | 'voting' | 'results';
-  currentPlayerIndex: number;
-  allCluesSubmitted: boolean;
-  votedPlayerId?: string;
-  winner?: 'civilians' | 'mister_white' | 'undercover' | 'payaso' | null;
-  includeUndercover: boolean;
-  round: number;
-  originalConfig: LocalGameConfig; // Configuration used to create this game
-  startingPlayerIndex: number; // Which player starts revealing roles this round
-  preFetchedWords?: PreFetchedWord[]; // Pre-fetched words from database for subsequent rounds
-  currentWordIndex?: number; // Index of the current word being used from preFetchedWords
-}
-
 // Tipos para eventos Pusher
 export type PusherEventData = 
   | { type: 'player-joined'; player: Player }
@@ -115,8 +80,6 @@ export type PusherEventData =
   | { type: 'room-deleted'; roomId: string };
 
 // Constantes
-export const MAX_PLAYERS = 20;
-export const MIN_PLAYERS = 3;
 export const ROOM_CODE_LENGTH = 6;
 
 export const PUSHER_EVENTS = {

@@ -2,13 +2,15 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ArrowLeft, Copy, Crown, Users, Share2, UserPlus } from "lucide-react";
+import { ArrowLeft, Copy, Crown, Users, Share2, UserPlus, Settings } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { useOnlineGame } from "../hooks/useOnlineGame";
 import { LoadingState } from "../components/ui/loading";
 import { useToast } from "../hooks/useToast";
+import GameSettingsForm from "../components/game/GameSettingsForm";
+import { loadOnlineSettings, saveOnlineSettings, GameSettings, MIN_PLAYERS } from "../lib/game-logic";
 
 function WaitingRoomContent() {
   const router = useRouter();
@@ -16,11 +18,12 @@ function WaitingRoomContent() {
   const roomCode = searchParams.get('code') || '';
   const playerName = searchParams.get('name') || '';
   
-  const { room, players, startGame, leaveRoom, loadRoomAndSubscribe, isLoading, roomClosed, joinRequests, respondJoinRequest } = useOnlineGame();
+  const { room, players, startRound, leaveRoom, loadRoomAndSubscribe, isLoading, roomClosed, joinRequests, respondJoinRequest } = useOnlineGame();
   const { success: showSuccess, error: showError } = useToast();
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [settings, setSettings] = useState<GameSettings>(loadOnlineSettings);
 
   // Buscar el jugador actual
   const currentPlayer = players.find(p => p.name === playerName);
@@ -68,24 +71,14 @@ function WaitingRoomContent() {
   }, [room?.status, router, roomCode, playerName]);
 
   const handleStartGame = async () => {
-    if (players.length < 3) {
-      showError('Se necesitan al menos 3 jugadores para empezar');
+    if (players.length < MIN_PLAYERS) {
+      showError(`Se necesitan al menos ${MIN_PLAYERS} jugadores para empezar`);
       return;
     }
-
     setIsStarting(true);
-    try {
-      // Las palabras se obtienen automáticamente en startGame
-      const success = await startGame({ currentWord: '', undercoverWord: '' });
-      if (success) {
-        showSuccess('¡Juego iniciado!');
-      }
-    } catch (error) {
-      console.error('Error al iniciar juego:', error);
-      showError('Error al iniciar el juego. Inténtalo de nuevo.');
-    } finally {
-      setIsStarting(false);
-    }
+    saveOnlineSettings(settings);
+    await startRound(settings);
+    setIsStarting(false);
   };
 
   const handleCopyCode = () => {
@@ -95,7 +88,7 @@ function WaitingRoomContent() {
   };
 
   const handleCopyRoomLink = () => {
-    const roomUrl = `https://mister-white-game.vercel.app/join-room?code=${roomCode}`;
+    const roomUrl = `${window.location.origin}/join-room?code=${roomCode}`;
     navigator.clipboard.writeText(roomUrl);
     setLinkCopied(true);
     showSuccess('¡Enlace copiado! Compártelo con tus amigos');
@@ -333,22 +326,33 @@ function WaitingRoomContent() {
             </CardContent>
           </Card>
 
-          {/* Información del juego */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Cómo Jugar</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="text-sm space-y-2 text-muted">
-                <li>• Cada jugador recibe un rol secreto</li>
-                <li>• Los civiles conocen la palabra</li>
-                <li>• Mister White no la conoce</li>
-                <li>• Todos dan pistas al mismo tiempo</li>
-                <li>• Luego votan para eliminar sospechosos</li>
-                <li>• ¡Encuentra a Mister White!</li>
-              </ul>
-            </CardContent>
-          </Card>
+          {isHost ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Settings className="h-5 w-5" />
+                  Ajustes de la partida
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GameSettingsForm value={settings} onChange={setSettings} playerCount={Math.max(players.length, MIN_PLAYERS)} />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Cómo jugar</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm space-y-2 text-muted">
+                  <li>• Cada jugador ve su rol y su palabra en su móvil</li>
+                  <li>• Los civiles comparten palabra; Mr. White no tiene</li>
+                  <li>• Por turnos, decid en voz alta una pista de vuestra palabra</li>
+                  <li>• ¡Descubrid quién es Mr. White!</li>
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
