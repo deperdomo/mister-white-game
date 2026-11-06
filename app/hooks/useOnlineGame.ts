@@ -2,6 +2,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { getPusherClient } from '../lib/pusher';
 import { useToast } from './useToast';
 
+export interface JoinRequest {
+  requestId: string;
+  playerName: string;
+}
+
+// Debe ser bastante menor que STALE_MS (lib/rooms.ts)
+const HEARTBEAT_MS = 20_000;
+
+const hostTokenKey = (roomCode: string) => `mw-host-${roomCode}`;
+const getHostToken = (roomCode: string) =>
+  typeof window === 'undefined' ? null : localStorage.getItem(hostTokenKey(roomCode));
+
 interface PusherConnection {
   bind: (event: string, callback: (data?: unknown) => void) => void;
 }
@@ -36,7 +48,6 @@ interface OnlineRoom {
   maxPlayers: number;
   currentWord: string | null;
   undercoverWord: string | null;
-  hostId: string;
   createdAt: string;
 }
 
@@ -46,6 +57,9 @@ interface UseOnlineGameState {
   isConnected: boolean;
   isLoading: boolean;
   error: string | null;
+  roomClosed: boolean;
+  joinRequests: JoinRequest[];
+  respondJoinRequest: (req: JoinRequest, accept: boolean) => Promise<void>;
   joinRoom: (roomCode: string, playerName: string) => Promise<boolean>;
   createRoom: (playerName: string, maxPlayers?: number) => Promise<string | null>;
   leaveRoom: () => void;
@@ -65,6 +79,8 @@ export function useOnlineGame(): UseOnlineGameState {
   const [error, setError] = useState<string | null>(null);
   const [pusher, setPusher] = useState<PusherClient | null>(null);
   const [channel, setChannel] = useState<PusherChannel | null>(null);
+  const [roomClosed, setRoomClosed] = useState(false);
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const { success: showSuccess, error: showError, info: showInfo, warning: showWarning } = useToast();
 
   // Initialize Pusher connection
@@ -114,6 +130,10 @@ export function useOnlineGame(): UseOnlineGameState {
         
         // Clear any previous errors on successful load
         setError(null);
+      } else if (response.status === 404) {
+        setRoomClosed(true);
+        setRoom(null);
+        setPlayers([]);
       } else {
         console.error('Failed to load room, status:', response.status);
         const errorData = await response.json();
@@ -272,8 +292,24 @@ export function useOnlineGame(): UseOnlineGameState {
     roomChannel.bind('room-deleted', () => {
       console.log('Room deleted event');
       showError('La sala fue eliminada');
+      setRoomClosed(true);
       setRoom(null);
       setPlayers([]);
+    });
+
+    // Solicitudes de entrada (solo las muestra el host)
+    roomChannel.bind('join-request', (data: unknown) => {
+      if (!getHostToken(roomCode)) return;
+      const req = data as JoinRequest;
+      setJoinRequests(prev => [...prev.filter(r => r.requestId !== req.requestId), req]);
+      navigator.vibrate?.(200);
+      // ponytail: caduca a los 60s, igual que el timeout del que la pide
+      setTimeout(() => setJoinRequests(prev => prev.filter(r => r.requestId !== req.requestId)), 60_000);
+    });
+
+    roomChannel.bind('join-request-cancelled', (data: unknown) => {
+      const { requestId } = data as { requestId: string };
+      setJoinRequests(prev => prev.filter(r => r.requestId !== requestId));
     });
 
     console.log(`Subscribed to channel: ${channelName}`);
@@ -302,6 +338,7 @@ export function useOnlineGame(): UseOnlineGameState {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        localStorage.setItem(hostTokenKey(data.roomCode), data.hostToken);
         showSuccess('Room created successfully!');
         
         // Fetch room details and subscribe
@@ -373,8 +410,12 @@ export function useOnlineGame(): UseOnlineGameState {
     }
   }, [showSuccess, showError, subscribeToRoom]);
 
-  // Leave room
+  // Leave room (si es el host, cierra la sala para no dejar basura)
   const leaveRoom = useCallback(() => {
+    if (room && getHostToken(room.roomCode)) {
+      localStorage.removeItem(hostTokenKey(room.roomCode));
+      fetch(`/api/rooms/${room.roomCode}`, { method: 'DELETE', keepalive: true }).catch(() => {});
+    }
     if (channel) {
       pusher?.unsubscribe(channel.name);
       setChannel(null);
@@ -382,7 +423,47 @@ export function useOnlineGame(): UseOnlineGameState {
     setRoom(null);
     setPlayers([]);
     setError(null);
-  }, [channel, pusher]);
+  }, [room, channel, pusher]);
+
+  // Latido del host: mientras tenga la sala abierta, la mantiene viva
+  const roomCode = room?.roomCode;
+  useEffect(() => {
+    if (!roomCode) return;
+    const hostToken = getHostToken(roomCode);
+    if (!hostToken) return;
+
+    const beat = () => {
+      fetch(`/api/rooms/${roomCode}/heartbeat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hostToken }),
+      }).catch(() => {});
+    };
+    const onVisible = () => document.visibilityState === 'visible' && beat();
+
+    beat();
+    const id = setInterval(beat, HEARTBEAT_MS);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [roomCode]);
+
+  const respondJoinRequest = useCallback(async (req: JoinRequest, accept: boolean) => {
+    if (!roomCode) return;
+    setJoinRequests(prev => prev.filter(r => r.requestId !== req.requestId));
+    try {
+      const res = await fetch(`/api/rooms/${roomCode}/requests`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hostToken: getHostToken(roomCode), ...req, accept }),
+      });
+      if (!res.ok) showError((await res.json()).error || 'No se pudo responder');
+    } catch {
+      showError('No se pudo responder');
+    }
+  }, [roomCode, showError]);
 
   // Start game
   const startGame = useCallback(async (words: { currentWord: string; undercoverWord: string }): Promise<boolean> => {
@@ -510,6 +591,9 @@ export function useOnlineGame(): UseOnlineGameState {
     isConnected,
     isLoading,
     error,
+    roomClosed,
+    joinRequests,
+    respondJoinRequest,
     joinRoom,
     createRoom,
     leaveRoom,

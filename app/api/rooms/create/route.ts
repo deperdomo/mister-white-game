@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 import { pusherServer } from '../../../lib/pusher';
+import { sweepStaleRooms } from '../../../lib/rooms';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +21,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    await sweepStaleRooms();
 
     // Generate a unique room code
     const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -76,6 +79,8 @@ export async function POST(request: NextRequest) {
       success: true,
       roomCode,
       roomId: room.id,
+      // Solo el creador recibe esto: autoriza latidos y aceptar solicitudes
+      hostToken: room.host_id,
       message: 'Room created successfully',
     });
 

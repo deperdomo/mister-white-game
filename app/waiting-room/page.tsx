@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { ArrowLeft, Copy, Crown, Users, Share2 } from "lucide-react";
+import { ArrowLeft, Copy, Crown, Users, Share2, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -16,7 +16,7 @@ function WaitingRoomContent() {
   const roomCode = searchParams.get('code') || '';
   const playerName = searchParams.get('name') || '';
   
-  const { room, players, startGame, leaveRoom, loadRoomAndSubscribe, isLoading } = useOnlineGame();
+  const { room, players, startGame, leaveRoom, loadRoomAndSubscribe, isLoading, roomClosed, joinRequests, respondJoinRequest } = useOnlineGame();
   const { success: showSuccess, error: showError } = useToast();
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -118,12 +118,41 @@ function WaitingRoomContent() {
     );
   }
 
+  if (roomClosed) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-md text-center">
+        <p className="mb-4 text-muted">La sala se ha cerrado porque el anfitrión se desconectó</p>
+        <Link href="/join-room">
+          <Button>Buscar otra sala</Button>
+        </Link>
+      </div>
+    );
+  }
+
   if (isLoading || !room) {
     return <LoadingState message="Cargando sala..." />;
   }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
+      {/* Solicitudes de entrada (solo host) */}
+      {isHost && joinRequests.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-2" aria-live="assertive">
+          {joinRequests.map((req) => (
+            <div key={req.requestId} className="mx-auto max-w-md p-4 rounded-2xl border border-accent/40 bg-elevated shadow-2xl">
+              <p className="flex items-center gap-2 mb-3 text-fg">
+                <UserPlus className="h-5 w-5 text-accent flex-shrink-0" />
+                <span><strong>{req.playerName}</strong> quiere unirse</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="outline" onClick={() => respondJoinRequest(req, false)}>Rechazar</Button>
+                <Button variant="success" onClick={() => respondJoinRequest(req, true)}>Aceptar</Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Header */}
       <div className="space-y-4 mb-6">
         {/* Primera fila: Botón salir y título */}

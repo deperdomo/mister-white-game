@@ -31,7 +31,7 @@ function JoinRoomContent() {
       {/* Alternativas */}
       <div className="mt-8 text-center">
         <p className="text-sm mb-4 text-muted">
-          ¿No tienes un código de sala?
+          ¿Nadie ha creado sala todavía?
         </p>
         <Link href="/create-room">
           <Button variant="outline" className="w-full">

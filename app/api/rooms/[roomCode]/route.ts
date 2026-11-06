@@ -97,7 +97,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         maxPlayers: room.max_players,
         currentWord: room.current_word,
         undercoverWord: room.undercover_word,
-        hostId: room.host_id,
         createdAt: room.created_at,
       },
       players: players?.map((player: { 

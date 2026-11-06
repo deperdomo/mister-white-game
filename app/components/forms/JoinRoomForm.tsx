@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { AlertCircle, Loader2, UserPlus } from 'lucide-react';
 import { isValidPlayerName } from '../../lib/utils';
 import { useOnlineGame } from '../../hooks/useOnlineGame';
+import OpenRooms from './OpenRooms';
 
 interface JoinRoomFormData {
   roomCode: string;
@@ -58,6 +59,13 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateName = (): boolean => {
+    if (isValidPlayerName(formData.playerName)) return true;
+    setErrors(prev => ({ ...prev, playerName: 'El nombre debe tener entre 2 y 20 caracteres' }));
+    playerNameInputRef.current?.focus();
+    return false;
+  };
+
   // Manejar envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +102,7 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
         </div>
         <CardTitle>Unirse a Sala</CardTitle>
         <CardDescription>
-          Introduce el código de la sala para unirte al juego
+          Elige una sala abierta o introduce su código
         </CardDescription>
       </CardHeader>
       
@@ -111,34 +119,6 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
               </div>
             </div>
           )}
-
-          {/* Código de la sala */}
-          <div className="space-y-2">
-            <Label htmlFor="roomCode">
-              Código de la sala <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="roomCode"
-              type="text"
-              placeholder="ABC123"
-              value={formData.roomCode}
-              onChange={(e) => handleInputChange('roomCode', e.target.value)}
-              maxLength={6}
-              disabled={isLoading}
-              className={`text-center text-lg font-mono tracking-wider ${
-                errors.roomCode ? 'border-red-500 focus:border-red-500' : ''
-              }`}
-            />
-            {errors.roomCode && (
-              <div className="flex items-center space-x-1 text-sm text-red-400">
-                <AlertCircle className="h-4 w-4" />
-                <span>{errors.roomCode}</span>
-              </div>
-            )}
-            <p className="text-xs text-muted">
-              Código de 6 caracteres proporcionado por el anfitrión
-            </p>
-          </div>
 
           {/* Nombre del jugador */}
           <div className="space-y-2">
@@ -167,6 +147,44 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
             </p>
           </div>
 
+          {/* Salas abiertas */}
+          <div className="space-y-2">
+            <Label>Salas abiertas</Label>
+            <OpenRooms playerName={formData.playerName} validateName={validateName} />
+          </div>
+
+          <div className="flex items-center gap-3 text-xs text-faint">
+            <div className="h-px flex-1 bg-white/10" />
+            o con código
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+
+          {/* Código de la sala */}
+          <div className="space-y-2">
+            <Label htmlFor="roomCode">Código de la sala</Label>
+            <Input
+              id="roomCode"
+              type="text"
+              placeholder="ABC123"
+              value={formData.roomCode}
+              onChange={(e) => handleInputChange('roomCode', e.target.value)}
+              maxLength={6}
+              disabled={isLoading}
+              className={`text-center text-lg font-mono tracking-wider ${
+                errors.roomCode ? 'border-red-500 focus:border-red-500' : ''
+              }`}
+            />
+            {errors.roomCode && (
+              <div className="flex items-center space-x-1 text-sm text-red-400">
+                <AlertCircle className="h-4 w-4" />
+                <span>{errors.roomCode}</span>
+              </div>
+            )}
+            <p className="text-xs text-muted">
+              Código de 6 caracteres proporcionado por el anfitrión
+            </p>
+          </div>
+
           {/* Botón de envío */}
           <Button 
             type="submit" 
@@ -184,20 +202,6 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
           </Button>
         </form>
 
-        {/* Información adicional */}
-        <div className="mt-6 p-4 rounded-xl border border-accent/20 bg-accent/10">
-          <div className="flex items-start space-x-2.5">
-            <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-accent" />
-            <div className="text-sm text-muted">
-              <p className="font-medium mb-1">¿No tienes un código?</p>
-              <ul className="space-y-1 text-xs">
-                <li>• Pídele al anfitrión que te comparta el código</li>
-                <li>• O créate tu propia sala desde la página principal</li>
-                <li>• El código es generado automáticamente al crear una sala</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );

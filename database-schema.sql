@@ -18,6 +18,8 @@ CREATE TABLE game_rooms (
     current_word TEXT,
     undercover_word TEXT,
     host_id UUID NOT NULL,
+    -- Último latido del host; las salas sin latido en 2 min se borran (app/lib/rooms.ts)
+    last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     
     -- Índices para optimización
     CONSTRAINT room_code_format CHECK (room_code ~ '^[A-Z0-9]{6}$')
@@ -27,6 +29,7 @@ CREATE TABLE game_rooms (
 CREATE INDEX idx_game_rooms_room_code ON game_rooms(room_code);
 CREATE INDEX idx_game_rooms_status ON game_rooms(status);
 CREATE INDEX idx_game_rooms_created_at ON game_rooms(created_at);
+CREATE INDEX idx_game_rooms_last_seen ON game_rooms(last_seen);
 
 -- ===============================================
 -- 2. TABLA DE JUGADORES (game_players)

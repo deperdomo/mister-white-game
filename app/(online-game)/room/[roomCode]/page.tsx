@@ -31,7 +31,7 @@ function OnlineGameContent() {
   const roomCode = params.roomCode as string;
   const playerName = searchParams.get('name') || '';
   
-  const { room, players, submitDescription, submitVote, loadRoomAndSubscribe, isLoading } = useOnlineGame();
+  const { room, players, submitDescription, submitVote, loadRoomAndSubscribe, isLoading, roomClosed } = useOnlineGame();
   const { success: showSuccess, error: showError } = useToast();
   
   const [currentPlayer, setCurrentPlayer] = useState<OnlinePlayer | null>(null);
@@ -401,6 +401,15 @@ function OnlineGameContent() {
     return (
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
         <p className="mb-4 text-muted">Código de sala no válido</p>
+        <Button onClick={() => router.push('/')}>Volver al inicio</Button>
+      </div>
+    );
+  }
+
+  if (roomClosed) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-md text-center">
+        <p className="mb-4 text-muted">La sala se ha cerrado porque el anfitrión se desconectó</p>
         <Button onClick={() => router.push('/')}>Volver al inicio</Button>
       </div>
     );
