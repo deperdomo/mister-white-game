@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
       roomCode: normalizedRoomCode,
       roomId: result.roomId,
       playerCount: result.playerCount,
+      playerToken: result.playerToken,
       message: 'Successfully joined room',
     });
   } catch (error) {

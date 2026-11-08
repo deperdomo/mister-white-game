@@ -20,6 +20,8 @@ CREATE TABLE game_rooms (
     host_id UUID NOT NULL,
     -- Último latido del host; las salas sin latido en 2 min se borran (app/lib/rooms.ts)
     last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- created_at del jugador que empezó la última ronda (de ahí sale el siguiente turno)
+    starter_joined_at TIMESTAMPTZ,
     
     -- Índices para optimización
     CONSTRAINT room_code_format CHECK (room_code ~ '^[A-Z0-9]{6}$')

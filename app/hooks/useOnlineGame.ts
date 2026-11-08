@@ -13,6 +13,9 @@ export interface JoinRequest {
 const HEARTBEAT_MS = 20_000;
 
 const hostTokenKey = (roomCode: string) => `mw-host-${roomCode}`;
+const playerTokenKey = (roomCode: string) => `mw-player-${roomCode}`;
+export const savePlayerToken = (roomCode: string, token: string) => localStorage.setItem(playerTokenKey(roomCode), token);
+
 const getHostToken = (roomCode: string) =>
   typeof window === 'undefined' ? null : localStorage.getItem(hostTokenKey(roomCode));
 
@@ -48,6 +51,7 @@ interface OnlineRoom {
   maxPlayers: number;
   currentWord: string | null;
   undercoverWord: string | null;
+  starterName: string | null;
   createdAt: string;
 }
 
@@ -62,7 +66,7 @@ interface UseOnlineGameState {
   respondJoinRequest: (req: JoinRequest, accept: boolean) => Promise<void>;
   joinRoom: (roomCode: string, playerName: string) => Promise<boolean>;
   createRoom: (playerName: string) => Promise<string | null>;
-  leaveRoom: () => void;
+  leaveRoom: (playerName: string) => void;
   startRound: (settings: GameSettings) => Promise<boolean>;
   backToLobby: () => Promise<boolean>;
   loadRoom: (roomCode: string) => Promise<void>;
@@ -214,6 +218,7 @@ export function useOnlineGame(): UseOnlineGameState {
     // Nueva ronda (roles y palabra nuevos) o vuelta a la sala de espera
     roomChannel.bind('round-started', () => loadRoom(roomCode));
     roomChannel.bind('back-to-lobby', () => loadRoom(roomCode));
+    roomChannel.bind('player-left', () => loadRoom(roomCode));
 
     // Room deleted event
     roomChannel.bind('room-deleted', () => {
@@ -309,6 +314,7 @@ export function useOnlineGame(): UseOnlineGameState {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        savePlayerToken(data.roomCode, data.playerToken);
         showSuccess('Joined room successfully!');
         
         // Fetch room details and subscribe
@@ -338,10 +344,17 @@ export function useOnlineGame(): UseOnlineGameState {
   }, [showSuccess, showError, subscribeToRoom]);
 
   // Leave room (si es el host, cierra la sala para no dejar basura)
-  const leaveRoom = useCallback(() => {
+  const leaveRoom = useCallback((playerName: string) => {
     if (room && getHostToken(room.roomCode)) {
       localStorage.removeItem(hostTokenKey(room.roomCode));
       fetch(`/api/rooms/${room.roomCode}`, { method: 'DELETE', keepalive: true }).catch(() => {});
+    } else if (room && room.roomCode !== DEMO_CODE) {
+      fetch(`/api/rooms/${room.roomCode}/leave`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerName, playerToken: localStorage.getItem(playerTokenKey(room.roomCode)) }),
+        keepalive: true,
+      }).catch(() => {});
     }
     if (channel) {
       pusher?.unsubscribe(channel.name);

@@ -66,14 +66,38 @@ export function wordFor(role: Role | null, pair: { civilian: string | null; unde
   return null;
 }
 
-// Quién empieza a dar pistas: rota por orden de jugadores según el turno (ronda - 1), saltando
-// a los Mr. White. Es calculable en cada móvil, sin guardarlo.
-// ponytail: si el saltado le tocaba justo antes, alguien puede repetir; guardar el puntero si molesta.
-export function pickStarter<T extends { role: Role | null }>(players: T[], turn: number): T | undefined {
+// Quién empieza a dar pistas: el primero desde `index` que no sea Mr. White.
+export function starterFrom<T extends { role: Role | null }>(players: T[], index: number): T | undefined {
   for (let i = 0; i < players.length; i++) {
-    const player = players[(turn + i) % players.length];
+    const player = players[(index + i) % players.length];
     if (player.role !== 'mister_white') return player;
   }
+}
+
+// Posición del primer jugador que entró después de `lastJoinedAt` (online: orden de llegada).
+// Funciona aunque quien empezó ya no esté en la sala.
+export function indexAfter(players: { created_at: string }[], lastJoinedAt: string | null): number {
+  if (!lastJoinedAt) return 0;
+  const last = new Date(lastJoinedAt).getTime();
+  return Math.max(0, players.findIndex((p) => new Date(p.created_at).getTime() > last));
+}
+
+// Turno siguiente por persona, no por posición: quien iba detrás de `lastStarter` en el orden
+// en que jugó (`lastOrder`), aunque ahora esté en otro sitio. Si se ha ido, el siguiente que siga.
+export function nextStarter<T extends { name: string; role: Role | null }>(
+  players: T[],
+  lastStarter?: string | null,
+  lastOrder: string[] = players.map((p) => p.name),
+): T | undefined {
+  const names = players.map((p) => p.name);
+  const from = lastStarter ? lastOrder.indexOf(lastStarter) : -1;
+  if (from >= 0) {
+    for (let i = 1; i <= lastOrder.length; i++) {
+      const index = names.indexOf(lastOrder[(from + i) % lastOrder.length]);
+      if (index >= 0) return starterFrom(players, index);
+    }
+  }
+  return starterFrom(players, 0);
 }
 
 // Palabras para varias rondas (sin repetir) desde la BD; si falla, palabras estáticas.

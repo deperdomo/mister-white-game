@@ -9,7 +9,7 @@ import RoleCard from "../../../components/game/RoleCard";
 import CardSlide from "../../../components/game/CardSlide";
 import StartingPlayer from "../../../components/game/StartingPlayer";
 import { useOnlineGame } from "../../../hooks/useOnlineGame";
-import { loadOnlineSettings, pickStarter, wordFor } from "../../../lib/game-logic";
+import { loadOnlineSettings, wordFor } from "../../../lib/game-logic";
 
 function OnlineGameContent() {
   const params = useParams();
@@ -58,7 +58,6 @@ function OnlineGameContent() {
     );
   }
 
-  const starter = pickStarter(players, room.currentRound - 1);
   const flipped = flippedRound === room.currentRound;
 
   const hostAction = async (action: () => Promise<boolean>) => {
@@ -75,7 +74,7 @@ function OnlineGameContent() {
           size="sm"
           className="mr-2 h-11 w-11 p-0"
           onClick={() => {
-            leaveRoom();
+            leaveRoom(playerName);
             router.push('/');
           }}
           aria-label="Salir"
@@ -97,7 +96,7 @@ function OnlineGameContent() {
           />
         </CardSlide>
 
-        {starter && <StartingPlayer name={starter.name} />}
+        {room.starterName && <StartingPlayer name={room.starterName} />}
 
         {me.isHost && (
           <div className="space-y-3">

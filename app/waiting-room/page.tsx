@@ -89,7 +89,7 @@ function WaitingRoomContent() {
   };
 
   const handleLeaveRoom = () => {
-    leaveRoom();
+    leaveRoom(playerName);
     router.push('/');
   };
 

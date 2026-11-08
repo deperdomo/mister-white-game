@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 import { pusherServer } from '../../../lib/pusher';
+import { indexAfter, starterFrom } from '../../../lib/game-logic';
 
 interface RouteParams {
   params: Promise<{ roomCode: string }>;
@@ -49,6 +50,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Si quien empezaba se ha ido a mitad de ronda, lo sustituye el siguiente
+    const startedAt = room.starter_joined_at && new Date(room.starter_joined_at).getTime();
+    const starter = players?.find((p) => new Date(p.created_at).getTime() === startedAt)
+      ?? (room.status === 'playing' && players?.length ? starterFrom(players, indexAfter(players, room.starter_joined_at)) : undefined);
+    const starterName = room.status === 'playing' ? starter?.player_name ?? null : null;
+
     return NextResponse.json({
       success: true,
       room: {
@@ -59,6 +66,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         maxPlayers: room.max_players,
         currentWord: room.current_word,
         undercoverWord: room.undercover_word,
+        starterName,
         createdAt: room.created_at,
       },
       players: players?.map((player: { 

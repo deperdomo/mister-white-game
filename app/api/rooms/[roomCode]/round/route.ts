@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase';
 import { pusherServer } from '../../../../lib/pusher';
-import { assignRoles, DEFAULT_SETTINGS, GameSettings, MIN_PLAYERS } from '../../../../lib/game-logic';
+import { assignRoles, DEFAULT_SETTINGS, GameSettings, MIN_PLAYERS, indexAfter, starterFrom } from '../../../../lib/game-logic';
 
 type Params = { params: Promise<{ roomCode: string }> };
 
@@ -9,7 +9,7 @@ async function getHostRoom(roomCode: string, hostToken: unknown) {
   if (typeof hostToken !== 'string') return null;
   const { data } = await supabase
     .from('game_rooms')
-    .select('id, current_round, current_word')
+    .select('id, current_round, current_word, starter_joined_at')
     .eq('room_code', roomCode)
     .eq('host_id', hostToken)
     .maybeSingle();
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const { data: players } = await supabase
     .from('game_players')
-    .select('id')
+    .select('id, created_at')
     .eq('room_id', room.id)
     .order('created_at', { ascending: true });
   if (!players || players.length < MIN_PLAYERS) {
@@ -61,10 +61,19 @@ export async function POST(request: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'No se pudieron repartir los roles' }, { status: 500 });
   }
 
+  // Sigue quien entró justo después del que empezó la última ronda (sirve aunque ese ya no esté)
+  const starter = starterFrom(players.map((p, i) => ({ ...p, role: roles[i] })), indexAfter(players, room.starter_joined_at));
+
   const round = (room.current_round ?? 0) + 1;
   const { error } = await supabase
     .from('game_rooms')
-    .update({ status: 'playing', current_word: pair.word, undercover_word: pair.undercover_word, current_round: round })
+    .update({
+      status: 'playing',
+      current_word: pair.word,
+      undercover_word: pair.undercover_word,
+      current_round: round,
+      starter_joined_at: starter?.created_at ?? null,
+    })
     .eq('id', room.id);
   if (error) return NextResponse.json({ error: 'No se pudo empezar la ronda' }, { status: 500 });
 

@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   await pusherServer.trigger(
     responseChannel(requestId),
     'join-response',
-    result.ok ? { accepted: true } : { accepted: false, error: result.error },
+    result.ok ? { accepted: true, playerToken: result.playerToken } : { accepted: false, error: result.error },
   );
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
   return NextResponse.json({ success: true });

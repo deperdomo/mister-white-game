@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Users, ChevronRight, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { getPusherClient } from '../../lib/pusher';
+import { savePlayerToken } from '../../hooks/useOnlineGame';
 
 interface OpenRoom {
   roomCode: string;
@@ -74,9 +75,10 @@ export default function OpenRooms({ playerName, validateName }: OpenRoomsProps) 
 
     // Suscribirse al canal de respuesta ANTES de enviar la solicitud
     const channel = pusherRef.current.subscribe(`join-request-${requestId}`);
-    channel.bind('join-response', (data: { accepted: boolean; error?: string }) => {
+    channel.bind('join-response', (data: { accepted: boolean; error?: string; playerToken?: string }) => {
       stopWaiting(requestId);
       if (data.accepted) {
+        if (data.playerToken) savePlayerToken(room.roomCode, data.playerToken);
         router.push(`/waiting-room?code=${room.roomCode}&name=${encodeURIComponent(name)}`);
       } else {
         setMessage(data.error ?? `${room.hostName} ha rechazado tu solicitud`);

@@ -1,5 +1,5 @@
 // Sala online simulada para revisar el diseño en /demo: vive en memoria, sin BD ni Pusher.
-import { assignRoles, GameSettings, Role } from './game-logic';
+import { assignRoles, nextStarter, GameSettings, Role } from './game-logic';
 import { GAME_WORDS } from './static-words';
 
 // 4 caracteres: una sala real siempre tiene 6, así que no puede coincidir.
@@ -16,12 +16,14 @@ const initialPlayers = (): DemoPlayer[] =>
 let status = 'waiting';
 let round = 0;
 let pair: (typeof GAME_WORDS)[number] | null = null;
+let starterName: string | null = null;
 let players = initialPlayers();
 
 export function demoReset() {
   status = 'waiting';
   round = 0;
   pair = null;
+  starterName = null;
   players = initialPlayers();
 }
 
@@ -30,6 +32,7 @@ export function demoStartRound(settings: GameSettings) {
   pair = pool[Math.floor(Math.random() * pool.length)];
   const roles = assignRoles(players.length, settings);
   players = players.map((p, i) => ({ ...p, role: roles[i] }));
+  starterName = nextStarter(players, starterName)?.name ?? null;
   status = 'playing';
   round += 1;
 }
@@ -56,6 +59,7 @@ export function demoSnapshot(inGame: boolean) {
       maxPlayers: 20,
       currentWord: pair?.civilian ?? null,
       undercoverWord: pair?.undercover ?? null,
+      starterName,
       createdAt: new Date(0).toISOString(),
     },
     players,

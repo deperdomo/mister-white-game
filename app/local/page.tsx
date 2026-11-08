@@ -13,10 +13,10 @@ import GameSettingsForm from "../components/game/GameSettingsForm";
 import { useNavigationGuard } from "../contexts/NavigationGuardContext";
 
 // Jugador con id estable para que el reordenado (Motion Reorder) no confunda filas.
-type PlayerRowData = { id: string; name: string };
+type PlayerRowData = { id: string; name: string; locked?: boolean };
 // Contador determinista (mismo orden en SSR y cliente -> sin desajuste de hidratación).
 let nextPlayerId = 0;
-const makePlayer = (name = ''): PlayerRowData => ({ id: `p${nextPlayerId++}`, name });
+const makePlayer = (name = '', locked = false): PlayerRowData => ({ id: `p${nextPlayerId++}`, name, locked });
 
 function LocalGameSetupContent() {
   const router = useRouter();
@@ -27,7 +27,8 @@ function LocalGameSetupContent() {
   const [settings, setSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
   const [errors, setErrors] = useState<string[]>([]);
   const [isEditingMode, setIsEditingMode] = useState(false);
-  const [nextRound, setNextRound] = useState<number | undefined>();
+  // Por dónde seguir el turno al volver de una partida
+  const [resume, setResume] = useState<{ nextRound?: number; lastStarter?: string; lastOrder?: string[] }>({});
 
   // Cargar configuración desde parámetros URL si están presentes
   useEffect(() => {
@@ -39,7 +40,8 @@ function LocalGameSetupContent() {
         
         // Pre-llenar los campos con la configuración existente
         if (config.players && Array.isArray(config.players)) {
-          setPlayers(config.players.map((name: string) => makePlayer(name)));
+          // En una partida en curso el turno sigue a la persona por su nombre: no se puede renombrar
+          setPlayers(config.players.map((name: string) => makePlayer(name, !!config.isEditing)));
         }
         
         if (config.settings) {
@@ -47,9 +49,8 @@ function LocalGameSetupContent() {
         }
         
         // Al volver de una partida, se sigue por el turno que tocaba
-        if (typeof config.nextRound === 'number') {
-          setNextRound(config.nextRound);
-        }
+        const { nextRound, lastStarter, lastOrder } = config;
+        setResume({ nextRound, lastStarter, lastOrder });
 
         // Indicar que estamos en modo edición
         if (config.isEditing) {
@@ -121,7 +122,7 @@ function LocalGameSetupContent() {
     if (!validateForm()) return;
     
     const validPlayers = players.map(p => p.name).filter(n => n.trim() !== '');
-    const config = { players: validPlayers, settings, nextRound };
+    const config = { players: validPlayers, settings, ...resume };
     
     const params = new URLSearchParams({
       config: JSON.stringify(config),
@@ -277,7 +278,7 @@ function LocalGameSetupContent() {
         <div className="space-y-3">
           {isEditingMode && (
             <Button 
-              onClick={() => router.back()} 
+              onClick={() => router.push(`/local-game?${new URLSearchParams({ config: searchParams.get('config') ?? '' })}`)} 
               variant="outline"
               size="lg" 
               className="w-full"
@@ -334,7 +335,8 @@ function PlayerRow({
         value={player.name}
         onChange={(e) => onChange(player.id, e.target.value)}
         maxLength={20}
-        className="flex-1"
+        readOnly={player.locked}
+        className={player.locked ? 'flex-1 text-muted' : 'flex-1'}
       />
       {canRemove && (
         <Button

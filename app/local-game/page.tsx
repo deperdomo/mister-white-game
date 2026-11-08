@@ -7,7 +7,7 @@ import { Button } from "../components/ui/button";
 import RoleCard from "../components/game/RoleCard";
 import CardSlide from "../components/game/CardSlide";
 import StartingPlayer from "../components/game/StartingPlayer";
-import { assignRoles, fetchWordPairs, pickStarter, wordFor, DEFAULT_SETTINGS, GameSettings, Role, WordPair } from "../lib/game-logic";
+import { assignRoles, fetchWordPairs, nextStarter, wordFor, DEFAULT_SETTINGS, GameSettings, Role, WordPair } from "../lib/game-logic";
 import { useNavigationGuard } from "../contexts/NavigationGuardContext";
 
 interface RoundPlayer {
@@ -39,7 +39,7 @@ function LocalGameContent() {
     return () => setGuard(false);
   }, [round, setGuard]);
 
-  const startRound = useCallback(async (cfg: { players: string[]; settings: GameSettings }, number: number) => {
+  const startRound = useCallback(async (cfg: { players: string[]; settings: GameSettings }, number: number, lastStarter?: string, lastOrder?: string[]) => {
     const { difficulty, category } = cfg.settings;
     if (!wordQueue.current.length) wordQueue.current = await fetchWordPairs(difficulty, category);
     const pair = wordQueue.current.shift()!;
@@ -50,7 +50,7 @@ function LocalGameContent() {
     setRound({
       number,
       players,
-      starter: pickStarter(players, number - 1)?.name ?? players[0].name,
+      starter: nextStarter(players, lastStarter, lastOrder)?.name ?? players[0].name,
     });
     setRevealIndex(0);
     setFlipped(false);
@@ -64,7 +64,7 @@ function LocalGameContent() {
       const cfg = { players: parsed.players as string[], settings: { ...DEFAULT_SETTINGS, ...parsed.settings } };
       setConfig(cfg);
       wordQueue.current = [];
-      startRound(cfg, Number(parsed.nextRound) || 1);
+      startRound(cfg, Number(parsed.nextRound) || 1, parsed.lastStarter, parsed.lastOrder);
     } catch {
       router.push('/local');
     }
@@ -83,7 +83,7 @@ function LocalGameContent() {
 
   const editSettings = () => {
     if (!config || !round) return;
-    const params = new URLSearchParams({ config: JSON.stringify({ ...config, nextRound: round.number + 1, isEditing: true }) });
+    const params = new URLSearchParams({ config: JSON.stringify({ ...config, nextRound: round.number + 1, lastStarter: round.starter, lastOrder: config.players, isEditing: true }) });
     router.push(`/local?${params.toString()}`);
   };
 
@@ -130,7 +130,7 @@ function LocalGameContent() {
       ) : (
         <div className="space-y-4">
           <StartingPlayer name={round.starter} />
-          <Button size="lg" className="w-full" onClick={() => startRound(config, round.number + 1)}>
+          <Button size="lg" className="w-full" onClick={() => startRound(config, round.number + 1, round.starter, config.players)}>
             <RotateCcw className="h-4 w-4" />
             Nueva ronda
           </Button>
