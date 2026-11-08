@@ -8,7 +8,7 @@ export default function CardSlide({ slideKey, children }: { slideKey: string | n
   const offset = useReducedMotion() ? 0 : '120%';
 
   return (
-    <div className="-mx-4 px-4 overflow-x-clip">
+    <div className="-mx-5 px-5 overflow-x-clip">
       <div className="relative mx-auto w-full max-w-xs aspect-[3/4]">
         <AnimatePresence initial={false}>
           <motion.div
