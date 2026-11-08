@@ -156,36 +156,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Función para actualizar el host cuando el host actual se va
-CREATE OR REPLACE FUNCTION update_host_on_leave()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Si el jugador que se va era el host
-    IF OLD.is_host = TRUE THEN
-        -- Asignar el host al siguiente jugador más antiguo
-        UPDATE game_players 
-        SET is_host = TRUE 
-        WHERE id = (
-            SELECT id 
-            FROM game_players 
-            WHERE room_id = OLD.room_id 
-            AND id != OLD.id 
-            AND is_alive = TRUE
-            ORDER BY created_at ASC 
-            LIMIT 1
-        );
-    END IF;
-    
-    RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger para actualizar host automáticamente
-CREATE TRIGGER trigger_update_host_on_leave
-    BEFORE DELETE ON game_players
-    FOR EACH ROW
-    EXECUTE FUNCTION update_host_on_leave();
-
 -- ===============================================
 -- POLÍTICAS RLS (Row Level Security) - OPCIONAL
 -- ===============================================
