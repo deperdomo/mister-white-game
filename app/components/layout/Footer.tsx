@@ -1,9 +1,16 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
 import { Github, Heart } from 'lucide-react';
 import InvitePanel from './InvitePanel';
 
 const version = process.env.NEXT_PUBLIC_APP_VERSION;
 
 export default function Footer() {
+  // Durante la partida solo importa la carta
+  const pathname = usePathname();
+  if (pathname.startsWith('/local-game') || pathname.startsWith('/room/')) return null;
+
   return (
     <footer className="border-t border-white/[0.06] bg-ink">
       <div className="container mx-auto max-w-screen-xl px-4 py-10">

@@ -6,6 +6,7 @@ import { ArrowLeft, RotateCcw, Settings } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { LoadingState } from "../../../components/ui/loading";
 import RoleCard from "../../../components/game/RoleCard";
+import CardSlide from "../../../components/game/CardSlide";
 import StartingPlayer from "../../../components/game/StartingPlayer";
 import { useOnlineGame } from "../../../hooks/useOnlineGame";
 import { loadOnlineSettings, pickStarter, wordFor } from "../../../lib/game-logic";
@@ -57,7 +58,7 @@ function OnlineGameContent() {
     );
   }
 
-  const starter = pickStarter(players, room.currentRound);
+  const starter = pickStarter(players, room.currentRound - 1);
   const flipped = flippedRound === room.currentRound;
 
   const hostAction = async (action: () => Promise<boolean>) => {
@@ -86,19 +87,19 @@ function OnlineGameContent() {
       </div>
 
       <div className="space-y-6">
-        <RoleCard
-          key={room.currentRound}
-          name={me.name}
-          role={me.role}
-          word={wordFor(me.role, { civilian: room.currentWord, undercover: room.undercoverWord })}
-          category={room.currentCategory}
-          flipped={flipped}
-          onFlip={() => setFlippedRound(flipped ? null : room.currentRound)}
-        />
+        <CardSlide slideKey={room.currentRound}>
+          <RoleCard
+            name={me.name}
+            role={me.role}
+            word={wordFor(me.role, { civilian: room.currentWord, undercover: room.undercoverWord })}
+            flipped={flipped}
+            onFlip={() => setFlippedRound(flipped ? null : room.currentRound)}
+          />
+        </CardSlide>
 
         {starter && <StartingPlayer name={starter.name} />}
 
-        {me.isHost ? (
+        {me.isHost && (
           <div className="space-y-3">
             <Button size="lg" className="w-full" disabled={busy} onClick={() => hostAction(() => startRound(loadOnlineSettings()))}>
               <RotateCcw className="h-4 w-4" />
@@ -109,8 +110,6 @@ function OnlineGameContent() {
               Cambiar ajustes
             </Button>
           </div>
-        ) : (
-          <p className="text-center text-sm text-faint">El anfitrión iniciará la siguiente ronda</p>
         )}
       </div>
     </div>

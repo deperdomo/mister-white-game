@@ -56,7 +56,6 @@ export function demoSnapshot(inGame: boolean) {
       maxPlayers: 20,
       currentWord: pair?.civilian ?? null,
       undercoverWord: pair?.undercover ?? null,
-      currentCategory: pair?.difficulty === 'easy' ? pair.category : null,
       createdAt: new Date(0).toISOString(),
     },
     players,

@@ -66,11 +66,14 @@ export function wordFor(role: Role | null, pair: { civilian: string | null; unde
   return null;
 }
 
-// Quién empieza a dar pistas: nunca un Mr. White. Determinista por `seed`
-// para que en online todos los móviles calculen el mismo sin guardarlo.
-export function pickStarter<T extends { role: Role | null }>(players: T[], seed: number): T | undefined {
-  const candidates = players.filter((p) => p.role !== 'mister_white');
-  return candidates[Math.abs(seed) % candidates.length];
+// Quién empieza a dar pistas: rota por orden de jugadores según el turno (ronda - 1), saltando
+// a los Mr. White. Es calculable en cada móvil, sin guardarlo.
+// ponytail: si el saltado le tocaba justo antes, alguien puede repetir; guardar el puntero si molesta.
+export function pickStarter<T extends { role: Role | null }>(players: T[], turn: number): T | undefined {
+  for (let i = 0; i < players.length; i++) {
+    const player = players[(turn + i) % players.length];
+    if (player.role !== 'mister_white') return player;
+  }
 }
 
 // Palabras para varias rondas (sin repetir) desde la BD; si falla, palabras estáticas.

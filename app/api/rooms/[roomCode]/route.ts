@@ -49,18 +49,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Categoría de la pareja actual (solo se muestra en fácil)
-    let currentCategory: string | null = null;
-    if (room.current_word && room.undercover_word) {
-      const { data: w } = await supabase
-        .from('game_words')
-        .select('category, difficulty')
-        .eq('word', room.current_word)
-        .eq('undercover_word', room.undercover_word)
-        .maybeSingle();
-      if (w?.difficulty === 'easy') currentCategory = w.category;
-    }
-
     return NextResponse.json({
       success: true,
       room: {
@@ -71,7 +59,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         maxPlayers: room.max_players,
         currentWord: room.current_word,
         undercoverWord: room.undercover_word,
-        currentCategory,
         createdAt: room.created_at,
       },
       players: players?.map((player: { 

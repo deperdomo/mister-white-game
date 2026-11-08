@@ -34,13 +34,12 @@ interface RoleCardProps {
   name: string;
   role: Role;
   word: string | null;
-  category?: string | null;
   flipped: boolean;
   onFlip: () => void;
 }
 
 // Tarjeta giratoria: delante el nombre del jugador, detrás su rol y su palabra.
-export default function RoleCard({ name, role, word, category, flipped, onFlip }: RoleCardProps) {
+export default function RoleCard({ name, role, word, flipped, onFlip }: RoleCardProps) {
   const info = ROLE_INFO[role];
   const Icon = info.icon;
   const face = 'absolute inset-0 backface-hidden rounded-3xl border overflow-hidden flex flex-col';
@@ -82,11 +81,6 @@ export default function RoleCard({ name, role, word, category, flipped, onFlip }
               </>
             ) : (
               <p className="text-5xl font-bold text-faint">???</p>
-            )}
-            {category && (
-              <p className="text-sm text-muted">
-                Categoría: <strong className="text-fg">{category}</strong>
-              </p>
             )}
           </div>
           <p className="pb-4 text-center text-xs text-faint">Toca para ocultar</p>

@@ -27,6 +27,7 @@ function LocalGameSetupContent() {
   const [settings, setSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
   const [errors, setErrors] = useState<string[]>([]);
   const [isEditingMode, setIsEditingMode] = useState(false);
+  const [nextRound, setNextRound] = useState<number | undefined>();
 
   // Cargar configuración desde parámetros URL si están presentes
   useEffect(() => {
@@ -45,6 +46,11 @@ function LocalGameSetupContent() {
           setSettings({ ...DEFAULT_SETTINGS, ...config.settings });
         }
         
+        // Al volver de una partida, se sigue por el turno que tocaba
+        if (typeof config.nextRound === 'number') {
+          setNextRound(config.nextRound);
+        }
+
         // Indicar que estamos en modo edición
         if (config.isEditing) {
           setIsEditingMode(true);
@@ -115,7 +121,7 @@ function LocalGameSetupContent() {
     if (!validateForm()) return;
     
     const validPlayers = players.map(p => p.name).filter(n => n.trim() !== '');
-    const config = { players: validPlayers, settings };
+    const config = { players: validPlayers, settings, nextRound };
     
     const params = new URLSearchParams({
       config: JSON.stringify(config),

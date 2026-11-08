@@ -5,9 +5,9 @@ import { useEffect, useRef, useState, useCallback, Suspense } from "react";
 import { ArrowLeft, RotateCcw, Settings } from "lucide-react";
 import { Button } from "../components/ui/button";
 import RoleCard from "../components/game/RoleCard";
+import CardSlide from "../components/game/CardSlide";
 import StartingPlayer from "../components/game/StartingPlayer";
 import { assignRoles, fetchWordPairs, pickStarter, wordFor, DEFAULT_SETTINGS, GameSettings, Role, WordPair } from "../lib/game-logic";
-import { randomSeed } from "../lib/utils";
 import { useNavigationGuard } from "../contexts/NavigationGuardContext";
 
 interface RoundPlayer {
@@ -19,7 +19,6 @@ interface RoundPlayer {
 interface Round {
   number: number;
   players: RoundPlayer[];
-  category: string | null;
   starter: string;
 }
 
@@ -51,8 +50,7 @@ function LocalGameContent() {
     setRound({
       number,
       players,
-      category: difficulty === 'easy' ? pair.category : null,
-      starter: pickStarter(players, randomSeed())?.name ?? players[0].name,
+      starter: pickStarter(players, number - 1)?.name ?? players[0].name,
     });
     setRevealIndex(0);
     setFlipped(false);
@@ -66,7 +64,7 @@ function LocalGameContent() {
       const cfg = { players: parsed.players as string[], settings: { ...DEFAULT_SETTINGS, ...parsed.settings } };
       setConfig(cfg);
       wordQueue.current = [];
-      startRound(cfg, 1);
+      startRound(cfg, Number(parsed.nextRound) || 1);
     } catch {
       router.push('/local');
     }
@@ -84,8 +82,8 @@ function LocalGameContent() {
   };
 
   const editSettings = () => {
-    if (!config) return;
-    const params = new URLSearchParams({ config: JSON.stringify({ ...config, isEditing: true }) });
+    if (!config || !round) return;
+    const params = new URLSearchParams({ config: JSON.stringify({ ...config, nextRound: round.number + 1, isEditing: true }) });
     router.push(`/local?${params.toString()}`);
   };
 
@@ -120,23 +118,13 @@ function LocalGameContent() {
           <p className="text-center text-muted">
             Pasa el móvil a <strong className="text-fg">{current.name}</strong>
           </p>
-          <RoleCard
-            key={`${round.number}-${revealIndex}`}
-            name={current.name}
-            role={current.role}
-            word={current.word}
-            category={round.category}
-            flipped={flipped}
-            onFlip={flip}
-          />
-          {seen && !flipped ? (
+          <CardSlide slideKey={`${round.number}-${revealIndex}`}>
+            <RoleCard name={current.name} role={current.role} word={current.word} flipped={flipped} onFlip={flip} />
+          </CardSlide>
+          {seen && !flipped && (
             <Button size="lg" className="w-full" onClick={next}>
               {nextPlayer ? `Pasar a ${nextPlayer.name}` : 'Empezar la ronda'}
             </Button>
-          ) : (
-            <p className="text-center text-sm text-faint min-h-12 flex items-center justify-center">
-              {flipped ? 'Toca la tarjeta para ocultarla antes de pasar el móvil' : 'Que nadie más mire la pantalla'}
-            </p>
           )}
         </div>
       ) : (

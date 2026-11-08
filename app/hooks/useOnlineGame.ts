@@ -48,7 +48,6 @@ interface OnlineRoom {
   maxPlayers: number;
   currentWord: string | null;
   undercoverWord: string | null;
-  currentCategory: string | null;
   createdAt: string;
 }
 

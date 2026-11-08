@@ -44,7 +44,7 @@ export default function GameSettingsForm({ value, onChange, playerCount }: GameS
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="easy">Fácil (se muestra categoría)</SelectItem>
+            <SelectItem value="easy">Fácil</SelectItem>
             <SelectItem value="medium">Medio</SelectItem>
             <SelectItem value="hard">Difícil</SelectItem>
           </SelectContent>
