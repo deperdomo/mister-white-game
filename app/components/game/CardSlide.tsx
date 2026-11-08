@@ -9,7 +9,8 @@ export default function CardSlide({ slideKey, children }: { slideKey: string | n
 
   return (
     <div className="-mx-5 px-5 overflow-x-clip">
-      <div className="relative mx-auto w-full max-w-xs aspect-[3/4]">
+      {/* Altura según la pantalla: el botón de pasar debe verse sin hacer scroll */}
+      <div className="relative mx-auto w-full max-w-xs h-[min(calc(100svh-19rem),26rem)] min-h-[17rem]">
         <AnimatePresence initial={false}>
           <motion.div
             key={slideKey}

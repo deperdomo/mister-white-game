@@ -50,17 +50,14 @@ export default function RoleCard({ name, role, word, flipped, onFlip }: RoleCard
       onClick={onFlip}
       aria-label={flipped ? 'Ocultar rol' : `Ver el rol de ${name}`}
       aria-pressed={flipped}
-      className="relative mx-auto block w-full max-w-xs aspect-[3/4] perspective-[1200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded-3xl"
+      className="relative block h-full w-full perspective-[1200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded-3xl"
     >
       <div
         className={`relative h-full w-full transform-3d transition-transform duration-500 motion-reduce:transition-none ${flipped ? 'rotate-y-180' : ''}`}
       >
         {/* Delante: nombre */}
         <div className={`${face} items-center justify-center gap-4 p-6 border-accent/30 bg-gradient-to-br from-accent/25 via-surface to-iris/20`}>
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-accent/20 text-4xl font-semibold text-accent ring-1 ring-accent/30">
-            {name.charAt(0).toUpperCase()}
-          </div>
-          <p className="text-[clamp(1.75rem,8vw,2.5rem)] font-bold leading-tight text-fg text-center break-words">{name}</p>
+          <p className="max-w-full text-[clamp(2.25rem,11vw,3.25rem)] font-bold leading-tight text-fg text-center break-words">{name}</p>
           <p className="absolute bottom-5 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-sm text-muted">
             <Lock className="h-4 w-4" /> Toca para ver tu rol
           </p>
@@ -68,8 +65,8 @@ export default function RoleCard({ name, role, word, flipped, onFlip }: RoleCard
 
         {/* Detrás: rol y palabra */}
         <div className={`${face} rotate-y-180 border-white/10 bg-surface`}>
-          <div className={`px-5 py-6 text-center ${info.tint}`}>
-            <Icon className="mx-auto mb-2 h-12 w-12" />
+          <div className={`px-5 py-4 text-center ${info.tint}`}>
+            <Icon className="mx-auto mb-1 h-10 w-10" />
             <p className="text-2xl font-bold">{info.title}</p>
             <p className="mt-1 text-sm opacity-80">{info.description}</p>
           </div>
@@ -83,7 +80,7 @@ export default function RoleCard({ name, role, word, flipped, onFlip }: RoleCard
               <p className="text-5xl font-bold text-faint">???</p>
             )}
           </div>
-          <p className="pb-4 text-center text-xs text-faint">Toca para ocultar</p>
+          <p className="pb-3 text-center text-xs text-faint">Toca para ocultar</p>
         </div>
       </div>
     </button>
