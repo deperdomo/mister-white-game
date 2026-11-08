@@ -18,7 +18,7 @@ function OnlineGameContent() {
   const roomCode = (params.roomCode as string).toUpperCase();
   const playerName = searchParams.get('name') || '';
 
-  const { room, players, loadRoomAndSubscribe, roomClosed, startRound, backToLobby, leaveRoom } = useOnlineGame();
+  const { room, players, loadRoomAndSubscribe, roomClosed, removed, startRound, backToLobby, leaveRoom } = useOnlineGame();
   const [flippedRound, setFlippedRound] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -36,10 +36,12 @@ function OnlineGameContent() {
     }
   }, [room?.status, router, roomCode, playerName]);
 
-  if (roomClosed) {
+  if (roomClosed || removed) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
-        <p className="mb-4 text-muted">La sala se ha cerrado porque el anfitrión se desconectó</p>
+        <p className="mb-4 text-muted">
+          {roomClosed ? 'La sala se ha cerrado porque el anfitrión se desconectó' : 'Ya no estás en esta sala'}
+        </p>
         <Button onClick={() => router.push('/')}>Volver al inicio</Button>
       </div>
     );

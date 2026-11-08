@@ -82,6 +82,23 @@ export function indexAfter(players: { created_at: string }[], lastJoinedAt: stri
   return Math.max(0, players.findIndex((p) => new Date(p.created_at).getTime() > last));
 }
 
+// Presencia online. Se juega en persona con el móvil bloqueado, así que si la mayoría lleva
+// un rato sin señal no se puede saber quién se ha ido de verdad: entonces no se descarta a nadie.
+const IDLE_MS = 2 * 60_000;
+const GONE_MS = 10 * 60_000;
+type Seen = { is_host: boolean; last_seen: string };
+const seenWithin = (p: Seen, ms: number, now: number) => p.is_host || now - new Date(p.last_seen).getTime() < ms;
+const mostlyActive = (players: Seen[], now: number) =>
+  players.filter((p) => seenWithin(p, IDLE_MS, now)).length * 2 >= players.length;
+
+// Quienes pueden empezar la ronda.
+export const presentPlayers = <T extends Seen>(players: T[], now = Date.now()): T[] =>
+  mostlyActive(players, now) ? players.filter((p) => seenWithin(p, IDLE_MS, now)) : players;
+
+// Quienes se dan por ido y se sacan de la sala.
+export const abandonedPlayers = <T extends Seen>(players: T[], now = Date.now()): T[] =>
+  mostlyActive(players, now) ? players.filter((p) => !seenWithin(p, GONE_MS, now)) : [];
+
 // Turno siguiente por persona, no por posición: quien iba detrás de `lastStarter` en el orden
 // en que jugó (`lastOrder`), aunque ahora esté en otro sitio. Si se ha ido, el siguiente que siga.
 export function nextStarter<T extends { name: string; role: Role | null }>(

@@ -18,7 +18,7 @@ function WaitingRoomContent() {
   const roomCode = searchParams.get('code') || '';
   const playerName = searchParams.get('name') || '';
   
-  const { room, players, startRound, leaveRoom, loadRoomAndSubscribe, isLoading, roomClosed, joinRequests, respondJoinRequest } = useOnlineGame();
+  const { room, players, startRound, leaveRoom, loadRoomAndSubscribe, isLoading, roomClosed, removed, joinRequests, respondJoinRequest } = useOnlineGame();
   const { success: showSuccess, error: showError } = useToast();
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -104,10 +104,12 @@ function WaitingRoomContent() {
     );
   }
 
-  if (roomClosed) {
+  if (roomClosed || removed) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-md text-center">
-        <p className="mb-4 text-muted">La sala se ha cerrado porque el anfitrión se desconectó</p>
+        <p className="mb-4 text-muted">
+          {roomClosed ? 'La sala se ha cerrado porque el anfitrión se desconectó' : 'Ya no estás en esta sala'}
+        </p>
         <Link href="/join-room">
           <Button>Buscar otra sala</Button>
         </Link>

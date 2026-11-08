@@ -46,6 +46,7 @@ CREATE TABLE game_players (
     description TEXT,
     voted_for VARCHAR(50),
     created_at TIMESTAMPTZ DEFAULT NOW(),
+    last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     
     -- Constraints
     CONSTRAINT player_name_length CHECK (LENGTH(player_name) >= 2 AND LENGTH(player_name) <= 50),
@@ -58,6 +59,7 @@ CREATE INDEX idx_game_players_room_id ON game_players(room_id);
 CREATE INDEX idx_game_players_is_host ON game_players(is_host);
 CREATE INDEX idx_game_players_is_alive ON game_players(is_alive);
 CREATE INDEX idx_game_players_role ON game_players(role);
+CREATE INDEX idx_game_players_last_seen ON game_players(last_seen);
 
 -- ===============================================
 -- 3. TABLA DE PALABRAS/CATEGORÍAS (game_words)

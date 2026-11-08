@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase';
 import { pusherServer } from '../../../../lib/pusher';
-import { assignRoles, DEFAULT_SETTINGS, GameSettings, MIN_PLAYERS, indexAfter, starterFrom } from '../../../../lib/game-logic';
+import { assignRoles, DEFAULT_SETTINGS, GameSettings, MIN_PLAYERS, indexAfter, presentPlayers, starterFrom } from '../../../../lib/game-logic';
 
 type Params = { params: Promise<{ roomCode: string }> };
 
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const { data: players } = await supabase
     .from('game_players')
-    .select('id, created_at')
+    .select('id, created_at, is_host, last_seen')
     .eq('room_id', room.id)
     .order('created_at', { ascending: true });
   if (!players || players.length < MIN_PLAYERS) {
@@ -62,7 +62,10 @@ export async function POST(request: NextRequest, { params }: Params) {
   }
 
   // Sigue quien entró justo después del que empezó la última ronda (sirve aunque ese ya no esté)
-  const starter = starterFrom(players.map((p, i) => ({ ...p, role: roles[i] })), indexAfter(players, room.starter_joined_at));
+  const dealt = players.map((p, i) => ({ ...p, role: roles[i] }));
+  const present = presentPlayers(dealt);
+  const starter = starterFrom(present, indexAfter(present, room.starter_joined_at))
+    ?? starterFrom(dealt, indexAfter(dealt, room.starter_joined_at));
 
   const round = (room.current_round ?? 0) + 1;
   const { error } = await supabase

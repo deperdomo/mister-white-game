@@ -62,6 +62,7 @@ interface UseOnlineGameState {
   isLoading: boolean;
   error: string | null;
   roomClosed: boolean;
+  removed: boolean;
   joinRequests: JoinRequest[];
   respondJoinRequest: (req: JoinRequest, accept: boolean) => Promise<void>;
   joinRoom: (roomCode: string, playerName: string) => Promise<boolean>;
@@ -83,6 +84,7 @@ export function useOnlineGame(): UseOnlineGameState {
   const [pusher, setPusher] = useState<PusherClient | null>(null);
   const [channel, setChannel] = useState<PusherChannel | null>(null);
   const [roomClosed, setRoomClosed] = useState(false);
+  const [removed, setRemoved] = useState(false);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const { success: showSuccess, error: showError } = useToast();
 
@@ -365,7 +367,7 @@ export function useOnlineGame(): UseOnlineGameState {
     setError(null);
   }, [room, channel, pusher]);
 
-  // Latido del host: mientras tenga la sala abierta, la mantiene viva
+  // Latido: el del host mantiene viva la sala; el de cada invitado, su sitio en ella
   const roomCode = room?.roomCode;
 
   // Demo: llega una solicitud de entrada poco después de abrir la sala de espera
@@ -379,13 +381,19 @@ export function useOnlineGame(): UseOnlineGameState {
   useEffect(() => {
     if (!roomCode) return;
     const hostToken = getHostToken(roomCode);
-    if (!hostToken) return;
+    const playerToken = localStorage.getItem(playerTokenKey(roomCode));
+    if (!hostToken && !playerToken) return;
+    const credentials = hostToken
+      ? { hostToken }
+      : { playerToken, playerName: new URLSearchParams(window.location.search).get('name') };
 
     const beat = () => {
       fetch(`/api/rooms/${roomCode}/heartbeat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hostToken }),
+        body: JSON.stringify(credentials),
+      }).then((res) => {
+        if (res.status === 404 && !hostToken) setRemoved(true);
       }).catch(() => {});
     };
     const onVisible = () => document.visibilityState === 'visible' && beat();
@@ -456,6 +464,7 @@ export function useOnlineGame(): UseOnlineGameState {
     isLoading,
     error,
     roomClosed,
+    removed,
     joinRequests,
     respondJoinRequest,
     joinRoom,
