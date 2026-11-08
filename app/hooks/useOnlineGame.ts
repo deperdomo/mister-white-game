@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getPusherClient } from '../lib/pusher';
 import { useToast } from './useToast';
 import type { GameSettings, Role } from '../lib/game-logic';
+import { DEMO_CODE, DEMO_REQUEST, demoAddPlayer, demoBackToLobby, demoSnapshot, demoStartRound } from '../lib/demo-room';
 
 export interface JoinRequest {
   requestId: string;
@@ -118,6 +119,13 @@ export function useOnlineGame(): UseOnlineGameState {
   const loadRoom = useCallback(async (roomCode: string, retryCount = 0) => {
     if (!roomCode) return;
 
+    if (roomCode === DEMO_CODE) {
+      const demo = demoSnapshot(window.location.pathname.startsWith('/room'));
+      setRoom(demo.room);
+      setPlayers(demo.players);
+      return;
+    }
+
     try {
       console.log(`Loading room ${roomCode}, attempt ${retryCount + 1}`);
       const response = await fetch(`/api/rooms/${roomCode}`);
@@ -176,7 +184,7 @@ export function useOnlineGame(): UseOnlineGameState {
 
   // Subscribe to room channel with proper cleanup
   const subscribeToRoom = useCallback((roomCode: string) => {
-    if (!pusher) return;
+    if (!pusher || roomCode === DEMO_CODE) return;
 
     const channelName = `room-${roomCode}`;
     
@@ -347,6 +355,15 @@ export function useOnlineGame(): UseOnlineGameState {
 
   // Latido del host: mientras tenga la sala abierta, la mantiene viva
   const roomCode = room?.roomCode;
+
+  // Demo: llega una solicitud de entrada poco después de abrir la sala de espera
+  const demoWaiting = roomCode === DEMO_CODE && room?.status === 'waiting';
+  useEffect(() => {
+    if (!demoWaiting) return;
+    const id = setTimeout(() => setJoinRequests([DEMO_REQUEST]), 3000);
+    return () => clearTimeout(id);
+  }, [demoWaiting]);
+
   useEffect(() => {
     if (!roomCode) return;
     const hostToken = getHostToken(roomCode);
@@ -373,6 +390,11 @@ export function useOnlineGame(): UseOnlineGameState {
   const respondJoinRequest = useCallback(async (req: JoinRequest, accept: boolean) => {
     if (!roomCode) return;
     setJoinRequests(prev => prev.filter(r => r.requestId !== req.requestId));
+    if (roomCode === DEMO_CODE) {
+      if (accept) demoAddPlayer(req.playerName);
+      await loadRoom(roomCode);
+      return;
+    }
     try {
       const res = await fetch(`/api/rooms/${roomCode}/requests`, {
         method: 'PATCH',
@@ -383,11 +405,17 @@ export function useOnlineGame(): UseOnlineGameState {
     } catch {
       showError('No se pudo responder');
     }
-  }, [roomCode, showError]);
+  }, [roomCode, showError, loadRoom]);
 
   // Acciones del host sobre la ronda
   const hostRoundAction = useCallback(async (method: 'POST' | 'DELETE', settings?: GameSettings): Promise<boolean> => {
     if (!room) return false;
+    if (room.roomCode === DEMO_CODE) {
+      if (method === 'POST' && settings) demoStartRound(settings);
+      else demoBackToLobby();
+      await loadRoom(room.roomCode);
+      return true;
+    }
     try {
       const res = await fetch(`/api/rooms/${room.roomCode}/round`, {
         method,

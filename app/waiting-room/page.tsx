@@ -29,13 +29,6 @@ function WaitingRoomContent() {
   const currentPlayer = players.find(p => p.name === playerName);
   const isHost = currentPlayer?.isHost || false;
 
-  // Función para forzar actualización
-  const triggerRefresh = () => {
-    if (roomCode) {
-      loadRoomAndSubscribe(roomCode);
-    }
-  };
-
   // Debug logging
   useEffect(() => {
     if (players.length > 0) {
@@ -161,58 +154,19 @@ function WaitingRoomContent() {
           </div>
         </div>
         
-        {/* Segunda fila: Botones de acción */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-center gap-3">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleCopyCode}
-            className="flex items-center justify-center space-x-2 min-w-[140px]"
-            title="Copiar código de sala"
-          >
+        {/* Código y compartir */}
+        <div className={`grid gap-3 ${isHost ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <Button variant="outline" onClick={handleCopyCode} title="Copiar código de sala">
             <Copy className="h-4 w-4" />
-            <span className="font-mono">{copied ? 'Copiado!' : roomCode}</span>
+            <span className="font-mono tracking-wider">{copied ? '¡Copiado!' : roomCode}</span>
           </Button>
-          
           {isHost && (
-            <Button 
-              variant="default" 
-              size="sm" 
-              onClick={handleCopyRoomLink}
-              className="flex items-center justify-center space-x-2 min-w-[140px] bg-blue-600 hover:bg-blue-700"
-              title="Copiar enlace de la sala para compartir"
-            >
+            <Button onClick={handleCopyRoomLink} title="Copiar enlace de la sala para compartir">
               <Share2 className="h-4 w-4" />
-              <span>{linkCopied ? '¡Copiado!' : 'Compartir Sala'}</span>
+              {linkCopied ? '¡Copiado!' : 'Compartir'}
             </Button>
           )}
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={triggerRefresh}
-            className="flex items-center justify-center space-x-2 min-w-[120px]"
-            title="Actualizar estado de la sala"
-          >
-            <Users className="h-4 w-4" />
-            <span>Actualizar</span>
-          </Button>
         </div>
-      </div>
-
-      {/* Código de sala */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center space-x-2">
-          <span className="text-lg text-muted">
-            Código de sala:
-          </span>
-          <code className="px-3 py-1 rounded-md text-lg font-mono font-bold tracking-wider bg-panel">
-            {roomCode}
-          </code>
-        </div>
-        <p className="text-sm mt-2 text-faint">
-          Comparte este código con tus amigos para que se unan
-        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -252,19 +206,6 @@ function WaitingRoomContent() {
                   </div>
                 ))}
                 
-                {/* Slots vacíos */}
-                {Array.from({ length: room.maxPlayers - players.length }).map((_, index) => (
-                  <div
-                    key={`empty-${index}`}
-                    className="p-3 border-2 border-dashed rounded-lg border-white/10"
-                  >
-                    <div className="flex items-center justify-center">
-                      <p className="text-faint">
-                        Esperando jugador...
-                      </p>
-                    </div>
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>

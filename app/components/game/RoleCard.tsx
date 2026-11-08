@@ -62,7 +62,7 @@ export default function RoleCard({ name, role, word, category, flipped, onFlip }
             {name.charAt(0).toUpperCase()}
           </div>
           <p className="text-[clamp(1.75rem,8vw,2.5rem)] font-bold leading-tight text-fg text-center break-words">{name}</p>
-          <p className="mt-auto inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-sm text-muted">
+          <p className="absolute bottom-5 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-sm text-muted">
             <Lock className="h-4 w-4" /> Toca para ver tu rol
           </p>
         </div>
