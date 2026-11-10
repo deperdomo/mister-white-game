@@ -247,8 +247,8 @@ export default function PlayerNameForm({ onSubmit, isLoading = false }: PlayerNa
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="p-2 rounded-lg w-fit mx-auto mb-2 bg-blue-900">
-                <Users className="h-6 w-6 text-blue-400" />
+              <div className="p-2 rounded-lg w-fit mx-auto mb-2 bg-accent/15">
+                <Users className="h-6 w-6 text-accent" />
               </div>
               <h3 className="font-medium text-sm mb-1 text-fg">
                 1. Configurar
@@ -271,8 +271,8 @@ export default function PlayerNameForm({ onSubmit, isLoading = false }: PlayerNa
             </div>
 
             <div className="text-center">
-              <div className="p-2 rounded-lg w-fit mx-auto mb-2 bg-purple-900">
-                <Play className="h-6 w-6 text-purple-400" />
+              <div className="p-2 rounded-lg w-fit mx-auto mb-2 bg-accent/15">
+                <Play className="h-6 w-6 text-accent" />
               </div>
               <h3 className="font-medium text-sm mb-1 text-fg">
                 3. ¡A jugar!

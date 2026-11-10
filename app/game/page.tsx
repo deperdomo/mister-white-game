@@ -135,7 +135,7 @@ function GameContent() {
           <div className="space-y-4">
             {currentPhase === 'assigning' && (
               <div className="text-center py-8">
-                <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
+                <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto mb-4" />
                 <p className="text-muted">
                   Los roles se están asignando automáticamente...
                 </p>
@@ -143,11 +143,11 @@ function GameContent() {
             )}
             
             {currentPhase === 'describing' && (
-              <div className="rounded-lg p-4 bg-blue-950">
-                <h3 className="font-medium mb-2 text-blue-100">
+              <div className="rounded-lg p-4 bg-accent/10">
+                <h3 className="font-medium mb-2 text-fg">
                   Tu rol ha sido asignado
                 </h3>
-                <p className="text-sm text-blue-200">
+                <p className="text-sm text-muted">
                   Pronto podrás ver tu rol y palabra secreta. El juego comenzará cuando todos estén listos.
                 </p>
               </div>
@@ -166,8 +166,8 @@ function GameContent() {
             {players.map((player) => (
               <div key={player.id} className="flex items-center justify-between p-3 rounded-lg bg-panel">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-900">
-                    <span className="text-sm font-medium text-blue-400">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-accent/15">
+                    <span className="text-sm font-medium text-accent">
                       {player.name.charAt(0).toUpperCase()}
                     </span>
                   </div>

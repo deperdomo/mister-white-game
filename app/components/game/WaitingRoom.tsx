@@ -211,13 +211,13 @@ function PlayerCard({ player, isCurrentPlayer, playerNumber }: PlayerCardProps) 
     <div className={cn(
       'flex items-center space-x-3 p-3 rounded-lg border transition-all',
       isCurrentPlayer 
-        ? 'bg-blue-950 border-blue-800' 
+        ? 'bg-accent/10 border-accent/40' 
         : 'bg-panel border-white/10'
     )}>
       <div className={cn(
         'w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm',
         isCurrentPlayer 
-          ? 'bg-blue-900 text-blue-400' 
+          ? 'bg-accent/15 text-accent' 
           : 'bg-elevated text-muted'
       )}>
         {playerNumber}
@@ -227,7 +227,7 @@ function PlayerCard({ player, isCurrentPlayer, playerNumber }: PlayerCardProps) 
         <div className="flex items-center space-x-2">
           <p className={cn(
             'font-medium truncate',
-            isCurrentPlayer ? 'text-blue-100' : 'text-fg'
+            isCurrentPlayer ? 'text-fg' : 'text-fg'
           )}>
             {player.name}
           </p>
@@ -235,7 +235,7 @@ function PlayerCard({ player, isCurrentPlayer, playerNumber }: PlayerCardProps) 
             <Crown className="h-4 w-4 text-yellow-500" />
           )}
           {isCurrentPlayer && (
-            <span className="text-xs px-2 py-1 rounded bg-blue-900 text-blue-400">
+            <span className="text-xs px-2 py-1 rounded bg-accent/15 text-accent">
               Tú
             </span>
           )}

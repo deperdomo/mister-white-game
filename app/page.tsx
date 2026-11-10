@@ -34,9 +34,9 @@ export default function HomePage() {
           <div className="relative mx-auto max-w-3xl pt-20 pb-10 text-center sm:pt-28">
             <p className="eyebrow animate-fade-in">Juego de deducción social</p>
 
-            <h1 className="animate-rise mt-5 text-balance text-5xl font-semibold leading-[1.02] tracking-display text-fg sm:text-6xl lg:text-7xl">
+            <h1 className="animate-rise mt-5 text-balance text-5xl font-extrabold leading-[1.05] tracking-display text-fg sm:text-6xl lg:text-7xl">
               Alguien está{" "}
-              <span className="text-gradient">fingiendo</span>.
+              <span className="tape">fingiendo</span>.
             </h1>
 
             <p className="animate-rise mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
@@ -71,13 +71,13 @@ export default function HomePage() {
 
           {/* Elemento firma: la carta con la palabra censurada */}
           <div className="relative mx-auto max-w-sm pb-16">
-            <div className="animate-rise rounded-3xl border border-white/[0.08] bg-surface p-7 shadow-float">
+            <div className="animate-rise -rotate-2 rounded-3xl border border-white/[0.08] bg-surface p-7 shadow-float">
               <div className="flex items-center justify-between">
                 <span className="eyebrow">Tu rol</span>
                 <Logo className="h-7 w-7" />
               </div>
 
-              <p className="mt-7 text-3xl font-semibold tracking-tight text-fg">
+              <p className="mt-7 font-display text-4xl font-extrabold tracking-tight text-fg">
                 Mister White
               </p>
               <p className="mt-1.5 text-sm text-muted">
@@ -87,9 +87,7 @@ export default function HomePage() {
               <div className="mt-7">
                 <p className="eyebrow mb-2">Palabra</p>
                 <div className="flex items-center justify-center rounded-xl border border-white/10 bg-panel py-5">
-                  <span className="select-none text-xl font-semibold tracking-[0.35em] text-faint blur-[7px]">
-                    SECRETO
-                  </span>
+                  <span aria-hidden className="h-7 w-40 -rotate-1 rounded-sm bg-fg" />
                 </div>
               </div>
 

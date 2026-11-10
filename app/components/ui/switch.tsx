@@ -33,8 +33,8 @@ export function Switch({ id, checked = false, onCheckedChange, disabled = false,
     >
       <span
         className={cn(
-          "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform",
-          checked ? "translate-x-5" : "translate-x-0"
+          "pointer-events-none block h-5 w-5 rounded-full shadow-lg ring-0 transition-transform",
+          checked ? "translate-x-5 bg-ink" : "translate-x-0 bg-fg"
         )}
       />
     </button>

@@ -191,7 +191,7 @@ function WaitingRoomContent() {
                     key={player.id}
                     className={`p-3 border rounded-lg ${
                       player.name === playerName 
-                        ? 'border-blue-500 bg-blue-900/20' 
+                        ? 'border-accent bg-accent/10' 
                         : 'border-white/10'
                     }`}
                   >
@@ -200,7 +200,7 @@ function WaitingRoomContent() {
                         <p className="font-semibold flex items-center">
                           {player.name}
                           {player.isHost && <Crown className="ml-2 h-4 w-4 text-yellow-500" />}
-                          {player.name === playerName && <span className="ml-2 text-blue-500 text-sm">(Tú)</span>}
+                          {player.name === playerName && <span className="ml-2 text-accent text-sm">(Tú)</span>}
                         </p>
                       </div>
                       <div className="w-3 h-3 rounded-full bg-green-500" />

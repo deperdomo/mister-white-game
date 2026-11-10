@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import "./globals.css";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./contexts/ToastContext";
 import { NavigationGuardProvider } from "./contexts/NavigationGuardContext";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
+const body = Figtree({ subsets: ["latin"], variable: "--font-sans" });
+const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage" });
 
 export const metadata: Metadata = {
   title: "Mister White - Juego Multijugador Online Gratis | Deducción Social",
@@ -75,7 +73,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="scroll-smooth">
-      <body className={`${inter.variable} antialiased min-h-screen bg-ink`}>
+      <body className={`${body.variable} ${display.variable} antialiased min-h-screen bg-ink`}>
         <ToastProvider>
           <NavigationGuardProvider>
             <div className="flex flex-col min-h-screen">
