@@ -170,7 +170,7 @@ export default function HomePage() {
             </div>
             <ul className="mt-6 space-y-2.5 text-sm text-muted">
               {[
-                "Hasta 8 jugadores simultáneos",
+                "Hasta 20 jugadores simultáneos",
                 "Salas privadas con código único",
                 "Sincronización en tiempo real",
                 "Roles avanzados: Undercover y Payaso",
