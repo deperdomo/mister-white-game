@@ -115,10 +115,7 @@ function LocalGameContent() {
 
       {revealing ? (
         <div className="space-y-6">
-          <p className="text-center text-muted">
-            Pasa el móvil a <strong className="text-fg">{current.name}</strong>
-          </p>
-          <CardSlide slideKey={`${round.number}-${revealIndex}`}>
+          <CardSlide tall slideKey={`${round.number}-${revealIndex}`}>
             <RoleCard name={current.name} role={current.role} word={current.word} flipped={flipped} onFlip={flip} />
           </CardSlide>
           {seen && !flipped && (

@@ -5,14 +5,17 @@ import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./contexts/ToastContext";
 import { NavigationGuardProvider } from "./contexts/NavigationGuardContext";
+import { SITE_URL } from "./lib/utils";
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-figtree" });
 const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage" });
 
+const description = "Juego de deducción social gratis para 3 a 20 jugadores. Da pistas, descubre al impostor y juega online o pasando el móvil. Sin descargas.";
+const shareTitle = "Mister White: ¿quién está fingiendo?";
+
 export const metadata: Metadata = {
-  title: "Mister White - Juego Multijugador Online Gratis | Deducción Social",
-  description: "🎭 Juego GRATIS de deducción social para 3-20 jugadores. ¡Descubre al espía antes de que te descubran! Sin descargas, multijugador en tiempo real. Perfecto para fiestas y reuniones.",
-  keywords: ["juego gratis", "multijugador online", "juego de mesa", "deducción", "social", "amigos", "familia", "fiesta", "sin descarga", "navegador", "espía", "mister white", "party game"],
+  title: "Mister White: juego de deducción social gratis para móvil",
+  description,
   authors: [{ name: "Mister White Game Team" }],
   creator: "Mister White Game Team",
   publisher: "Mister White Game",
@@ -21,13 +24,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
-    title: "Mister White - Juego Multijugador Online Gratis",
-    description: "🎭 El mejor juego de deducción social online. 3-20 jugadores, sin descargas, multijugador en tiempo real. ¡Descubre al espía!",
+    title: shareTitle,
+    description,
+    url: "/",
     type: "website",
     locale: "es_ES",
-    siteName: "Mister White Game",
+    siteName: "Mister White",
     images: [
       {
         url: "/og-image.png",
@@ -39,8 +43,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mister White - Juego Multijugador Online Gratis",
-    description: "🎭 El mejor juego de deducción social online. ¡Descubre al espía antes de que te descubran!",
+    title: shareTitle,
+    description,
     images: ["/og-image.png"],
   },
   robots: {

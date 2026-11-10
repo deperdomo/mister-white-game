@@ -1,9 +1,11 @@
+import type { Metadata } from "next";
 import { Users, Monitor, ArrowRight, Hash, Check } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./components/ui/button";
 import { Card } from "./components/ui/card";
 import { ShareButton } from "./components/ui/share-button";
 import { Logo } from "./components/ui/logo";
+import { SITE_URL } from "./lib/utils";
 
 const steps = [
   {
@@ -23,9 +25,15 @@ const steps = [
   },
 ];
 
+export const metadata: Metadata = { alternates: { canonical: "/" } };
+
+// Nombre del sitio que Google muestra en los resultados
+const websiteJsonLd = JSON.stringify({ "@context": "https://schema.org", "@type": "WebSite", name: "Mister White", url: SITE_URL });
+
 export default function HomePage() {
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteJsonLd }} />
       {/* ───────────────── Hero ───────────────── */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[640px] spotlight" />

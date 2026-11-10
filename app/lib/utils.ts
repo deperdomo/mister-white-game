@@ -132,3 +132,6 @@ export const handleAsyncError = async (operation: () => Promise<void>) => {
     throw error instanceof Error ? error : new Error('Unknown error');
   }
 };
+
+// Dirección pública: los enlaces al compartir y los buscadores necesitan URLs absolutas
+export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://mr-white.deiviperdomo.dev";
