@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Figtree:wght@500;600;700&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      /* Paleta "Mesa de noche" (app/globals.css). El vídeo se ve pequeño en móvil:
+         nada de texto por debajo de ~50px. */
+      :root {
+        --ink: #110e22;
+        --surface: #1a1631;
+        --panel: #241f42;
+        --fg: #f7f2e8;
+        --muted: #b6b0cf;
+        --accent: #ffb627;
+        --accent-deep: #b97c00;
+        --rose: #fb7185;
+        --sky: #7dd3fc;
+        --display: "Bricolage Grotesque", sans-serif;
+        --body: "Figtree", sans-serif;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--ink); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: var(--body); color: var(--fg); }
+
+      /* Fondo: lámpara sobre la mesa */
+      #bg { position: absolute; inset: 0; }
+      #bg .lamp { position: absolute; inset: 0; background: radial-gradient(60% 70% at 50% 0%, rgba(255, 182, 39, 0.26), rgba(255, 182, 39, 0.07) 45%, transparent 72%); }
+      #bg .weave {
+        position: absolute; inset: 0; opacity: 0.5;
+        background-image: repeating-linear-gradient(45deg, rgba(255, 182, 39, 0.05) 0 2px, transparent 2px 44px),
+          repeating-linear-gradient(-45deg, rgba(255, 182, 39, 0.05) 0 2px, transparent 2px 44px);
+      }
+      #bg .vig { position: absolute; inset: 0; background: radial-gradient(75% 75% at 50% 50%, transparent 55%, rgba(5, 4, 12, 0.75)); }
+      #bg .alarm { position: absolute; inset: 0; opacity: 0; background: radial-gradient(70% 70% at 50% 50%, rgba(251, 113, 133, 0.34), transparent 75%); }
+
+      .scene { position: absolute; inset: 0; }
+      .in { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      .display { font-family: var(--display); font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+      .tape { display: inline-block; padding: 0 0.2em 0.06em; border-radius: 0.1em; background: var(--fg); color: var(--ink); rotate: -2deg; }
+      .ltr { display: inline-block; }
+      .word { display: inline-block; white-space: nowrap; }
+
+      /* Cabecera de paso */
+      .step { position: absolute; top: 64px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 36px; }
+      .step .n { width: 132px; height: 132px; border-radius: 50%; background: var(--accent); color: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 92px; box-shadow: 0 10px 0 var(--accent-deep); }
+      .step .t { font-size: 124px; }
+      .caption { position: absolute; left: 0; right: 0; bottom: 70px; font-size: 70px; font-weight: 600; color: var(--muted); }
+      .caption b { color: var(--fg); font-weight: 700; }
+
+      /* Escena 1 */
+      #s1 h1 { font-size: 210px; }
+      #s1 .tape { margin-top: 26px; }
+      #s1sub { margin-top: 80px; font-size: 76px; font-weight: 600; color: var(--muted); }
+
+      /* Escena 2 */
+      #logo { width: 250px; height: 250px; filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.55)); }
+      #logo-wrap { position: relative; line-height: 0; }
+      #ring { position: absolute; inset: 0; border-radius: 50%; border: 10px solid var(--accent); opacity: 0; }
+      #title { margin-top: 48px; font-size: 220px; white-space: nowrap; }
+      #tagline { margin-top: 40px; font-size: 72px; font-weight: 600; color: var(--muted); }
+      .chips { margin-top: 56px; display: flex; gap: 32px; }
+      .chip { padding: 18px 44px; border-radius: 999px; border: 4px solid rgba(247, 242, 232, 0.25); background: var(--surface); font-size: 56px; font-weight: 700; }
+
+      /* Escena 3: cartas */
+      #cards { position: absolute; top: 300px; left: 0; right: 0; display: flex; justify-content: center; gap: 48px; }
+      .card { width: 340px; height: 480px; perspective: 1600px; }
+      .flipper { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+      .face { position: absolute; inset: 0; border-radius: 40px; overflow: hidden; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 40px 70px -20px rgba(0, 0, 0, 0.8); }
+      .face.front {
+        background-color: var(--panel);
+        background-image: repeating-linear-gradient(45deg, rgba(255, 182, 39, 0.16) 0 2px, transparent 2px 26px),
+          repeating-linear-gradient(-45deg, rgba(255, 182, 39, 0.16) 0 2px, transparent 2px 26px);
+        box-shadow: inset 0 0 0 14px var(--surface), inset 0 0 0 17px rgba(247, 242, 232, 0.3), 0 40px 70px -20px rgba(0, 0, 0, 0.8);
+      }
+      .face.front .plate { padding: 14px 34px 20px; border-radius: 26px; background: var(--ink); font-size: 86px; }
+      .face.back { transform: rotateY(180deg); background: var(--surface); border: 4px solid rgba(247, 242, 232, 0.14); justify-content: flex-start; }
+      .face.back .role { width: 100%; padding: 30px 10px 34px; font-size: 62px; }
+      .face.back.civil .role { background: rgba(14, 165, 233, 0.16); color: var(--sky); }
+      .face.back.white .role { background: rgba(244, 63, 94, 0.18); color: var(--rose); }
+      .face.back .body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+      .face.back .lbl { font-size: 30px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+      .face.back .word { font-size: 104px; }
+      .face.back .word.tape { font-size: 120px; color: #8d87ab; }
+
+      /* Escenas 4 y 5: jugadores */
+      .players { position: absolute; left: 0; right: 0; display: flex; justify-content: center; gap: 110px; }
+      #p4 { top: 560px; gap: 150px; }
+      #p5 { top: 400px; }
+      .player { position: relative; width: 230px; display: flex; flex-direction: column; align-items: center; }
+      .avatar { width: 230px; height: 230px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ink); font-size: 130px; box-shadow: inset 0 -14px 0 rgba(0, 0, 0, 0.18), 0 26px 44px -14px rgba(0, 0, 0, 0.7); }
+      .pname { margin-top: 22px; font-size: 58px; font-weight: 700; white-space: nowrap; }
+      .bubble { position: absolute; bottom: 348px; left: 50%; translate: -50% 0; padding: 20px 40px 26px; border-radius: 40px; background: var(--fg); color: var(--ink); font-size: 68px; white-space: nowrap; transform-origin: 50% 130%; }
+      .bubble::after { content: ""; position: absolute; left: 50%; bottom: -22px; width: 44px; height: 44px; margin-left: -22px; background: var(--fg); rotate: 45deg; border-radius: 8px; }
+      .bubble.bad { background: #ffd9de; }
+      .bubble.bad::after { background: #ffd9de; }
+      .q { position: absolute; top: -50px; right: -44px; font-size: 130px; color: var(--accent); }
+      .sweat { position: absolute; top: 34px; right: 18px; width: 34px; height: 34px; border-radius: 0 50% 50% 50%; rotate: 45deg; background: #bfe9ff; opacity: 0; }
+      #secret { position: absolute; top: 236px; left: 50%; translate: -50% 0; padding: 12px 40px; border-radius: 999px; border: 4px solid var(--accent); color: var(--accent); font-size: 54px; font-weight: 700; white-space: nowrap; }
+
+      /* Escena 5: votos y sello */
+      .vote { position: absolute; left: 1470px; top: 232px; width: 120px; height: 120px; margin-left: -60px; border-radius: 50%; background: var(--accent); color: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 76px; box-shadow: 0 8px 0 var(--accent-deep); }
+      #stamp { position: absolute; top: 790px; left: 50%; translate: -50% 0; padding: 14px 60px 24px; border: 14px solid var(--rose); border-radius: 36px; color: var(--rose); background: rgba(17, 14, 34, 0.88); font-size: 150px; white-space: nowrap; }
+      #dim { position: absolute; inset: 0; background: rgba(12, 10, 26, 0.93); opacity: 0; }
+      #twist { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; }
+      #tw1 { font-size: 150px; color: var(--accent); }
+      #tw2 { font-size: 96px; font-weight: 700; }
+      #tw3 { font-size: 170px; }
+
+      /* Escena 6 */
+      #s6 h2 { font-size: 176px; }
+      #s6sub { margin-top: 40px; font-size: 84px; font-weight: 600; color: var(--muted); }
+      #cta-wrap { position: relative; margin-top: 84px; }
+      #cta { padding: 34px 96px 40px; border-radius: 44px; background: var(--accent); color: var(--ink); font-size: 110px; box-shadow: 0 18px 0 var(--accent-deep); }
+      #s6foot { margin-top: 84px; font-size: 58px; font-weight: 700; color: var(--muted); }
+      #tap { position: absolute; left: 50%; top: 50%; width: 200px; height: 200px; margin: -100px 0 0 -100px; border-radius: 50%; border: 12px solid var(--fg); opacity: 0; }
+      .conf { position: absolute; left: 50%; top: 50%; margin: -22px 0 0 -15px; width: 30px; height: 44px; border-radius: 8px; opacity: 0; }
+
+      /* ── Vertical 1080×1920 (vertical.html, generado por render.mjs con <html class="portrait">) ── */
+      .portrait, .portrait body, .portrait #root { width: 1080px; height: 1920px; }
+      .portrait .step { top: 150px; gap: 28px; }
+      .portrait .step .n { width: 112px; height: 112px; font-size: 78px; }
+      .portrait .step .t { font-size: 92px; }
+      .portrait .caption { bottom: 190px; padding: 0 70px; line-height: 1.2; text-wrap: balance; }
+      .portrait #s1 h1 { font-size: 165px; }
+      .portrait #s1sub { padding: 0 60px; }
+      .portrait #logo { width: 320px; height: 320px; }
+      .portrait #title { margin-top: 60px; width: min-content; font-size: 260px; line-height: 0.92; white-space: normal; }
+      .portrait #tagline { margin-top: 56px; padding: 0 90px; line-height: 1.2; text-wrap: balance; }
+      .portrait .chips { flex-wrap: wrap; justify-content: center; gap: 28px; padding: 0 60px; }
+      .portrait #cards { top: 390px; left: 50%; right: auto; width: 728px; margin-left: -364px; flex-wrap: wrap; scale: 1.08; transform-origin: 50% 0; }
+      .portrait #secret { top: 310px; }
+      .portrait #p4 { top: 600px; left: 50%; right: auto; width: 700px; margin-left: -350px; flex-wrap: wrap; gap: 230px 200px; }
+      .portrait #p5 { top: 690px; gap: 60px; scale: 0.85; transform-origin: 50% 0; }
+      .portrait .vote { left: 910px; top: 530px; }
+      .portrait #stamp { top: 1130px; font-size: 130px; }
+      .portrait #tw2 { font-size: 84px; }
+      .portrait #tw3 { font-size: 130px; }
+      .portrait #s6 h2 { padding: 0 60px; font-size: 190px; text-wrap: balance; }
+      .portrait #s6sub { margin-top: 56px; padding: 0 90px; line-height: 1.2; text-wrap: balance; }
+      .portrait #s6foot { font-size: 50px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="42" data-fps="30" data-width="1920" data-height="1080">
+      <div id="bg" class="clip" data-start="0" data-duration="42" data-track-index="0">
+        <div class="weave"></div>
+        <div class="lamp"></div>
+        <div class="alarm"></div>
+        <div class="vig"></div>
+      </div>
+
+      <!-- 1 · Gancho -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="6" data-track-index="1">
+        <div class="in">
+          <h1 class="display"><span id="w1" class="ltr">Alguien</span> <span id="w2" class="ltr">está</span><br /><span id="w3" class="tape">fingiendo.</span></h1>
+          <p id="s1sub">¿Sabrás descubrir quién?</p>
+        </div>
+      </section>
+
+      <!-- 2 · Título -->
+      <section id="s2" class="scene clip" data-start="6" data-duration="4" data-track-index="1">
+        <div class="in">
+          <div id="logo-wrap">
+          <div id="ring"></div>
+          <svg id="logo" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="#ffb627" />
+            <path d="M92 318C150 302 362 302 420 318C430 321 430 332 420 336C380 350 132 350 92 336C82 332 82 321 92 318Z" fill="#110e22" />
+            <path d="M184 314L196 212C198 190 210 180 224 182C238 185 246 198 256 198C266 198 274 185 288 182C302 180 314 190 316 212L328 314Z" fill="#110e22" />
+            <path d="M188 288L324 288L327 311L185 311Z" fill="#ffb627" opacity="0.55" />
+          </svg>
+          </div>
+          <div id="title" class="display" data-split>Mister White</div>
+          <p id="tagline">El juego de fiesta para descubrir al impostor.</p>
+          <div class="chips">
+            <span class="chip">3–20 jugadores</span><span class="chip">Gratis</span><span class="chip">Sin descargas</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 · Recibe tu carta -->
+      <section id="s3" class="scene clip" data-start="10" data-duration="8" data-track-index="1">
+        <div class="in">
+          <div class="step display"><span class="n">1</span><span class="t">Recibe tu carta</span></div>
+          <div id="cards"></div>
+          <p class="caption">Todos conocen la palabra… <b>menos Mr. White.</b></p>
+        </div>
+      </section>
+
+      <!-- 4 · Da una pista -->
+      <section id="s4" class="scene clip" data-start="18" data-duration="8" data-track-index="1">
+        <div class="in">
+          <div class="step display"><span class="n">2</span><span class="t">Da una pista</span></div>
+          <div id="secret">Palabra secreta: PIZZA</div>
+          <div id="p4" class="players"></div>
+          <p class="caption">Una sola palabra. <b>Sin delatarte.</b></p>
+        </div>
+      </section>
+
+      <!-- 5 · Vota -->
+      <section id="s5" class="scene clip" data-start="26" data-duration="8" data-track-index="1">
+        <div class="in">
+          <div class="step display"><span class="n">3</span><span class="t">Vota al sospechoso</span></div>
+          <div id="p5" class="players"></div>
+          <div class="vote display">1</div>
+          <div class="vote display">2</div>
+          <div class="vote display">3</div>
+          <div id="stamp" class="display">¡Descubierto!</div>
+          <div id="dim"></div>
+          <div id="twist">
+            <div id="tw1" class="display">Pero ojo…</div>
+            <div id="tw2">si adivina la palabra,</div>
+            <div id="tw3" class="display"><span class="tape">gana Mr. White.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6 · A jugar -->
+      <section id="s6" class="scene clip" data-start="34" data-duration="8" data-track-index="1">
+        <div class="in">
+          <h2 class="display">Reúne a tus amigos.</h2>
+          <p id="s6sub">Descubre quién disimula mejor.</p>
+          <div id="cta-wrap">
+            <div id="cta" class="display">Jugar ahora</div>
+            <div id="tap"></div>
+            <div id="confetti"></div>
+          </div>
+          <p id="s6foot">Gratis · Sin descargas · 3–20 jugadores</p>
+        </div>
+      </section>
+
+      <audio id="music" src="assets/soundtrack.wav" data-start="0" data-duration="42" data-track-index="2" data-volume="1"></audio>
+    </div>
+
+    <script>
+      // ── DOM generado (determinista) ─────────────────────────────
+      const PLAYERS = [
+        { name: "Ana", color: "#7dd3fc", hint: "Queso" },
+        { name: "Luis", color: "#86efac", hint: "Horno" },
+        { name: "Leo", color: "#c4b5fd", hint: "Italia" },
+        { name: "Sofía", color: "#fda4af", hint: "Eh… ¿rica?", white: true },
+      ];
+      const P = document.documentElement.classList.contains("portrait"); // formato vertical
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => [...document.querySelectorAll(s)];
+
+      $("#cards").innerHTML = PLAYERS.map((p) => `
+        <div class="card"><div class="flipper">
+          <div class="face front"><div class="plate display">${p.name}</div></div>
+          <div class="face back ${p.white ? "white" : "civil"}">
+            <div class="role display">${p.white ? "Mr. White" : "Civil"}</div>
+            <div class="body">${p.white ? '<div class="word tape display">???</div>' : '<div class="lbl">Tu palabra</div><div class="word display">Pizza</div>'}</div>
+          </div>
+        </div></div>`).join("");
+
+      const playerHtml = (p, withHint) => `
+        <div class="player">
+          ${withHint ? `<div class="bubble display ${p.white ? "bad" : ""}">${p.hint}</div>` : ""}
+          <div class="avatar display" style="background:${p.color}">${p.name[0]}${p.white && withHint ? '<span class="sweat"></span>' : ""}</div>
+          ${withHint && !p.white ? '<div class="q display">?</div>' : ""}
+          <div class="pname">${p.name}</div>
+        </div>`;
+      $("#p4").innerHTML = PLAYERS.map((p) => playerHtml(p, true)).join("");
+      $("#p5").innerHTML = PLAYERS.map((p) => playerHtml(p, false)).join("");
+
+      $$("[data-split]").forEach((el) => {
+        // cada palabra en su caja para que el título solo pueda partirse entre palabras
+        el.innerHTML = el.textContent.split(" ").map((w) => `<span class="word">${[...w].map((c) => `<span class="ltr">${c}</span>`).join("")}</span>`).join(" ");
+      });
+
+      const CONF_COLORS = ["#ffb627", "#f7f2e8", "#7dd3fc", "#fb7185", "#c4b5fd", "#86efac"];
+      $("#confetti").innerHTML = Array.from({ length: 48 }, (_, i) => `<i class="conf" style="background:${CONF_COLORS[i % 6]}"></i>`).join("");
+
+      // ── Timeline ────────────────────────────────────────────────
+      // Tiempos sobre la rejilla de la música (120 BPM); los efectos de sonido
+      // de make-audio.mjs usan estos mismos segundos.
+      const tl = gsap.timeline({ paused: true });
+      const pop = (sel, t, vars = {}) => tl.fromTo(sel, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(2.2)", ...vars }, t);
+      const rise = (sel, t, vars = {}) => tl.fromTo(sel, { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out", ...vars }, t);
+      const slam = (sel, t, from = 2.6) => tl.fromTo(sel, { scale: from, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.22, ease: "power3.in" }, t - 0.22);
+      const shake = (sel, t, amp = 22) => tl.fromTo(sel, { x: amp }, { x: 0, duration: 0.6, ease: "elastic.out(1.4, 0.14)" }, t);
+      const exit = (id, t) => tl.to(`${id} .in`, { opacity: 0, scale: 1.14, duration: 0.4, ease: "power2.in" }, t);
+      const alarm = (t) => tl.fromTo("#bg .alarm", { opacity: 0 }, { opacity: 1, duration: 0.12 }, t).to("#bg .alarm", { opacity: 0, duration: 1.4, ease: "power2.out" }, t + 0.12);
+
+      tl.fromTo("#bg .lamp", { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power2.out" }, 0);
+
+      // 1 · Gancho (0–6)
+      tl.fromTo("#s1 .in", { scale: 1 }, { scale: 1.07, duration: 5.6, ease: "none" }, 0);
+      tl.fromTo("#w1", { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "back.out(2)" }, 1.0);
+      tl.fromTo("#w2", { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "back.out(2)" }, 1.5);
+      slam("#w3", 2.0, 3);
+      shake("#s1 h1", 2.0, 30);
+      rise("#s1sub", 3.5);
+      exit("#s1", 5.6);
+
+      // 2 · Título (6–10)
+      tl.fromTo("#logo", { scale: 0, rotation: -40 }, { scale: 1, rotation: 0, duration: 0.6, ease: "back.out(2)" }, 6.0);
+      tl.fromTo("#ring", { scale: 1, opacity: 0.9 }, { scale: 4.5, opacity: 0, duration: 0.9, ease: "power2.out", immediateRender: false }, 6.05);
+      tl.fromTo("#title .ltr", { y: 160, opacity: 0, rotation: 12 }, { y: 0, opacity: 1, rotation: 0, duration: 0.5, ease: "back.out(1.8)", stagger: 0.04 }, 6.2);
+      rise("#tagline", 7.5);
+      $$("#s2 .chip").forEach((c, i) => pop(c, 8.2 + i * 0.15));
+      tl.fromTo("#s2 .in", { scale: 1 }, { scale: 1.04, duration: 3.6, ease: "none" }, 6);
+      exit("#s2", 9.6);
+
+      // 3 · Cartas (10–18)
+      tl.fromTo("#s3 .step", { y: -220, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 10.0);
+      const cards = $$("#s3 .card"), flippers = $$("#s3 .flipper");
+      const REST = [-4, 2, -2, 4];
+      cards.forEach((c, i) => {
+        tl.fromTo(c, { y: P ? 1500 : 900, rotation: (i - 1.5) * 30, opacity: 0 }, { y: 0, rotation: REST[i], opacity: 1, duration: 0.5, ease: "power3.out" }, 10.5 + i * 0.2);
+      });
+      [12.0, 12.6, 13.2, 14.0].forEach((t, i) => {
+        tl.to(flippers[i], { rotationY: 180, duration: 0.5, ease: "power2.inOut" }, t);
+        tl.to(cards[i], { y: -46, duration: 0.25, ease: "power2.out" }, t).to(cards[i], { y: 0, duration: 0.25, ease: "power2.in" }, t + 0.25);
+      });
+      // Revelación de Mr. White
+      tl.to(cards.slice(0, 3), { opacity: 0.4, scale: 0.92, duration: 0.3 }, 14.3);
+      tl.to(cards[3], { scale: 1.16, rotation: 0, duration: 0.35, ease: "back.out(3)" }, 14.3);
+      shake("#cards", 14.35, 26);
+      alarm(14.3);
+      rise("#s3 .caption", 15.5);
+      exit("#s3", 17.6);
+
+      // 4 · Pistas (18–26)
+      tl.fromTo("#s4 .step", { y: -220, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 18.0);
+      rise("#secret", 18.3);
+      const p4 = $$("#p4 .player"), bub = $$("#p4 .bubble"), qs = $$("#p4 .q");
+      p4.forEach((p, i) => pop(p, 18.5 + i * 0.12));
+      gsap.set(qs, { scale: 0, opacity: 0 });
+      [19.5, 20.25, 21.0].forEach((t, i) => {
+        pop(bub[i], t, { ease: "back.out(3)" });
+        tl.to(p4[i].querySelector(".avatar"), { y: -26, duration: 0.15, ease: "power2.out" }, t).to(p4[i].querySelector(".avatar"), { y: 0, duration: 0.3, ease: "bounce.out" }, t + 0.15);
+      });
+      // La pista torpe
+      pop(bub[3], 22.0, { duration: 0.3 });
+      tl.fromTo(bub[3], { rotation: -7 }, { rotation: 0, duration: 1.3, ease: "elastic.out(1.6, 0.12)" }, 22.05);
+      tl.fromTo("#p4 .sweat", { y: 0, opacity: 0 }, { y: 70, opacity: 1, duration: 0.9, ease: "power1.in" }, 22.3).to("#p4 .sweat", { opacity: 0, duration: 0.2 }, 23.2);
+      [23.0, 23.12, 23.24].forEach((t, i) => {
+        pop(qs[i], t, { duration: 0.35 });
+        tl.to(p4[i], { rotation: 7, x: 18, duration: 0.3, ease: "back.out(2)" }, t);
+      });
+      tl.to(p4[3].querySelector(".avatar"), { x: 6, duration: 0.06, repeat: 13, yoyo: true, ease: "none" }, 23.0);
+      rise("#s4 .caption", 23.75);
+      exit("#s4", 25.6);
+
+      // 5 · Votación (26–34)
+      tl.fromTo("#s5 .step", { y: -220, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.6)" }, 26.0);
+      const p5 = $$("#p5 .player"), votes = $$("#s5 .vote");
+      p5.forEach((p, i) => pop(p, 26.3 + i * 0.1));
+      gsap.set(["#stamp", "#tw1", "#tw2", "#tw3"], { opacity: 0 });
+      [27.0, 27.5, 28.0].forEach((t, i) => {
+        // el voto sale del jugador i y aterriza apilado sobre Sofía
+        tl.fromTo(votes[i], { x: (i - 3) * (P ? 246.5 : 340), y: 290, scale: 0.3, opacity: 0, rotation: -200 }, { x: P ? (i - 2) * 100 : (i - 1) * 104, y: 0, scale: 1, opacity: 1, rotation: 0, duration: 0.3, ease: "power2.in" }, t - 0.3);
+        tl.to(p5[i], { y: -34, duration: 0.14, ease: "power2.out" }, t - 0.34).to(p5[i], { y: 0, duration: 0.2, ease: "power2.in" }, t - 0.2);
+        tl.fromTo(p5[3], { x: 16 }, { x: 0, duration: 0.4, ease: "elastic.out(1.4, 0.2)" }, t);
+      });
+      tl.fromTo("#stamp", { scale: 3.2, opacity: 0, rotation: -24 }, { scale: 1, opacity: 1, rotation: -4, duration: 0.2, ease: "power3.in" }, 28.8);
+      shake("#p5", 29.0, 30);
+      alarm(29.0);
+      // El giro
+      tl.to("#dim", { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 29.8);
+      tl.to(["#stamp", "#s5 .step", "#p5", votes], { opacity: 0, duration: 0.4 }, 29.8);
+      pop("#tw1", 30.5);
+      rise("#tw2", 31.2);
+      slam("#tw3", 32.0, 2.8);
+      shake("#twist", 32.0, 24);
+      tl.to("#twist", { scale: 1.06, duration: 1.6, ease: "none" }, 32.0);
+      exit("#s5", 33.6);
+
+      // 6 · A jugar (34–42)
+      slam("#s6 h2", 34.0, 2.4);
+      shake("#s6 h2", 34.0, 26);
+      rise("#s6sub", 35.0);
+      pop("#cta", 36.5, { duration: 0.6, ease: "back.out(2.6)" });
+      // pulsación: el botón se hunde sobre su canto, como en la app
+      tl.to("#cta", { y: 14, boxShadow: "0 4px 0 #b97c00", duration: 0.08, ease: "power2.in" }, 37.94)
+        .to("#cta", { y: 0, boxShadow: "0 18px 0 #b97c00", duration: 0.35, ease: "back.out(3)" }, 38.1);
+      tl.fromTo("#tap", { scale: 0.3, opacity: 0.9 }, { scale: 4, opacity: 0, duration: 0.8, ease: "power2.out", immediateRender: false }, 38.0);
+      $$(".conf").forEach((c, i) => {
+        const a = (i * 137.5 * Math.PI) / 180, d = 380 + ((i * 53) % 520);
+        tl.fromTo(c, { x: 0, y: 0, scale: 0.2, rotation: 0, opacity: 1 }, { x: Math.cos(a) * d * (P ? 0.85 : 1.5), y: Math.sin(a) * d * (P ? 1.3 : 0.75) - 180, scale: 1, rotation: (i * 97) % 720, duration: 0.9, ease: "power3.out", immediateRender: false }, 38.0);
+        tl.to(c, { y: "+=620", rotation: "+=260", opacity: 0, duration: 1.9, ease: "power1.in" }, 38.9);
+      });
+      rise("#s6foot", 39.0);
+      tl.to("#cta", { scale: 1.07, duration: 0.25, ease: "power2.out" }, 40.0).to("#cta", { scale: 1, duration: 0.9, ease: "elastic.out(1.2, 0.3)" }, 40.25);
+      tl.fromTo("#s6 .in", { scale: 1 }, { scale: 1.03, duration: 8, ease: "none" }, 34);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# tutorial en vídeo (hyperframes): dependencias y artefactos generados
+/video/node_modules
+/video/renders
+/video/snaps
+/video/.hyperframes
+/video/assets/soundtrack.wav
+
+# dependencias de los scripts de utilidad
+/scripts/node_modules
+/video/vertical.html
+/video/.cache

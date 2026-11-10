@@ -1,0 +1,11 @@
+{
+  "name": "mister-white-tutorial-video",
+  "private": true,
+  "scripts": {
+    "audio": "node make-audio.mjs",
+    "render": "node render.mjs"
+  },
+  "devDependencies": {
+    "hyperframes": "^0.9.30"
+  }
+}

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Users, Monitor, ArrowRight, Hash, Check } from "lucide-react";
+import { ArrowRight, Hash, Check } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./components/ui/button";
 import { Card } from "./components/ui/card";
-import { ShareButton } from "./components/ui/share-button";
 import { Logo } from "./components/ui/logo";
+import { ShareButton } from "./components/ui/share-button";
 import { SITE_URL } from "./lib/utils";
 
 const steps = [
@@ -25,6 +25,29 @@ const steps = [
   },
 ];
 
+const modes = [
+  {
+    title: "Online",
+    tagline: "Cada uno con su móvil, en tiempo real.",
+    features: [
+      "Hasta 20 jugadores simultáneos",
+      "Salas privadas con código único",
+      "Sincronización en tiempo real",
+      "Roles avanzados: Undercover y Payaso",
+    ],
+  },
+  {
+    title: "En local",
+    tagline: "Un solo móvil que pasa de mano en mano.",
+    features: [
+      "De 3 a 20 jugadores en persona",
+      "No necesita conexión a internet",
+      "Categorías y dificultad ajustables",
+      "Ideal para fiestas y reuniones",
+    ],
+  },
+];
+
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 // Nombre del sitio que Google muestra en los resultados
@@ -39,7 +62,7 @@ export default function HomePage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[640px] spotlight" />
 
         <div className="container mx-auto max-w-screen-xl px-4">
-          <div className="relative mx-auto max-w-3xl pt-20 pb-10 text-center sm:pt-28">
+          <div className="relative mx-auto max-w-3xl pt-16 pb-10 text-center sm:pt-28">
             <p className="eyebrow animate-fade-in">Juego de deducción social</p>
 
             <h1 className="nd-display animate-rise mt-5 text-balance text-5xl font-semibold leading-[1.02] tracking-display text-fg sm:text-6xl lg:text-7xl">
@@ -56,13 +79,11 @@ export default function HomePage() {
             <div className="animate-rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href="/create-room" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto">
-                  <Users className="h-5 w-5" />
                   Crear sala online
                 </Button>
               </Link>
               <Link href="/local" className="w-full sm:w-auto">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  <Monitor className="h-5 w-5" />
                   Jugar en local
                 </Button>
               </Link>
@@ -78,7 +99,7 @@ export default function HomePage() {
           </div>
 
           {/* Elemento firma: la carta con la palabra censurada */}
-          <div className="relative mx-auto max-w-sm pb-16">
+          <div className="relative mx-auto max-w-sm pb-12">
             <div className="nd-tilt animate-rise rounded-3xl border border-white/[0.08] bg-surface p-7 shadow-float">
               <div className="flex items-center justify-between">
                 <span className="eyebrow">Tu rol</span>
@@ -108,155 +129,127 @@ export default function HomePage() {
           </div>
 
           {/* Línea de confianza, discreta */}
-          <p className="pb-20 text-center text-sm text-faint">
+          <p className="pb-6 text-center text-sm text-faint">
             3–20 jugadores · ~15 min por partida · Sin descargas · Gratis
           </p>
+
         </div>
       </section>
 
       {/* ───────────────── Cómo se juega ───────────────── */}
-      <section className="container mx-auto max-w-screen-xl px-4 py-20">
+      <section className="container mx-auto max-w-screen-xl px-4 py-14 sm:py-20">
         <div className="max-w-2xl">
-          <p className="eyebrow">Cómo se juega</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
-            Tres pasos. Una sola mentira que sostener.
+          <h2 className="text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
+            Cómo se juega
           </h2>
-        </div>
-
-        <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
-          {steps.map((step) => (
-            <div
-              key={step.n}
-              className="rounded-2xl border border-white/[0.06] bg-surface/60 p-6"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 text-sm font-semibold text-fg">
-                {step.n}
-              </div>
-              <h3 className="mt-5 text-lg font-semibold tracking-tight text-fg">
-                {step.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                {step.body}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ───────────────── Modos de juego ───────────────── */}
-      <section className="container mx-auto max-w-screen-xl px-4 py-20">
-        <div className="max-w-2xl">
-          <p className="eyebrow">Dos formas de jugar</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
-            En la misma mesa o a distancia.
-          </h2>
-        </div>
-
-        <div className="mt-12 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          {/* Online */}
-          <Card className="flex flex-col p-7">
-            <div className="flex items-center gap-3.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent">
-                <Users className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold tracking-tight text-fg">
-                  Online
-                </h3>
-                <p className="text-sm text-muted">
-                  Cada quien en su pantalla, en tiempo real
-                </p>
-              </div>
-            </div>
-            <ul className="mt-6 space-y-2.5 text-sm text-muted">
-              {[
-                "Hasta 20 jugadores simultáneos",
-                "Salas privadas con código único",
-                "Sincronización en tiempo real",
-                "Roles avanzados: Undercover y Payaso",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2.5">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-auto flex gap-3 pt-7">
-              <Link href="/create-room" className="flex-1">
-                <Button className="w-full">Crear sala</Button>
-              </Link>
-              <Link href="/join-room" className="flex-1">
-                <Button variant="secondary" className="w-full">
-                  Unirse
-                </Button>
-              </Link>
-            </div>
-          </Card>
-
-          {/* Local */}
-          <Card className="flex flex-col p-7">
-            <div className="flex items-center gap-3.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent">
-                <Monitor className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold tracking-tight text-fg">
-                  Local
-                </h3>
-                <p className="text-sm text-muted">
-                  Un solo dispositivo que va pasando de mano en mano
-                </p>
-              </div>
-            </div>
-            <ul className="mt-6 space-y-2.5 text-sm text-muted">
-              {[
-                "De 3 a 20 jugadores en persona",
-                "No necesita conexión a internet",
-                "Categorías y dificultad ajustables",
-                "Ideal para fiestas y reuniones",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2.5">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-auto pt-7">
-              <Link href="/local">
-                <Button variant="secondary" className="w-full">
-                  Empezar modo local
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        </div>
-      </section>
-
-      {/* ───────────────── Demo ───────────────── */}
-      <section className="container mx-auto max-w-screen-xl px-4 py-20">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">En movimiento</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
-            Míralo en acción
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-muted">
-            Una partida completa en modo local, de principio a fin.
+          <p className="mt-3 text-base leading-relaxed text-muted sm:text-lg">
+            Tres pasos y un solo objetivo: que no te descubran.
           </p>
         </div>
 
-        <div className="mx-auto mt-12 max-w-3xl">
-          <div className="overflow-hidden rounded-2xl border border-white/[0.08] shadow-float">
-            <video
-              className="aspect-video w-full"
-              controls
-              poster="/detective.jpg"
-              preload="metadata"
-            >
-              <source src="/video/Tutorial_modo_local.mp4" type="video/mp4" />
-              Tu navegador no soporta videos HTML5.
-            </video>
+        <ol className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-3">
+          {steps.map((step) => (
+            <li key={step.n} className="relative grid grid-cols-[2.75rem_1fr] gap-x-4 border-t border-white/10 pt-6 md:block">
+              <span className="absolute -top-px left-0 h-0.5 w-14 bg-accent" />
+              <span className="nd-display row-span-2 block text-6xl leading-none text-accent">
+                {step.n}
+              </span>
+              <h3 className="md:mt-4 text-xl font-semibold tracking-tight text-fg">
+                {step.title}
+              </h3>
+              <p className="mt-2 text-base leading-relaxed text-muted">
+                {step.body}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* ───────────────── Vídeo tutorial ───────────────── */}
+      <section className="container mx-auto max-w-screen-xl px-4 pb-14 pt-12 sm:pb-20 sm:pt-16">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-balance text-3xl font-semibold tracking-tight text-fg sm:text-5xl">
+            Aprende a jugar en 40 segundos
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-muted sm:text-lg">
+            Todo lo que necesitas saber antes de tu primera partida. Sube el volumen.
+          </p>
+        </div>
+
+        {/* Dos formatos: vertical en el móvil (donde se juega) y horizontal a partir de sm.
+            preload="none": el que queda oculto no descarga nada. */}
+        {[
+          { file: "tutorial-vertical", box: "mx-auto max-w-sm sm:hidden", ratio: "aspect-[9/16]" },
+          { file: "tutorial", box: "hidden sm:mx-auto sm:block sm:max-w-5xl", ratio: "aspect-video" },
+        ].map((v) => (
+          <div key={v.file} className={`mt-10 sm:mt-12 ${v.box}`}>
+            <div className="overflow-hidden rounded-3xl border border-accent/40 bg-surface shadow-[0_40px_120px_-40px_rgba(255,182,39,0.45)]">
+              <video
+                className={`block w-full ${v.ratio}`}
+                controls
+                playsInline
+                poster={`/video/${v.file}-poster.jpg`}
+                preload="none"
+              >
+                <source src={`/video/${v.file}.mp4`} type="video/mp4" />
+                Tu navegador no soporta videos HTML5.
+              </video>
+            </div>
           </div>
+        ))}
+      </section>
+
+      {/* ───────────────── Modos de juego ───────────────── */}
+      <section className="container mx-auto max-w-screen-xl px-4 py-14 sm:py-20">
+        <div className="max-w-2xl">
+          <h2 className="text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
+            Elige cómo jugar
+          </h2>
+          <p className="mt-3 text-base leading-relaxed text-muted sm:text-lg">
+            En la misma mesa o a distancia.
+          </p>
+        </div>
+
+        <div className="mt-12 grid grid-cols-1 gap-5 lg:grid-cols-2">
+          {modes.map((mode, i) => (
+            <Card key={mode.title} className="flex flex-col p-7 sm:p-9">
+              <h3 className="nd-display text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
+                {mode.title}
+              </h3>
+              <p className="mt-2 text-base text-muted">{mode.tagline}</p>
+
+              <ul className="mt-6 space-y-3 border-t border-white/[0.08] pt-6 text-base text-muted">
+                {mode.features.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <Check className="mt-1 h-4 w-4 shrink-0 text-accent" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              {i === 0 ? (
+                <div className="mt-auto flex gap-3 pt-8">
+                  <Link href="/create-room" className="flex-1">
+                    <Button size="lg" className="w-full px-4">Crear sala</Button>
+                  </Link>
+                  <Link href="/join-room" className="flex-1">
+                    <Button variant="secondary" size="lg" className="w-full px-4">
+                      Unirse
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="mt-auto pt-8">
+                  <Link href="/local">
+                    <Button variant="secondary" size="lg" className="w-full px-4">
+                      Empezar en local
+                      <ArrowRight className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </Card>
+          ))}
         </div>
       </section>
 
@@ -266,7 +259,7 @@ export default function HomePage() {
           <div className="pointer-events-none absolute inset-x-0 top-0 h-72 spotlight" />
           <div className="relative">
             <h2 className="mx-auto max-w-xl text-balance text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
-              Reúne a tus amigos y descubre quién sabe mentir mejor.
+              Reúne a tus amigos y empieza la partida.
             </h2>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href="/create-room" className="w-full sm:w-auto">
