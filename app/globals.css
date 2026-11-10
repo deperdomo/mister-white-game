@@ -206,3 +206,119 @@
     max-width: 1180px;
   }
 }
+
+/* ───────────────────────────────────────────────────────────
+   Diseño nuevo — "Mesa de noche" (opt-in)
+   Se activa con <html data-design="new">, que pone el script de
+   layout.tsx al visitar /new-design (y quita /old-design).
+   Noche índigo, texto hueso y un único acento caléndula; el blanco
+   se reserva para la cinta que tapa lo que no debes ver.
+   ponytail: overrides sin capa sobre clases gancho (btn, nd-*); cuando
+   el diseño nuevo sea el definitivo, pasar estos valores a @theme y
+   borrar el bloque y los ganchos.
+   ─────────────────────────────────────────────────────────── */
+html[data-design="new"] {
+  --color-ink: #110e22;
+  --color-surface: #1a1631;
+  --color-panel: #241f42;
+  --color-elevated: #322b59;
+  --color-fg: #f7f2e8;
+  --color-muted: #b6b0cf;
+  --color-faint: #8d87ab;
+  --color-accent: #ffb627;
+  --color-iris: #ffb627;
+  --accent-deep: #b97c00;
+  --font-display: var(--font-bricolage), var(--font-figtree), sans-serif;
+}
+
+html[data-design="new"] body {
+  font-family: var(--font-figtree), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+html[data-design="new"] :is(h1, h2, h3, .nd-display) {
+  font-family: var(--font-display);
+}
+html[data-design="new"] .nd-display {
+  font-weight: 800;
+}
+
+/* Botones: canto sólido que se hunde al pulsar */
+html[data-design="new"] .btn {
+  border-radius: 1rem;
+  font-weight: 600;
+}
+html[data-design="new"] .btn-lg {
+  height: 3.5rem;
+  font-size: 1.125rem;
+}
+html[data-design="new"] .btn-primary,
+html[data-design="new"] .btn-primary:hover {
+  background: var(--color-accent);
+  color: var(--color-ink);
+  box-shadow: 0 4px 0 0 var(--accent-deep);
+}
+html[data-design="new"] .btn-primary:hover {
+  filter: brightness(1.05);
+}
+html[data-design="new"] .btn-primary:active {
+  scale: 1;
+  translate: 0 3px;
+  box-shadow: 0 1px 0 0 var(--accent-deep);
+}
+
+html[data-design="new"] .switch-thumb {
+  background: var(--color-fg);
+}
+html[data-design="new"] [aria-checked="true"] > .switch-thumb {
+  background: var(--color-ink);
+}
+
+/* Cinta hueso: palabra destacada del hero y "???" de Mr. White */
+html[data-design="new"] :is(.text-gradient, .nd-tape) {
+  display: inline-block;
+  padding: 0 0.2em 0.04em;
+  border-radius: 0.1em;
+  background: var(--color-fg);
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: var(--color-ink);
+  rotate: -2deg;
+}
+/* Palabra secreta tapada con una barra en vez de desenfocada */
+html[data-design="new"] .nd-redact {
+  padding: 0 0.6em;
+  border-radius: 2px;
+  background: var(--color-fg);
+  color: transparent;
+  filter: none;
+  rotate: -1deg;
+}
+html[data-design="new"] .nd-tilt {
+  rotate: -2deg;
+}
+
+/* Luz de lámpara cayendo sobre la mesa */
+html[data-design="new"] .spotlight {
+  background: radial-gradient(60% 55% at 50% 0%, rgba(255, 182, 39, 0.16), rgba(255, 182, 39, 0.05) 45%, transparent 72%);
+}
+
+/* Dorso de carta: rombos finos y filete interior */
+html[data-design="new"] .card-back {
+  background-color: var(--color-panel);
+  background-image: repeating-linear-gradient(45deg, rgba(255, 182, 39, 0.12) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(-45deg, rgba(255, 182, 39, 0.12) 0 1px, transparent 1px 14px);
+  box-shadow: inset 0 0 0 7px var(--color-surface), inset 0 0 0 8px rgba(247, 242, 232, 0.3);
+}
+html[data-design="new"] :is(.nd-plate, .nd-hint) {
+  background: var(--color-ink);
+}
+html[data-design="new"] p.nd-plate {
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+}
+
+html[data-design="new"] .logo-bg {
+  fill: #ffb627;
+}
+html[data-design="new"] .logo-hat {
+  fill: #110e22;
+}

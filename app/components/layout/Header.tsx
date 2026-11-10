@@ -9,7 +9,7 @@ export default function Header() {
         {/* Logo */}
         <GuardedLink
           href="/"
-          className="flex items-center gap-2.5 text-[17px] font-semibold tracking-tight text-fg transition-opacity hover:opacity-80"
+          className="nd-display flex items-center gap-2.5 text-[17px] font-semibold tracking-tight text-fg transition-opacity hover:opacity-80"
         >
           <Logo className="h-8 w-8" />
           <span>Mister White</span>

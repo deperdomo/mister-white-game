@@ -16,6 +16,11 @@ function appVersion(): string {
 }
 
 const nextConfig: NextConfig = {
+  // Se sirven como la portada; el script de layout.tsx cambia el diseño y vuelve a "/"
+  rewrites: async () => [
+    { source: "/new-design", destination: "/" },
+    { source: "/old-design", destination: "/" },
+  ],
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion(),
   },

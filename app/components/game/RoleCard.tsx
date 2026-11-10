@@ -56,9 +56,9 @@ export default function RoleCard({ name, role, word, flipped, onFlip }: RoleCard
         className={`relative h-full w-full transform-3d transition-transform duration-500 motion-reduce:transition-none ${flipped ? 'rotate-y-180' : ''}`}
       >
         {/* Delante: nombre */}
-        <div className={`${face} items-center justify-center gap-4 p-6 border-accent/30 bg-gradient-to-br from-accent/25 via-surface to-iris/20`}>
-          <p className="max-w-full text-[clamp(2.25rem,11vw,3.25rem)] font-bold leading-tight text-fg text-center break-words">{name}</p>
-          <p className="absolute bottom-5 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-sm text-muted">
+        <div className={`${face} card-back items-center justify-center gap-4 p-6 border-accent/30 bg-gradient-to-br from-accent/25 via-surface to-iris/20`}>
+          <p className="nd-display nd-plate max-w-full text-[clamp(2.25rem,11vw,3.25rem)] font-bold leading-tight text-fg text-center break-words">{name}</p>
+          <p className="nd-hint absolute bottom-5 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-sm text-muted">
             <Lock className="h-4 w-4" /> Toca para ver tu rol
           </p>
         </div>
@@ -67,17 +67,17 @@ export default function RoleCard({ name, role, word, flipped, onFlip }: RoleCard
         <div className={`${face} rotate-y-180 border-white/10 bg-surface`}>
           <div className={`px-5 py-4 text-center ${info.tint}`}>
             <Icon className="mx-auto mb-1 h-10 w-10" />
-            <p className="text-2xl font-bold">{info.title}</p>
+            <p className="nd-display text-2xl font-bold">{info.title}</p>
             <p className="mt-1 text-sm opacity-80">{info.description}</p>
           </div>
           <div className="flex flex-1 flex-col items-center justify-center gap-2 px-5 text-center">
             {word ? (
               <>
                 <p className="eyebrow">Tu palabra</p>
-                <p className="text-[clamp(1.75rem,9vw,2.75rem)] font-bold leading-tight tracking-tight text-fg break-words">{word}</p>
+                <p className="nd-display text-[clamp(1.75rem,9vw,2.75rem)] font-bold leading-tight tracking-tight text-fg break-words">{word}</p>
               </>
             ) : (
-              <p className="text-5xl font-bold text-faint">???</p>
+              <p className="nd-display nd-tape text-5xl font-bold text-faint">???</p>
             )}
           </div>
           <p className="pb-3 text-center text-xs text-faint">Toca para ocultar</p>
