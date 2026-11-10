@@ -194,7 +194,7 @@ function LocalGameSetupContent() {
               ))}
             </Reorder.Group>
             {players.length < MAX_PLAYERS && (
-              <Button variant="outline" onClick={addPlayer} className="mt-4">
+              <Button variant="outline" onClick={addPlayer} className="mt-4 nd:h-12 nd:w-full nd:border-dashed">
                 Añadir Jugador
               </Button>
             )}
@@ -230,22 +230,22 @@ function LocalGameSetupContent() {
               {/* Conteo de roles */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-2xl border border-white/[0.06] bg-panel p-4 text-center">
-                  <p className="text-3xl font-semibold tracking-tight text-fg tabular-nums">
+                  <p className="nd-display text-3xl font-semibold tracking-tight text-fg tabular-nums">
                     {validPlayerCount}
                   </p>
                   <p className="mt-1 text-xs font-medium text-faint">Jugadores</p>
                 </div>
-                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07] p-4 text-center">
-                  <p className="text-3xl font-semibold tracking-tight text-emerald-300 tabular-nums">
+                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07] p-4 text-center nd:border-white/[0.06] nd:bg-panel">
+                  <p className="nd-display text-3xl font-semibold tracking-tight text-emerald-300 tabular-nums nd:text-fg">
                     {validPlayerCount - misterWhites - (settings.includeUndercover ? 1 : 0) - (includePayaso ? 1 : 0)}
                   </p>
-                  <p className="mt-1 text-xs font-medium text-emerald-200/70">Civiles</p>
+                  <p className="mt-1 text-xs font-medium text-emerald-200/70 nd:text-faint">Civiles</p>
                 </div>
-                <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.07] p-4 text-center">
-                  <p className="text-3xl font-semibold tracking-tight text-red-300 tabular-nums">
+                <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.07] p-4 text-center nd:border-transparent nd:bg-fg">
+                  <p className="nd-display text-3xl font-semibold tracking-tight text-red-300 tabular-nums nd:text-ink">
                     {misterWhites}
                   </p>
-                  <p className="mt-1 text-xs font-medium text-red-200/70">Mr. White</p>
+                  <p className="mt-1 text-xs font-medium text-red-200/70 nd:text-ink/70">Mr. White</p>
                 </div>
               </div>
 
@@ -275,7 +275,7 @@ function LocalGameSetupContent() {
         )}
 
         {/* Start Game Button */}
-        <div className="space-y-3">
+        <div className="space-y-3 nd:sticky nd:bottom-0 nd:z-20 nd:-mx-5 nd:bg-gradient-to-t nd:from-ink nd:via-ink nd:to-transparent nd:px-5 nd:pb-[max(1rem,env(safe-area-inset-bottom))] nd:pt-6">
           {isEditingMode && (
             <Button 
               onClick={() => router.push(`/local-game?${new URLSearchParams({ config: searchParams.get('config') ?? '' })}`)} 
@@ -321,14 +321,14 @@ function PlayerRow({
       dragListener={false}
       dragControls={controls}
       whileDrag={{ scale: 1.03 }}
-      className="flex gap-2 items-center rounded-xl bg-panel/40"
+      className="flex gap-2 items-center rounded-xl bg-panel/40 nd:gap-0 nd:bg-transparent"
     >
       <div
-        className="flex-shrink-0 touch-none cursor-grab active:cursor-grabbing p-1"
+        className="flex-shrink-0 touch-none cursor-grab active:cursor-grabbing p-1 nd:p-3"
         onPointerDown={(e) => controls.start(e)}
         title="Arrastra para reordenar"
       >
-        <GripVertical className="h-4 w-4 text-muted" />
+        <GripVertical className="h-4 w-4 text-muted nd:h-5 nd:w-5" />
       </div>
       <Input
         placeholder="Nombre del jugador"
@@ -343,7 +343,7 @@ function PlayerRow({
           variant="ghost"
           size="sm"
           onClick={() => onRemove(player.id)}
-          className="flex-shrink-0 text-faint hover:text-rose-300 hover:bg-rose-500/10"
+          className="flex-shrink-0 text-faint hover:text-rose-300 hover:bg-rose-500/10 nd:px-0"
           aria-label="Eliminar jugador"
         >
           <Trash2 className="h-4 w-4" />

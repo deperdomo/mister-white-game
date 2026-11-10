@@ -73,7 +73,7 @@ export function SelectTrigger({ className, children, ...props }: SelectTriggerPr
   return (
     <div
       className={cn(
-        "flex h-11 w-full cursor-pointer items-center justify-between rounded-xl border border-white/10 bg-panel px-4 text-[15px] text-fg transition-colors focus:outline-none focus:border-accent/70 focus:ring-2 focus:ring-accent/25 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+        "flex h-11 w-full cursor-pointer items-center justify-between rounded-xl border border-white/10 bg-panel px-4 text-[15px] text-fg transition-colors focus:outline-none focus:border-accent/70 focus:ring-2 focus:ring-accent/25 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 nd:h-12 nd:text-base",
         className
       )}
       onClick={() => setIsOpen(!isOpen)}
@@ -110,8 +110,8 @@ export function SelectItem({ value, children, className, ...props }: SelectItemP
   return (
     <div
       className={cn(
-        "relative flex w-full cursor-pointer select-none items-center rounded-lg px-3 py-2 text-sm text-fg outline-none transition-colors hover:bg-white/5 focus:bg-white/5",
-        selectedValue === value && "bg-white/10",
+        "relative flex w-full cursor-pointer select-none items-center rounded-lg px-3 py-2 text-sm text-fg outline-none transition-colors hover:bg-white/5 focus:bg-white/5 nd:min-h-11 nd:text-base",
+        selectedValue === value && "bg-white/10 nd:bg-accent/15 nd:text-accent",
         className
       )}
       onClick={handleClick}

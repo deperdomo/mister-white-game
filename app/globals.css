@@ -29,6 +29,9 @@
     0 50px 90px -36px rgba(0, 0, 0, 0.92);
 }
 
+/* nd:* = solo con el diseño nuevo activo (ver bloque "Mesa de noche") */
+@custom-variant nd (html[data-design="new"] &);
+
 @layer base {
   /* Borde por defecto = hairline sutil (las utilidades border-{color} lo sobreescriben) */
   *,
@@ -249,6 +252,11 @@ html[data-design="new"] .btn {
 html[data-design="new"] .btn-lg {
   height: 3.5rem;
   font-size: 1.125rem;
+}
+/* Objetivo táctil mínimo de 44px también en los botones pequeños */
+html[data-design="new"] .btn-sm {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
 }
 html[data-design="new"] .btn-primary,
 html[data-design="new"] .btn-primary:hover {

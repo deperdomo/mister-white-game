@@ -11,8 +11,11 @@ export default function Footer() {
   const pathname = usePathname();
   if (pathname.startsWith('/local-game') || pathname.startsWith('/room/')) return null;
 
+  // Diseño nuevo: las pantallas de preparación van sin pie, como una app
+  const setup = ['/local', '/waiting-room', '/create-room', '/join-room'].includes(pathname);
+
   return (
-    <footer className="border-t border-white/[0.06] bg-ink">
+    <footer className={`border-t border-white/[0.06] bg-ink ${setup ? 'nd:hidden' : ''}`}>
       <div className="container mx-auto max-w-screen-xl px-4 py-10">
         {/* Invitar a jugar (solo en la página principal) */}
         <InvitePanel />

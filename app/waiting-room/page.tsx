@@ -12,6 +12,9 @@ import { useToast } from "../hooks/useToast";
 import GameSettingsForm from "../components/game/GameSettingsForm";
 import { loadOnlineSettings, saveOnlineSettings, GameSettings, MIN_PLAYERS } from "../lib/game-logic";
 
+// Diseño nuevo en móvil: la acción principal siempre a mano
+const BOTTOM_BAR = 'nd:max-lg:fixed nd:max-lg:inset-x-0 nd:max-lg:bottom-0 nd:max-lg:z-40 nd:max-lg:border-t-0 nd:max-lg:bg-gradient-to-t nd:max-lg:from-ink nd:max-lg:via-ink nd:max-lg:to-transparent nd:max-lg:px-5 nd:max-lg:pb-[max(1rem,env(safe-area-inset-bottom))] nd:max-lg:pt-8';
+
 function WaitingRoomContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -122,7 +125,7 @@ function WaitingRoomContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-4xl nd:max-lg:pb-40">
       {/* Solicitudes de entrada (solo host) */}
       {isHost && joinRequests.length > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-2" aria-live="assertive">
@@ -158,12 +161,12 @@ function WaitingRoomContent() {
         
         {/* Código y compartir */}
         <div className={`grid gap-3 ${isHost ? 'grid-cols-2' : 'grid-cols-1'}`}>
-          <Button variant="outline" onClick={handleCopyCode} title="Copiar código de sala">
+          <Button variant="outline" onClick={handleCopyCode} title="Copiar código de sala" className="nd:col-span-2 nd:h-20 nd:-rotate-1 nd:border-transparent nd:bg-fg nd:text-ink nd:hover:bg-fg">
             <Copy className="h-4 w-4" />
-            <span className="font-mono tracking-wider">{copied ? '¡Copiado!' : roomCode}</span>
+            <span className="nd-display font-mono tracking-wider nd:text-4xl nd:tracking-[0.1em]">{copied ? '¡Copiado!' : roomCode}</span>
           </Button>
           {isHost && (
-            <Button onClick={handleCopyRoomLink} title="Copiar enlace de la sala para compartir">
+            <Button onClick={handleCopyRoomLink} title="Copiar enlace de la sala para compartir" className="nd:col-span-2 nd:h-12">
               <Share2 className="h-4 w-4" />
               {linkCopied ? '¡Copiado!' : 'Compartir'}
             </Button>
@@ -178,7 +181,7 @@ function WaitingRoomContent() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Jugadores ({players.length}/{room.maxPlayers})</span>
-                <div className="flex items-center space-x-1 text-green-400">
+                <div className="flex items-center space-x-1 text-green-400 nd:text-muted">
                   <Users className="h-4 w-4" />
                   <span className="text-sm">Online</span>
                 </div>
@@ -189,21 +192,21 @@ function WaitingRoomContent() {
                 {players.map((player) => (
                   <div
                     key={player.id}
-                    className={`p-3 border rounded-lg ${
+                    className={`p-3 border rounded-lg nd:rounded-xl nd:px-4 ${
                       player.name === playerName 
-                        ? 'border-blue-500 bg-blue-900/20' 
-                        : 'border-white/10'
+                        ? 'border-blue-500 bg-blue-900/20 nd:border-accent nd:bg-accent/10' 
+                        : 'border-white/10 nd:bg-panel'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold flex items-center">
+                        <p className="font-semibold flex items-center nd:text-lg">
                           {player.name}
-                          {player.isHost && <Crown className="ml-2 h-4 w-4 text-yellow-500" />}
-                          {player.name === playerName && <span className="ml-2 text-blue-500 text-sm">(Tú)</span>}
+                          {player.isHost && <Crown className="ml-2 h-4 w-4 text-yellow-500 nd:text-accent" />}
+                          {player.name === playerName && <span className="ml-2 text-blue-500 text-sm nd:text-accent">(Tú)</span>}
                         </p>
                       </div>
-                      <div className="w-3 h-3 rounded-full bg-green-500" />
+                      <div className="w-3 h-3 rounded-full bg-green-500 nd:hidden" />
                     </div>
                   </div>
                 ))}
@@ -215,13 +218,13 @@ function WaitingRoomContent() {
 
         {/* Panel de control */}
         <div className="space-y-6">
-          {/* Estado del juego */}
-          <Card>
-            <CardHeader>
+          {/* Estado del juego (diseño nuevo en móvil: solo la barra fija inferior) */}
+          <Card className="nd:max-lg:contents">
+            <CardHeader className="nd:max-lg:hidden">
               <CardTitle className="text-lg">Estado del Juego</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+            <CardContent className="space-y-4 nd:max-lg:contents">
+              <div className="space-y-2 nd:max-lg:hidden">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted">Jugadores mínimos:</span>
                   <span className="font-medium">3</span>
@@ -243,10 +246,11 @@ function WaitingRoomContent() {
               </div>
 
               {isHost && (
-                <div className="pt-4 border-t">
+                <div className={`pt-4 border-t ${BOTTOM_BAR}`}>
                   <Button 
                     onClick={handleStartGame}
                     disabled={players.length < 3 || isStarting}
+                    size="lg"
                     className="w-full"
                   >
                     {isStarting ? 'Iniciando...' : 'Iniciar Juego'}
@@ -260,8 +264,8 @@ function WaitingRoomContent() {
               )}
 
               {!isHost && (
-                <div className="pt-4 border-t">
-                  <p className="text-sm text-center text-muted">
+                <div className={`pt-4 border-t ${BOTTOM_BAR}`}>
+                  <p className="text-sm text-center text-muted nd:max-lg:text-base">
                     Esperando a que el host inicie el juego...
                   </p>
                 </div>

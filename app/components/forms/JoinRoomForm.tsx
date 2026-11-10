@@ -170,7 +170,7 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
               onChange={(e) => handleInputChange('roomCode', e.target.value)}
               maxLength={6}
               disabled={isLoading}
-              className={`text-center text-lg font-mono tracking-wider ${
+              className={`text-center text-lg font-mono tracking-wider nd:h-16 nd:text-3xl nd:font-bold ${
                 errors.roomCode ? 'border-red-500 focus:border-red-500' : ''
               }`}
             />
@@ -188,7 +188,7 @@ export default function JoinRoomForm({ initialRoomCode = '' }: JoinRoomFormProps
           {/* Botón de envío */}
           <Button 
             type="submit" 
-            className="w-full"
+            className="w-full nd:h-14 nd:text-lg"
             disabled={isLoading}
           >
             {isLoading ? (

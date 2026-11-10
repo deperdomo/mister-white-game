@@ -40,7 +40,7 @@ export function HelpTip({ text, label = 'Más información' }: { text: string; l
         aria-label={label}
         aria-expanded={open}
         onClick={toggle}
-        className="text-faint transition-colors hover:text-fg"
+        className="text-faint transition-colors hover:text-fg nd:-m-3.5 nd:p-3.5"
       >
         <HelpCircle className="h-4 w-4" />
       </button>

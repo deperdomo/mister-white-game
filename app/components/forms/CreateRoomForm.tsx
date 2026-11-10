@@ -99,7 +99,7 @@ export default function CreateRoomForm() {
           {/* Botón de envío */}
           <Button 
             type="submit" 
-            className="w-full"
+            className="w-full nd:h-14 nd:text-lg"
             disabled={isLoading}
           >
             {isLoading ? (

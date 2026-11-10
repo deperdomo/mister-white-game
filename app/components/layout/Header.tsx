@@ -9,7 +9,7 @@ export default function Header() {
         {/* Logo */}
         <GuardedLink
           href="/"
-          className="nd-display flex items-center gap-2.5 text-[17px] font-semibold tracking-tight text-fg transition-opacity hover:opacity-80"
+          className="nd-display flex items-center gap-2.5 nd:py-1.5 text-[17px] font-semibold tracking-tight text-fg transition-opacity hover:opacity-80"
         >
           <Logo className="h-8 w-8" />
           <span>Mister White</span>
@@ -42,14 +42,14 @@ export default function Header() {
         <nav className="flex sm:hidden items-center gap-1">
           <GuardedLink
             href="/"
-            className="rounded-lg p-2 text-muted transition-colors hover:bg-white/5 hover:text-fg"
+            className="rounded-lg p-2 nd:p-3 text-muted transition-colors hover:bg-white/5 hover:text-fg"
             aria-label="Inicio"
           >
             <Home className="h-5 w-5" />
           </GuardedLink>
           <GuardedLink
             href="/create-room"
-            className="rounded-lg p-2 text-muted transition-colors hover:bg-white/5 hover:text-fg"
+            className="rounded-lg p-2 nd:p-3 text-muted transition-colors hover:bg-white/5 hover:text-fg"
             aria-label="Crear sala"
           >
             <Users className="h-5 w-5" />
