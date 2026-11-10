@@ -29,7 +29,7 @@
     0 50px 90px -36px rgba(0, 0, 0, 0.92);
 }
 
-/* nd:* = solo con el diseño nuevo activo (ver bloque "Mesa de noche") */
+/* nd:* = estilos del diseño "Mesa de noche" (ver bloque al final) */
 @custom-variant nd (html[data-design="new"] &);
 
 @layer base {
@@ -211,14 +211,12 @@
 }
 
 /* ───────────────────────────────────────────────────────────
-   Diseño nuevo — "Mesa de noche" (opt-in)
-   Se activa con <html data-design="new">, que pone el script de
-   layout.tsx al visitar /new-design (y quita /old-design).
+   Diseño definitivo — "Mesa de noche"
    Noche índigo, texto hueso y un único acento caléndula; el blanco
    se reserva para la cinta que tapa lo que no debes ver.
-   ponytail: overrides sin capa sobre clases gancho (btn, nd-*); cuando
-   el diseño nuevo sea el definitivo, pasar estos valores a @theme y
-   borrar el bloque y los ganchos.
+   ponytail: sigue aplicado como capa sobre el sistema anterior, con
+   data-design="new" fijo en layout.tsx. Al retocar una pantalla, quita
+   sus clases antiguas y deja solo las nd:*.
    ─────────────────────────────────────────────────────────── */
 html[data-design="new"] {
   --color-ink: #110e22;

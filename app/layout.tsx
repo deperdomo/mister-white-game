@@ -1,22 +1,13 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Figtree, Inter } from "next/font/google";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import "./globals.css";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./contexts/ToastContext";
 import { NavigationGuardProvider } from "./contexts/NavigationGuardContext";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
-
-// Fuentes del diseño nuevo: sin preload para no cargarlas en el diseño actual
-const figtree = Figtree({ subsets: ["latin"], variable: "--font-figtree", preload: false });
-const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage", preload: false });
-
-// /new-design activa el diseño nuevo en este navegador; /old-design lo quita.
-const designScript = `try{var p=location.pathname,n=p==='/new-design',o=p==='/old-design';if(n)localStorage.setItem('design','new');if(o)localStorage.removeItem('design');if(localStorage.getItem('design')==='new')document.documentElement.dataset.design='new';if(n||o)location.replace('/')}catch(e){}`;
+const figtree = Figtree({ subsets: ["latin"], variable: "--font-figtree" });
+const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage" });
 
 export const metadata: Metadata = {
   title: "Mister White - Juego Multijugador Online Gratis | Deducción Social",
@@ -81,11 +72,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="scroll-smooth" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: designScript }} />
-      </head>
-      <body className={`${inter.variable} ${figtree.variable} ${bricolage.variable} antialiased min-h-screen bg-ink`}>
+    <html lang="es" className="scroll-smooth" data-design="new">
+      <body className={`${figtree.variable} ${bricolage.variable} antialiased min-h-screen bg-ink`}>
         <ToastProvider>
           <NavigationGuardProvider>
             <div className="flex flex-col min-h-screen">
